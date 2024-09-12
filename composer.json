@@ -20,6 +20,7 @@
         "symfony/security-bundle": "7.1.*",
         "symfony/twig-bundle": "7.1.*",
         "symfony/validator": "7.1.*",
+        "symfony/webpack-encore-bundle": "^2.1",
         "symfony/yaml": "7.1.*",
         "symfonycasts/verify-email-bundle": "^1.17"
     },
@@ -73,6 +74,8 @@
         }
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.61"
+        "symfony/maker-bundle": "^1.61",
+        "symfony/stopwatch": "7.1.*",
+        "symfony/web-profiler-bundle": "7.1.*"
     }
 }
