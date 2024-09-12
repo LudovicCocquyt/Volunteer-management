@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="UTF-8">
+        <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %}Welcome!{% endblock %}</title>
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
         {% endblock %}
@@ -11,8 +10,18 @@
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
         {% endblock %}
+        <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
     </head>
     <body>
+        {% if app.user is not null %}
+            {% include './sidebar.html.twig' %}
+            <div class="p-4 pt-20 sm:ml-64">
+        {% else %}
+            {# Only for login #}
+            <div class="flex justify-center my-8">
+        {% endif %}
         {% block body %}{% endblock %}
+        </div>
     </body>
 </html>
