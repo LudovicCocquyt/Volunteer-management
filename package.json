@@ -20,5 +20,10 @@
         "dev": "encore dev",
         "watch": "encore dev --watch",
         "build": "encore production --progress"
+    },
+    "dependencies": {
+        "@preact/preset-vite": "^2.9.0",
+        "preact": "^10.23.2",
+        "preact-compat": "^3.19.0"
     }
 }
