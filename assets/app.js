@@ -8,6 +8,6 @@
 // any CSS you import will output into a single css file (app.css in this case)
 import './styles/app.css';
 import { h, render } from 'preact';
-import UserList from './preact/UserList';
+import UserList from './preact/components/UserList';
 
 render(<UserList />, document.getElementById('userList-wrapper'));
