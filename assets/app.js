@@ -9,5 +9,13 @@
 import './styles/app.css';
 import { h, render } from 'preact';
 import Users from './preact/components/Users';
+import Activities from './preact/components/Activities';
 
-render(<Users />, document.getElementById('Users-wrapper'));
+const usersWrapper      = document.getElementById('Users-wrapper');
+const activitiesWrapper = document.getElementById('Activities-wrapper');
+
+if (usersWrapper)
+    render(<Users />, usersWrapper);
+
+if (activitiesWrapper)
+    render(<Activities />, activitiesWrapper);
