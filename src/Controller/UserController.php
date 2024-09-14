@@ -17,7 +17,7 @@ class UserController extends AbstractController
     #[Route('/users', name: 'app_users', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('user/list.html.twig');
+        return $this->render('user/users.html.twig');
     }
 
     #[Route('/user/edit/{id}', name: 'app_edit_users', methods: ['GET', 'POST'])]
