@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="w-full p-2 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+
+            <h3 class="w-full flex items-center justify-between p-2 text-gray-900" style="background-color: #f9cee8;">Évènement</h3>
+
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                    <th scope="col" class="px-6 py-3">Nom</th>
+                    <th scope="col" class="px-6 py-3">Date</th>
+                    <th scope="col" class="px-6 py-3">Lieu</th>
+                    <th scope="col" class="px-6 py-3">Publié</th>
+                        <th scope="col" class="px-6 py-3">
+                            Action
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="px-6 py-4">{{ event.name }}</td>
+                        <td class="px-6 py-4">{{ event.startAt ? event.startAt|date('Y-m-d H:i:s') : '' }}</td>
+                        <td class="px-6 py-4">{{ event.location }}</td>
+                        <td class="px-6 py-4">{{ event.archived ? 'Oui' : 'Non' }}</td>
+                        <td class="flex px-6 py-4">
+                            <a href="{{ path('app_events_edit', {'id': event.id}) }}" class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium mr-2">Modifer</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="px-6 py-3 w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">{{ event.description }}<p/>
+        </div>
+        <br>
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+            <h3 for="file" class="w-full flex items-center justify-between p-2 text-gray-900 " style="background-color: #a5f9e9;">Activités<h3/>
+        </div>
+        <br>
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+            <h3 class="w-full flex items-center justify-between p-2 text-gray-900 " style="background-color: #e9eb91;">Calendrier</h3>
+        </div>
+    </div>
+{% endblock %}

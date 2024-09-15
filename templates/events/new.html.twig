@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Events{% endblock %}
+
+{% block body %}
+<div class="w-full p-2 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 mt-3">
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg pb-3">
+        <h3 class="w-full flex items-center justify-between p-2 text-gray-900" style="background-color: #f9cee8;">Ajouter un évènement</h3>
+        <div class="mx-2">
+            {{ include('events/_form.html.twig') }}
+        </div>
+    </div>
+</div>
+{% endblock %}
