@@ -15,6 +15,12 @@
                 {{ include('events/_form.html.twig', {'button_label': 'Update'}) }}
             </div>
         </div>
+        <br>
+        <div id="Scheduler-wrapper"
+            data-eventId="{{ event.id|json_encode }}"
+            data-eventStartAt="{{ event.startAt|json_encode }}"
+        >
+        </div>
     </div>
 
 {% endblock %}

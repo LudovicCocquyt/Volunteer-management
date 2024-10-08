@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Plans index{% endblock %}
+
+{% block body %}
+    <h1>Plans index</h1>
+
+    <table class="table w-full text-center">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Date et heure du début</th>
+                <th>Date et heure de la fin</th>
+                <th>Nombre de Personne</th>
+                <th>Evènement</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for plan in plans %}
+            <tr>
+                <td>{{ plan.id }}</td>
+                <td>{{ plan.startDate ? plan.startDate|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ plan.endDate ? plan.endDate|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ plan.nbPers }}</td>
+                <td>{{ plan.event.name }}</td>
+                <td>
+                    <a href="{{ path('app_plans_show', {'id': plan.id}) }}">show</a>
+                    <a href="{{ path('app_plans_edit', {'id': plan.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_plans_new') }}">Create new</a>
+{% endblock %}

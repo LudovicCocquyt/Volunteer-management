@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Plans{% endblock %}
+
+{% block body %}
+    <h1>Plans</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ plan.id }}</td>
+            </tr>
+            <tr>
+                <th>StartDate</th>
+                <td>{{ plan.startDate ? plan.startDate|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>EndDate</th>
+                <td>{{ plan.endDate ? plan.endDate|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>NbPers</th>
+                <td>{{ plan.nbPers }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_plans_index') }}">back to list</a>
+
+    <a href="{{ path('app_plans_edit', {'id': plan.id}) }}">edit</a>
+
+    {{ include('plans/_delete_form.html.twig') }}
+{% endblock %}
