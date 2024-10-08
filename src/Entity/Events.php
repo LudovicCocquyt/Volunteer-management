@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\EventsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -31,6 +33,17 @@ class Events
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
+
+    /**
+     * @var Collection<int, Plans>
+     */
+    #[ORM\OneToMany(targetEntity: Plans::class, mappedBy: 'event', orphanRemoval: true)]
+    private Collection $plans;
+
+    public function __construct()
+    {
+        $this->plans = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -105,6 +118,36 @@ class Events
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @return Array<int, Plans>
+     */
+    public function getPlans(): array
+    {
+        return $this->plans->toArray();
+    }
+
+    public function addPlan(Plans $plan): static
+    {
+        if (!$this->plans->contains($plan)) {
+            $this->plans->add($plan);
+            $plan->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removePlan(Plans $plan): static
+    {
+        if ($this->plans->removeElement($plan)) {
+            // set the owning side to null (unless already changed)
+            if ($plan->getEvent() === $this) {
+                $plan->setEvent(null);
+            }
+        }
 
         return $this;
     }
