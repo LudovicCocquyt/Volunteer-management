@@ -5,3 +5,28 @@
 body {
     background-color: lightgray;
 }
+
+.tooltip {
+    position: absolute;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1f2937;
+    border: 1px solid black;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    z-index: 1000;
+    pointer-events: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+.fc-event-title-container {
+    text-align: center;
+}
+
+.form-plan {
+    justify-content: space-around;
+}

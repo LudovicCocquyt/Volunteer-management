@@ -57,7 +57,7 @@ const Users = () => {
     return (
         <div class="w-full p-2 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                <h3 class="w-full flex items-center justify-between p-2 text-gray-900 bg-yellow-200">Utilisateurs</h3>
+                <h3 class="w-full flex items-center justify-between p-2 text-gray-900" style="background-color: #f9ecce;">Utilisateurs</h3>
                 <div className='flex py-3 ml-2'>
                     <button type="button" onClick={() => setOpen(!open)} style="margin-right: 10px;" class="text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:focus:ring-blue-800 dark:hover:bg-blue-500">
                         <svg class="w-6 h-6 text-white-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
