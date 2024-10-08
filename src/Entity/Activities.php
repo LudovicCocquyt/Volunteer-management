@@ -5,7 +5,9 @@ namespace App\Entity;
 use App\Repository\ActivitiesRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
+#[ORM\UniqueConstraint(columns: ['name'])]
 #[ORM\Entity(repositoryClass: ActivitiesRepository::class)]
 class Activities
 {
@@ -14,6 +16,7 @@ class Activities
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Assert\NotBlank]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
