@@ -1,0 +1,30 @@
+
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% if error %}
+        <div id="Acknowledgement" class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center border-2 p-5 mb-8 border-dashed border-red-400">
+            <h4 style="color: #a62475">Une erreur est survenue !</h4>
+            <h5 style="color: #35b19a">Avez-vous ajouté vos disponibilités ?</h5>
+            <h5 style="color: #35b19a">Si l'erreur persiste, contactez un administrateur.</h5>
+        </div>
+    {% endif %}
+
+    {% if message %}
+        <div id="Acknowledgement">
+            <h4 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center border-2 p-5 mb-8 border-dashed border-green-400"><span style="color: #a62475">M</span><span style="color: #35b19a">erci pour votre inscription !</span></h4>
+        </div>
+    {% endif %}
+
+    <div id="ChooseEventAndTimes-wrapper"
+        data-eventId="{{ events|json_encode }}">
+    </div>
+
+    <div id="form-wrapper" class="pt-5 hidden">
+        <h4 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center"><span style="color: #a62475">R</span><span style="color: #35b19a">emplir vos informations</span></h4>
+
+        {{ include('subscriptions/_form.html.twig') }}
+    </div>
+
+
+{% endblock %}

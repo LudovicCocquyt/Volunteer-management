@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PlansRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -30,6 +32,17 @@ class Plans
     #[ORM\ManyToOne(inversedBy: 'plans')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Activities $activity = null;
+
+    /**
+     * @var Collection<int, Subscriptions>
+     */
+    #[ORM\OneToMany(targetEntity: Subscriptions::class, mappedBy: 'plan')]
+    private Collection $subscriptions;
+
+    public function __construct()
+    {
+        $this->subscriptions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -92,6 +105,36 @@ class Plans
     public function setActivity(?Activities $activity): static
     {
         $this->activity = $activity;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Subscriptions>
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    public function addSubscription(Subscriptions $subscription): static
+    {
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions->add($subscription);
+            $subscription->setPlan($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscriptions $subscription): static
+    {
+        if ($this->subscriptions->removeElement($subscription)) {
+            // set the owning side to null (unless already changed)
+            if ($subscription->getPlan() === $this) {
+                $subscription->setPlan(null);
+            }
+        }
 
         return $this;
     }

@@ -167,6 +167,7 @@ const TimelineCalendar = () => {
   };
 
   const calendarConfig = {
+    schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
     headerToolbar: {
       left: '',
       center: 'title',
@@ -178,7 +179,7 @@ const TimelineCalendar = () => {
         headerContent: 'Activités'
       }
     ],
-    slotMinTime: '06:00:00', // TODO: Make it configurable from event
+    slotMinTime: '12:00:00', // TODO: Make it configurable from event
     slotMaxTime: '23:00:00', // TODO: Make it configurable from event
     timeZone: 'UTC',
     locale: 'fr',
