@@ -28,7 +28,7 @@ final class ApiPlansController extends AbstractController
         if (empty($plans)) {
             return new JsonResponse([], JsonResponse::HTTP_OK);
         }
-        $plans = $plansRepository->findAll();
+        // $plans = $plansRepository->findAll();
         $plans = array_map(function(Plans $plan) {
             return [
                 'id'        => $plan->getId(),
@@ -52,6 +52,49 @@ final class ApiPlansController extends AbstractController
             array_push($activities[$activityName], $plan);
         }
         return new JsonResponse(array_reverse($activities), JsonResponse::HTTP_OK);
+    }
+
+    #[Route('/plans/our_needs_by_event/{id}', name: 'api_our_needs_plans_by_event', methods: ['GET'])]
+    public function ourNeedsByEvent(int $id, PlansRepository $plansRepository): JsonResponse
+    {
+        setlocale(LC_TIME, 'fr_FR.UTF-8');
+        $format = 'Y-m-dTH:i:s+01';
+        $plans = $plansRepository->findBy(['event' => $id]);
+        if (empty($plans)) {
+            return new JsonResponse([], JsonResponse::HTTP_OK);
+        }
+
+        $our_needs = [];
+        foreach ($plans as $plan) {
+            $startDateExists = false;
+            $endDateExists   = false;
+            foreach ($our_needs as &$need) { // Use reference &$need to modify the existing array element
+                if ($plan->getStartDate()->format($format) == $need['startDate']) {
+                    $startDateExists = true;
+                }
+                if ($plan->getEndDate()->format($format) == $need['endDate']) {
+                    $endDateExists = true;
+                }
+                if ($startDateExists && $endDateExists) {
+                    $need['nbPers'] += $plan->getNbPers();
+                    continue 2; // Skip to the next iteration of the outer loop
+                }
+            }
+
+            if ($plan->getNbPers() > 0) {
+                array_push($our_needs, [
+                    'startDate' => $plan->getStartDate()->format($format),
+                    'endDate'   => $plan->getEndDate()->format($format),
+                    'nbPers'    => $plan->getNbPers()
+                ]);
+            }
+        }
+
+        usort($our_needs, function($a, $b) {
+            return strtotime($a['startDate']) - strtotime($b['startDate']);
+        });
+
+        return new JsonResponse($our_needs, JsonResponse::HTTP_OK);
     }
 
     #[Route('/plan/new', name: 'api_plan_new', methods: ['POST'])]
@@ -143,4 +186,6 @@ final class ApiPlansController extends AbstractController
 
         return new JsonResponse(['status' => 'Deleted!'], JsonResponse::HTTP_OK);
     }
+
+    
 }

@@ -40,9 +40,16 @@ class Events
     #[ORM\OneToMany(targetEntity: Plans::class, mappedBy: 'event', orphanRemoval: true)]
     private Collection $plans;
 
+    /**
+     * @var Collection<int, Subscriptions>
+     */
+    #[ORM\OneToMany(targetEntity: Subscriptions::class, mappedBy: 'event')]
+    private Collection $subscriptions;
+
     public function __construct()
     {
-        $this->plans = new ArrayCollection();
+        $this->plans         = new ArrayCollection();
+        $this->subscriptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -146,6 +153,36 @@ class Events
             // set the owning side to null (unless already changed)
             if ($plan->getEvent() === $this) {
                 $plan->setEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Subscriptions>
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    public function addSubscription(Subscriptions $subscription): static
+    {
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions->add($subscription);
+            $subscription->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscriptions $subscription): static
+    {
+        if ($this->subscriptions->removeElement($subscription)) {
+            // set the owning side to null (unless already changed)
+            if ($subscription->getEvent() === $this) {
+                $subscription->setEvent(null);
             }
         }
 

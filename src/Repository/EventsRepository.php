@@ -16,28 +16,16 @@ class EventsRepository extends ServiceEntityRepository
         parent::__construct($registry, Events::class);
     }
 
-    //    /**
-    //     * @return Events[] Returns an array of Events objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('e')
-    //            ->andWhere('e.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('e.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Events
-    //    {
-    //        return $this->createQueryBuilder('e')
-    //            ->andWhere('e.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findPublishedAndNotArchivedEvents(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->select('e.id, e.name, e.startAt, e.location, e.description')
+            ->andWhere('e.published = :published')
+            ->andWhere('e.archived = :archived')
+            ->setParameter('published', true)
+            ->setParameter('archived', false)
+            ->orderBy('e.startAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
