@@ -51,7 +51,11 @@ class SubscriptionsFormType extends AbstractType
             ->add('event', HiddenType::class, [])
             ->add('availabilities', HiddenType::class, [])
             ->add('comment', null, [
-                'label'    => 'Commentaire'
+                'label'    => 'Commentaire',
+                'attr' => array(
+                    'placeholder' => 'Vous avez une préférence de stand? Vous souhaitez être sur le même stand qu\'un autre bénévole? Vous avez des impératifs (enfants...)?
+                    N\'hésitez pas à nous en faire part, nous ferons notre possible pour répondre à vos attentes.'
+                )
             ])
             // ->add('plan', EntityType::class, [
             //     'class'        => Plans::class,

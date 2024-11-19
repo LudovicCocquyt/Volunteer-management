@@ -86,3 +86,40 @@ export const removePlan = async (planId) => {
     }
     return false;
 };
+
+export const assignVolunteer = async (params) => {
+    try {
+        const response = await fetch('/api/plan/volunteer', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(params)
+        });
+        if (response.ok) {
+            return true;
+        }
+    } catch (error) {
+        console.error("[assignVolunteer] " + error);
+    }
+    return false;
+};
+
+export const getSubscriptions = async (planId) => {
+    try {
+        const response = await fetch(`/api/plan/get_subscriptions/${planId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const data = await response.json();
+        return data.plan;
+    } catch (error) {
+        console.error("[Plan/getSubscriptions] " + error);
+    }
+    return false;
+};

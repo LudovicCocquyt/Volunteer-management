@@ -15,12 +15,12 @@ import Archived from './preact/components/Archived';
 import TimelineCalendar from './preact/components/TimelineCalendar';
 import ChooseEventAndTimes from './preact/components/ChooseEventAndTimes';
 
-const usersWrapper          = document.getElementById('Users-wrapper');
-const activitiesWrapper     = document.getElementById('Activities-wrapper');
-const eventsWrapper         = document.getElementById('Events-wrapper');
-const archivedWrapper       = document.getElementById('Archived-wrapper');
-const schedulerWrapper      = document.getElementById('Scheduler-wrapper');
-const ChooseEventAndTimesWrapper    = document.getElementById('ChooseEventAndTimes-wrapper');
+const usersWrapper               = document.getElementById('Users-wrapper');
+const activitiesWrapper          = document.getElementById('Activities-wrapper');
+const eventsWrapper              = document.getElementById('Events-wrapper');
+const archivedWrapper            = document.getElementById('Archived-wrapper');
+const schedulerWrapper           = document.getElementById('Scheduler-wrapper');
+const ChooseEventAndTimesWrapper = document.getElementById('ChooseEventAndTimes-wrapper');
 
 if (usersWrapper)
     render(<Users />, usersWrapper);
