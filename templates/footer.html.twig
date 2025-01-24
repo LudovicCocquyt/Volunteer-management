@@ -1,0 +1,17 @@
+{% if app.user is null %}
+<div id="footer" class="md:flex text-center md:justify-around p-6 border border-gray-400 bg-green-200 w-full">
+    <div>
+        <a href="mailto:apelsaintfrancoisdouvaine@gmail.com" class="text-lg font-semibold whitespace-nowrap"
+            style="color: #35b19a">
+            <span style="color: #a62475">C</span>ontactez-<span style="color: #a62475">n</span>ous
+        </a>
+    </div>
+    <div>
+        <a href="https://www.apelstfrancois.fr/"
+            class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center">
+            <span style="color: #a62475">www</span><span style="color: #35b19a">.apelstfrancois</span><span
+                style="color: #a62475">.fr</span>
+        </a>
+    </div>
+</div>
+{% endif %}
