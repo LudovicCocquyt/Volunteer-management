@@ -34,9 +34,6 @@ class ApiUserController extends AbstractController
     #[Route('/api/add_user', name: 'api_add_user', methods: ['POST'])]
     public function addUser(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): JsonResponse
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return new JsonResponse(['status' => 'Error'], 403);
-        }
         try {
             $params = json_decode($request->getContent(), true);
 

@@ -71,13 +71,9 @@ final class ApiPlansController extends AbstractController
         return new JsonResponse(array_reverse($activities), JsonResponse::HTTP_OK);
     }
 
-    #[Route('/plans/our_needs_by_event/{id}', name: 'api_our_needs_plans_by_event', methods: ['GET'])]
+    #[Route('/public/plans/our_needs_by_event/{id}', name: 'api_our_needs_plans_by_event', methods: ['GET'])]
     public function ourNeedsByEvent(int $id, PlansRepository $plansRepository): JsonResponse
     {
-
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return new JsonResponse(['status' => 'Error'], JsonResponse::HTTP_FORBIDDEN);
-        }
         setlocale(LC_TIME, 'fr_FR.UTF-8');
         $format = 'Y-m-d\TH:i:s';
         $plans = $plansRepository->findBy(['event' => $id]);

@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ApiEventsController extends AbstractController
 {
-    #[Route('/api/events', name: 'api_events', methods: ['GET'])]
+    #[Route('/api/public/events', name: 'api_events', methods: ['GET'])]
     public function index(EventsRepository $eventsRepo): JsonResponse
     {
         $events = $eventsRepo->findAll();

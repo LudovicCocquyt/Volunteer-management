@@ -12,10 +12,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/subscriptions')]
 final class SubscriptionsController extends AbstractController
 {
-    #[Route(name: 'app_subscriptions_index', methods: ['GET'])]
+    #[Route('/subscriptions', name: 'app_subscriptions_index', methods: ['GET'])]
     public function index(SubscriptionsRepository $subscriptionsRepository): Response
     {
         return $this->render('subscriptions/index.html.twig', [
@@ -23,7 +22,7 @@ final class SubscriptionsController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_subscriptions_new', methods: ['GET', 'POST'])]
+    #[Route('/public/subscriptions/new', name: 'app_subscriptions_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, EventsRepository $eventsRepo): Response
     {
         $subscription   = new Subscriptions();
@@ -79,15 +78,16 @@ final class SubscriptionsController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_subscriptions_show', methods: ['GET'])]
+    #[Route('/subscriptions/{id}', name: 'app_subscriptions_show', methods: ['GET'])]
     public function show(Subscriptions $subscription): Response
     {
+        dd($subscription);
         return $this->render('subscriptions/show.html.twig', [
             'subscription' => $subscription,
         ]);
     }
 
-    // #[Route('/{id}/edit', name: 'app_subscriptions_edit', methods: ['GET', 'POST'])]
+    // #[Route('/subscriptions/{id}/edit', name: 'app_subscriptions_edit', methods: ['GET', 'POST'])]
     // public function edit(Request $request, Subscriptions $subscription, EntityManagerInterface $entityManager): Response
     // {
     //     $form = $this->createForm(SubscriptionsFormType::class, $subscription);
@@ -105,7 +105,7 @@ final class SubscriptionsController extends AbstractController
     //     ]);
     //}
 
-    #[Route('/{id}', name: 'app_subscriptions_delete', methods: ['POST'])]
+    #[Route('/subscriptions/{id}', name: 'app_subscriptions_delete', methods: ['POST'])]
     public function delete(Request $request, Subscriptions $subscription, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$subscription->getId(), $request->getPayload()->getString('_token'))) {
