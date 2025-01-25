@@ -3,8 +3,11 @@
 namespace App\Entity;
 
 use App\Repository\SubscriptionsRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: SubscriptionsRepository::class)]
 class Subscriptions
@@ -33,9 +36,6 @@ class Subscriptions
     private ?string $class = null;
 
     #[ORM\ManyToOne(inversedBy: 'subscriptions')]
-    private ?Plans $plan = null;
-
-    #[ORM\ManyToOne(inversedBy: 'subscriptions')]
     private ?Events $event = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
@@ -43,6 +43,45 @@ class Subscriptions
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
+
+    /**
+     * @var Collection<int, Plans>
+     * @Groups({"subscription:read", "subscription:write"})
+     */
+    #[ORM\ManyToMany(targetEntity: Plans::class, inversedBy: 'subscriptions')]
+    private Collection $plans;
+
+    public function __construct()
+    {
+        $this->plans = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Plans>
+     */
+    public function getPlans(): Collection
+    {
+        return $this->plans;
+    }
+
+    public function addPlan(Plans $plan): static
+    {
+        if (!$this->plans->contains($plan)) {
+            $this->plans->add($plan);
+            $plan->addSubscription($this);
+        }
+
+        return $this;
+    }
+
+    public function removePlan(Plans $plan): static
+    {
+        if ($this->plans->removeElement($plan)) {
+            $plan->removeSubscription($this);
+        }
+
+        return $this;
+    }
 
     public function getId(): ?int
     {
@@ -117,18 +156,6 @@ class Subscriptions
     public function setClass(string $class): static
     {
         $this->class = $class;
-
-        return $this;
-    }
-
-    public function getPlan(): ?Plans
-    {
-        return $this->plan;
-    }
-
-    public function setPlan(?Plans $plan): static
-    {
-        $this->plan = $plan;
 
         return $this;
     }

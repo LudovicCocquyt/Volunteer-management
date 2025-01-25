@@ -62,7 +62,7 @@ const ChooseEventAndTimes = () => {
     <div id="TimelineCalendarChooseTimes-wrapper" className='p-5'>
 
       <div id="events-wrapper">
-        <h4 className="mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center"><span style="color: #a62475">C</span><span style="color: #35b19a">hoisir un événement</span></h4>
+        <h4 className="mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white"><span style="color: #a62475">C</span><span style="color: #35b19a">hoisir un événement</span></h4>
         <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
           {events && events.map((event) => (
             <div
@@ -82,8 +82,8 @@ const ChooseEventAndTimes = () => {
       </div>
 
       {plans.length > 0 &&
-        <div id="times-wrapper" className="pt-5">
-          <h4 className="mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center"><span style="color: #a62475">C</span><span style="color: #35b19a">hoisir vos disponibilités</span></h4>
+        <div id="times-wrapper" className="pt-10">
+          <h4 className="mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white"><span style="color: #a62475">C</span><span style="color: #35b19a">hoisir vos disponibilités</span></h4>
           <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {plans.map((plan, key) => (
              <div

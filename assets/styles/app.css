@@ -37,3 +37,17 @@ body {
 .fc-event-title.fc-sticky {
     white-space: break-spaces;
 }
+
+
+.user-roles > label {
+    margin-right: 0.5rem;
+    margin-left: 0.2rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    color: #111827;
+}
+
+#form-wrapper label.required {
+    display: none;
+}
