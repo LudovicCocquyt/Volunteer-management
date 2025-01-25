@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PlansRepository::class)]
 class Plans
@@ -35,13 +36,41 @@ class Plans
 
     /**
      * @var Collection<int, Subscriptions>
+     * @Groups({"plan:read", "plan:write"})
      */
-    #[ORM\OneToMany(targetEntity: Subscriptions::class, mappedBy: 'plan')]
+    #[ORM\ManyToMany(targetEntity: Subscriptions::class, mappedBy: 'plans')]
     private Collection $subscriptions;
 
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Subscriptions>
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    public function addSubscription(Subscriptions $subscription): static
+    {
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions->add($subscription);
+            $subscription->addPlan($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscriptions $subscription): static
+    {
+        if ($this->subscriptions->removeElement($subscription)) {
+            $subscription->removePlan($this);
+        }
+
+        return $this;
     }
 
     public function getId(): ?int
@@ -105,36 +134,6 @@ class Plans
     public function setActivity(?Activities $activity): static
     {
         $this->activity = $activity;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Subscriptions>
-     */
-    public function getSubscriptions(): Collection
-    {
-        return $this->subscriptions;
-    }
-
-    public function addSubscription(Subscriptions $subscription): static
-    {
-        if (!$this->subscriptions->contains($subscription)) {
-            $this->subscriptions->add($subscription);
-            $subscription->setPlan($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSubscription(Subscriptions $subscription): static
-    {
-        if ($this->subscriptions->removeElement($subscription)) {
-            // set the owning side to null (unless already changed)
-            if ($subscription->getPlan() === $this) {
-                $subscription->setPlan(null);
-            }
-        }
 
         return $this;
     }
