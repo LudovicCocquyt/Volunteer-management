@@ -42,7 +42,7 @@ final class ApiSubscriptionsController extends AbstractController
 
         // Avoids loops during serialisation
         // ['ignored_attributes' => ['event', 'plan']
-        $json = $this->serializer->serialize($volunteers_available, 'json', ['ignored_attributes' => ['event', 'plan']]);
+        $json = $this->serializer->serialize($volunteers_available, 'json', ['ignored_attributes' => ['event', 'plans']]);
 
         return new JsonResponse([json_decode($json)], JsonResponse::HTTP_OK);
     }

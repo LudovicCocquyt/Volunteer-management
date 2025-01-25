@@ -25,10 +25,6 @@ final class ApiPlansController extends AbstractController
     #[Route('/plans/by_event/{id}', name: 'api_plans_by_event', methods: ['GET'])]
     public function byEvent(int $id, PlansRepository $plansRepository): JsonResponse
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return new JsonResponse(['status' => 'Error'], JsonResponse::HTTP_FORBIDDEN);
-        }
-
         $plans = $plansRepository->findBy(['event' => $id]);
         if (empty($plans)) {
             return new JsonResponse([], JsonResponse::HTTP_OK);
@@ -118,10 +114,6 @@ final class ApiPlansController extends AbstractController
     #[Route('/plan/new', name: 'api_plan_new', methods: ['POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, ActivitiesRepository $activitiesRepo, EventsRepository $eventsRepo): JsonResponse
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return new JsonResponse(['status' => 'Error'], JsonResponse::HTTP_FORBIDDEN);
-        }
-
         try {
             $params   = json_decode($request->getContent(), true);
             if (empty($params['nbPers'])) {
@@ -147,7 +139,11 @@ final class ApiPlansController extends AbstractController
             $entityManager->persist($plan);
             $entityManager->flush();
 
-            $jsonPlan = $this->serializer->serialize($plan, 'json', ['ignored_attributes' => ['event']]);
+            $jsonPlan = $this->serializer->serialize($plan, 'json',
+                ['ignored_attributes' => ['event'],
+                'groups' => ['plan:read', 'subscription:read'],
+                'enable_max_depth' => true]
+            );
 
             return new JsonResponse(
                 [
@@ -163,10 +159,6 @@ final class ApiPlansController extends AbstractController
     #[Route('/plan/edit/{id}', name: 'api_plan_edit', methods: ['PUT'])]
     public function edit(Plans $plan, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return new JsonResponse(['status' => 'Error'], JsonResponse::HTTP_FORBIDDEN);
-        }
-
         try {
             $params = json_decode($request->getContent(), true);
             $date  = $params['start'];
@@ -195,10 +187,6 @@ final class ApiPlansController extends AbstractController
     #[Route('/plan/volunteer', name: 'api_plan_volunteer', methods: ['PUT'])]
     public function volunteer(Request $request, PlansRepository $plansRepository, SubscriptionsRepository $subRepo, ManageVolunteerSercive $manageVolunteer, EntityManagerInterface $entityManager): JsonResponse
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return new JsonResponse(['status' => 'Error'], JsonResponse::HTTP_FORBIDDEN);
-        }
-
         try {
             $params       = json_decode($request->getContent(), true);
             $plan         = $plansRepository->find(intval($params['planId']));
@@ -227,9 +215,6 @@ final class ApiPlansController extends AbstractController
     #[Route('/plan/get_subscriptions/{id}', name: 'api_plan_get_subscriptions', methods: ['GET'])]
     public function get_subscriptions(Plans $plan): JsonResponse
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return new JsonResponse(['status' => 'Error'], JsonResponse::HTTP_FORBIDDEN);
-        }
         $jsonPlan = $this->serializer->serialize($plan->getSubscriptions(), 'json', ['ignored_attributes' => ['event', 'subscriptions']]);
 
         return new JsonResponse(
@@ -243,10 +228,6 @@ final class ApiPlansController extends AbstractController
     #[Route('/plan/remove/{id}', name: 'api_plans_delete', methods: ['DELETE'])]
     public function delete(Request $request, Plans $plan, EntityManagerInterface $entityManager): JsonResponse
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY') || !$plan instanceof Plans) {
-            return new JsonResponse(['status' => 'Error'], JsonResponse::HTTP_FORBIDDEN);
-        }
-
         $entityManager->remove($plan);
         $entityManager->flush();
 
