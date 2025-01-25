@@ -17,7 +17,7 @@ export const getPlans = async (id) => {
 
 export const getOurNeedsByEvent = async (id) => {
     try {
-        const response = await fetch(`/api/plans/our_needs_by_event/${id}`, {
+        const response = await fetch(`/api/public/plans/our_needs_by_event/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

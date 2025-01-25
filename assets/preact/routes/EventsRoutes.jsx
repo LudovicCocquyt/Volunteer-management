@@ -1,6 +1,6 @@
 export const getEvents = async (filter) => {
     try {
-        const response = await fetch('/api/events/', {
+        const response = await fetch('/api/public/events/', {
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
