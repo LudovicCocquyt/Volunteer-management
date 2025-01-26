@@ -1,22 +1,18 @@
 import { useState, useEffect } from 'preact/hooks';
 import { h } from 'preact';
-import { getUsers, addUser, deleteUser, getCurrentUser } from '../routes/UsersRoutes';
+import { getUsers, addUser, deleteUser } from '../routes/UsersRoutes';
 
 const Users = () => {
+    const allRoles = {
+        'ROLE_USER'     : 'Utilisateur'
+    };
     const [users, setUsers] = useState([]);
-    const [currentUser, setCurrentUser]   = useState(null);
     const [open, setOpen]   = useState(false);
     const [form, setForm]   = useState({"email": "", "firstname": "", "lastname": "", "password": ""});
 
     useEffect(() => {
         getApiUsers();
-        getApiCurrentUser();
     }, []);
-
-    const getApiCurrentUser = async () => {
-        const user = await getCurrentUser();
-        setCurrentUser(user);
-    };
 
     const getApiUsers = async () => {
         const users = await getUsers();
@@ -103,14 +99,12 @@ const Users = () => {
                                     <td class="px-6 py-4">{ user.email }</td>
                                     <td class="px-6 py-4">{ user.firstname } { user.lastname }</td>
                                     <td class="px-6 py-4">
-                                        { user.roles?.map(role => (
-                                            <span class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium">{ role }</span>
+                                        { user.roles?.map((role, key) => (
+                                            <span key={key} class="mx-2 bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium">{ allRoles[role] ?? role  }</span>
                                         ))}
                                     </td>
                                     <td class="px-6 py-4">
-                                        {currentUser?.id == user.id &&
-                                            <button onClick={() => goToUpdateUser(user.id)} class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium mr-1">Modifer</button>
-                                        }
+                                        <button onClick={() => goToUpdateUser(user.id)} class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium mr-1">Modifer</button>
                                         <button onClick={() => ApiDeleteUser(user.id)} class="bg-red-100 text-red-700 dark:bg-red-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium">Supprimer</button>
                                     </td>
                             </tr>
