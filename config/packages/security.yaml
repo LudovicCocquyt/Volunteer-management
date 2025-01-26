@@ -42,7 +42,8 @@ security:
 
         # APP PUBLIC ACCESS
         - { path: ^/login, roles: PUBLIC_ACCESS, methods: [GET] }
-        - { path: ^/public/, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/public/, roles: PUBLIC_ACCESS, methods: [GET, POST] }
+
 
         # API and APP PRIVATE ACCESS - ROLE_USER
         - { path: ^/, roles: ROLE_USER }

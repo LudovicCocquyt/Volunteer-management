@@ -3,6 +3,8 @@
 namespace App\Form;
 
 use App\Entity\Subscriptions;
+use Karser\Recaptcha3Bundle\Form\Recaptcha3Type;
+use Karser\Recaptcha3Bundle\Validator\Constraints\Recaptcha3;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -66,6 +68,11 @@ class SubscriptionsFormType extends AbstractType
                     N\'hésitez pas à nous en faire part, nous ferons notre possible pour répondre à vos attentes.'
                 )
             ])
+            ->add('captcha', Recaptcha3Type::class, [
+                'constraints' => new Recaptcha3(),
+                'action_name' => 'SubscriptionsForm',
+                'locale'      => 'fr',
+            ]);
         ;
     }
 
