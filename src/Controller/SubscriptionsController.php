@@ -54,7 +54,7 @@ final class SubscriptionsController extends AbstractController
                 return $this->render('subscriptions/new.html.twig', [
                     'subscription'      => $subscription,
                     'SubscriptionsForm' => $form,
-                    'events'            => $eventsRepo->findPublishedAndNotArchivedEvents(),
+                    'events'            => $eventsRepo->findPublishedEvents(),
                     "message"           => $message,
                     'error'             => true
                 ]);
@@ -72,7 +72,7 @@ final class SubscriptionsController extends AbstractController
         return $this->render('subscriptions/new.html.twig', [
             'subscription'      => $subscription,
             'SubscriptionsForm' => $form,
-            'events'            => $eventsRepo->findPublishedAndNotArchivedEvents(),
+            'events'            => $eventsRepo->findPublishedEvents(),
             "message"           => $message,
             'error'             => $error
         ]);

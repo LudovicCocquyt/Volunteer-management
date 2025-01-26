@@ -16,7 +16,7 @@ class EventsRepository extends ServiceEntityRepository
         parent::__construct($registry, Events::class);
     }
 
-    public function findPublishedAndNotArchivedEvents(): array
+    public function findPublishedEvents(): array
     {
         return $this->createQueryBuilder('e')
             ->select('e.id, e.name, e.startAt, e.location, e.description')
