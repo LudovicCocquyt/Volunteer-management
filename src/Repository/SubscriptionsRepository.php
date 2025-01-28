@@ -19,8 +19,10 @@ class SubscriptionsRepository extends ServiceEntityRepository
     public function findAllByEvent(): array
     {
         return $this->createQueryBuilder('s')
-            ->orderBy('s.id', 'ASC')
-            ->orderBy('s.event', 'ASC')
+            ->join('s.event', 'e')
+            ->where('e.archived != true') // If not archived
+            ->orderBy('e.id', 'ASC') // Order by event.id
+            ->addOrderBy('s.id', 'ASC') // And Order by subscription.id
             ->getQuery()
             ->getResult();
     }
