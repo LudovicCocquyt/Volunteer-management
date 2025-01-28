@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Events;
+use EmilePerron\TinymceBundle\Form\Type\TinymceType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -13,7 +14,12 @@ class EventsFormType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('description')
+            ->add('description', TinymceType::class, [
+                'attr' => [
+                    'class' => 'tinymce',
+                ]
+            ]
+            )
             ->add('startAt', null, [
                 'widget' => 'single_text',
             ])

@@ -7,6 +7,7 @@
 
 // any CSS you import will output into a single css file (app.css in this case)
 import './styles/app.css';
+import './styles/tinymce.css';
 import { h, render } from 'preact';
 import Users from './preact/components/Users';
 import Activities from './preact/components/Activities';

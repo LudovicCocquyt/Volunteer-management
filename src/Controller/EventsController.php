@@ -59,7 +59,7 @@ final class EventsController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_events', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_events_edit', ['id' => $event->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('events/edit.html.twig', [

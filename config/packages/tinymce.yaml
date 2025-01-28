@@ -1,0 +1,5 @@
+tinymce:
+    resize: true  # Permet le redimensionnement
+    min_height: 300  # Hauteur minimale
+    height: 300  # Hauteur initiale
+    max_height: 900  # Hauteur maximale

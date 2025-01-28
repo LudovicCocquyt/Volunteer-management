@@ -1,0 +1,26 @@
+.tinymce-content ul {
+    list-style: disc;
+    margin-left: 20px;
+    padding-left: 20px;
+}
+
+.tinymce-content ol {
+    list-style: decimal;
+    margin-left: 20px;
+    padding-left: 20px;
+}
+
+.tinymce-content p {
+    margin: 0;
+    padding: 0;
+}
+
+/* Optionnel : Réinitialiser les styles hérités des autres éléments */
+.tinymce-content * {
+    all: unset;
+}
+
+/* Appliquer les styles spécifiques à TinyMCE */
+.tinymce-content * {
+    all: revert;
+}

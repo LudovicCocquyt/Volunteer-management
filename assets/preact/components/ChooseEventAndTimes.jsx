@@ -58,6 +58,14 @@ const ChooseEventAndTimes = () => {
     setDescription(description);
   };
 
+  const HtmlRenderer = ({ mobile, htmlContent }) => {
+    if (mobile)
+      return <div className="tinymce-content text-sm font-normal text-gray-700 dark:text-gray-400 text-justify p-5" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+
+    return (
+      <div className="tinymce-content hidden lg:block font-normal text-gray-700 dark:text-gray-400" dangerouslySetInnerHTML={{ __html: htmlContent }} />
+    );
+  };
   return (
     <div id="TimelineCalendarChooseTimes-wrapper" className='p-5'>
 
@@ -72,12 +80,12 @@ const ChooseEventAndTimes = () => {
             >
               <h5 className="mb-2 text-xl text-center font-bold tracking-tight text-gray-900 dark:text-white">{event.name}</h5>
               <p className="font-normal text-center text-gray-700 dark:text-gray-400">{moment(event.startAt.date).format('LL')}</p>
-              <p className="hidden lg:block font-normal text-gray-700 dark:text-gray-400">{event.description}</p>
+              <HtmlRenderer mobile={false} htmlContent={event.description} />
             </div>
           ))}
         </div>
         <div className='lg:hidden mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center'>
-          <p className="text-sm font-normal text-gray-700 dark:text-gray-400 text-justify p-5">{description}</p>
+          <HtmlRenderer mobile={true} htmlContent={description} />
         </div>
       </div>
 
