@@ -79,7 +79,7 @@ const ChoiceOfVolunteers = () => {
               onClick={() => {changeEvent(event.id), descriptionEvent(event.description)}}
             >
               <h5 className="mb-2 text-xl text-center font-bold tracking-tight text-gray-900 dark:text-white">{event.name}</h5>
-              <p className="font-normal text-center text-gray-700 dark:text-gray-400">{moment(event.startAt.date).format('LL')}</p>
+              <p className="font-normal text-center text-gray-700 dark:text-gray-400 capitale">{moment(event.startAt.date).format('dddd')} {moment(event.startAt.date).format('LL')}</p>
               <HtmlRenderer mobile={false} htmlContent={event.description} />
             </div>
           ))}
