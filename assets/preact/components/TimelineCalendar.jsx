@@ -4,10 +4,12 @@ import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
 import frLocale from '@fullcalendar/core/locales/fr';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import moment from 'moment';
 import { Calendar } from '@fullcalendar/core';
 import { getPlans, addPlan, updatePlan, removePlan, assignVolunteer, getSubscriptions } from '../routes/PlansRoutes';
 import { getSubscriptionsByEvent } from '../routes/SubscriptionsRoutes';
 import { getActivities } from '../routes/ActivitiesRoutes';
+
 
 const TimelineCalendar = () => {
   const calendarRef                                   = useRef(null);
@@ -28,6 +30,13 @@ const TimelineCalendar = () => {
   const element           = document.getElementById('Scheduler-wrapper');
   const eventPreparedId   = JSON.parse(element.getAttribute('data-eventId'));
   const eventPreparedDate = JSON.parse(element.getAttribute('data-eventStartAt'));
+  const startCalendar     = JSON.parse(element.getAttribute('data-startCalendar'));
+  const endCalendar       = JSON.parse(element.getAttribute('data-endCalendar'));
+
+  const slotMinTime            = startCalendar ? moment(startCalendar.date).format('HH:mm') : '12:00' //default start time;
+  const slotMaxTime            = endCalendar ? moment(endCalendar.date).format('HH:mm') : '23:00';
+  // Add 1 hour in slotMinTime
+  const slotMinTimePlusOneHour = startCalendar ? moment(startCalendar.date).add(1, 'hours').format('HH:mm') : '13:00' //default start time;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -171,8 +180,8 @@ const TimelineCalendar = () => {
       "nbPers": 0,
       "start": eventPreparedDate.date,
       "end": eventPreparedDate.date,
-      "startTime": "12:00",
-      "endTime": "13:00"
+      "startTime": slotMinTime,
+      "endTime": slotMinTimePlusOneHour
     };
 
     const validate = await handleSubmit(form);
@@ -204,8 +213,8 @@ const TimelineCalendar = () => {
         headerContent: 'Activités'
       }
     ],
-    slotMinTime: '12:00:00', // TODO: Make it configurable from event
-    slotMaxTime: '23:00:00', // TODO: Make it configurable from event
+    slotMinTime: slotMinTime,
+    slotMaxTime: slotMaxTime,
     timeZone: 'UTC',
     locale: 'fr',
     plugins: [dayGridPlugin, resourceTimelinePlugin, interactionPlugin],

@@ -17,8 +17,10 @@
         </div>
         <br>
         <div id="Scheduler-wrapper"
-            data-eventId="{{ event.id|json_encode }}"
-            data-eventStartAt="{{ event.startAt|json_encode }}"
+            data-eventId       = "{{ event.id|json_encode }}"
+            data-eventStartAt  = "{{ event.startAt|json_encode }}"
+            data-startCalendar = "{{ event.startCalendar|json_encode }}"
+            data-endCalendar   = "{{ event.endCalendar|json_encode }}"
         >
         </div>
     </div>

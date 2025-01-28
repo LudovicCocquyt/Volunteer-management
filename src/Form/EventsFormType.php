@@ -17,6 +17,8 @@ class EventsFormType extends AbstractType
             ->add('startAt', null, [
                 'widget' => 'single_text',
             ])
+            ->add('startCalendar')
+            ->add('endCalendar')
             ->add('location')
             ->add('published')
             ->add('archived')

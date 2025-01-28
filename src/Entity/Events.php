@@ -8,6 +8,18 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+// | Id int                        |
+// | Name string                   |
+// | StartAt datetime              |
+// | Location string               |
+// | Published bool                |
+// | Archived bool                 |
+// | Description text              |
+// | OneToManyPlans array          |
+// | OneToMany Subscriptions array |
+// | StartCalendar datetime        |
+// | EndCalendar datetime          |
+
 #[ORM\Entity(repositoryClass: EventsRepository::class)]
 class Events
 {
@@ -45,6 +57,12 @@ class Events
      */
     #[ORM\OneToMany(targetEntity: Subscriptions::class, mappedBy: 'event')]
     private Collection $subscriptions;
+
+    #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $startCalendar = null;
+
+    #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $endCalendar = null;
 
     public function __construct()
     {
@@ -185,6 +203,30 @@ class Events
                 $subscription->setEvent(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getStartCalendar(): ?\DateTimeInterface
+    {
+        return $this->startCalendar;
+    }
+
+    public function setStartCalendar(?\DateTimeInterface $startCalendar): static
+    {
+        $this->startCalendar = $startCalendar;
+
+        return $this;
+    }
+
+    public function getEndCalendar(): ?\DateTimeInterface
+    {
+        return $this->endCalendar;
+    }
+
+    public function setEndCalendar(?\DateTimeInterface $endCalendar): static
+    {
+        $this->endCalendar = $endCalendar;
 
         return $this;
     }
