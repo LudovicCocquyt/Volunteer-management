@@ -35,6 +35,15 @@
         <br>
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
             <h3 class="w-full flex items-center justify-between p-2 text-gray-900 " style="background-color: #e9eb91;">Calendrier</h3>
+            <div id="EventCalendarView-wrapper"
+                className="pt-5"
+                data-eventId       = "{{ event.id|json_encode }}"
+                data-eventStartAt  = "{{ event.startAt|json_encode }}"
+                data-startCalendar = "{{ event.startCalendar|json_encode }}"
+                data-endCalendar   = "{{ event.endCalendar|json_encode }}"
+            >
+            </div>
+
         </div>
     </div>
 {% endblock %}
