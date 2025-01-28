@@ -4,9 +4,9 @@ import { getOurNeedsByEvent } from '../routes/PlansRoutes';
 import moment from 'moment';
 import 'moment/locale/fr';
 
-const ChooseEventAndTimes = () => {
+const ChoiceOfVolunteers = () => {
   moment.locale('fr');
-  const element                           = document.getElementById('ChooseEventAndTimes-wrapper');
+  const element                           = document.getElementById('ChoiceOfVolunteers-wrapper');
   const events                            = JSON.parse(element.getAttribute('data-eventId'));
   const subscriptions_form_availabilities = document.getElementById('subscriptions_form_availabilities');
   const subscriptions_form_event          = document.getElementById('subscriptions_form_event');
@@ -114,4 +114,4 @@ const ChooseEventAndTimes = () => {
   );
 };
 
-export default ChooseEventAndTimes;
+export default ChoiceOfVolunteers;

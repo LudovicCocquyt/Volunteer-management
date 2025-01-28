@@ -14,14 +14,14 @@ import Activities from './preact/components/Activities';
 import Events from './preact/components/Events';
 import Archived from './preact/components/Archived';
 import TimelineCalendar from './preact/components/TimelineCalendar';
-import ChooseEventAndTimes from './preact/components/ChooseEventAndTimes';
+import ChoiceOfVolunteers from './preact/components/ChoiceOfVolunteers';
 
 const usersWrapper               = document.getElementById('Users-wrapper');
 const activitiesWrapper          = document.getElementById('Activities-wrapper');
 const eventsWrapper              = document.getElementById('Events-wrapper');
 const archivedWrapper            = document.getElementById('Archived-wrapper');
 const schedulerWrapper           = document.getElementById('Scheduler-wrapper');
-const ChooseEventAndTimesWrapper = document.getElementById('ChooseEventAndTimes-wrapper');
+const ChooseEventAndTimesWrapper = document.getElementById('ChoiceOfVolunteers-wrapper');
 
 if (usersWrapper)
     render(<Users />, usersWrapper);
@@ -39,7 +39,7 @@ if (schedulerWrapper)
     render(<TimelineCalendar />, schedulerWrapper);
 
 if (ChooseEventAndTimesWrapper)
-    render(<ChooseEventAndTimes />, ChooseEventAndTimesWrapper);
+    render(<ChoiceOfVolunteers />, ChooseEventAndTimesWrapper);
 
 
 
