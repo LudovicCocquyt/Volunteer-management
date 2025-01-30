@@ -26,6 +26,9 @@
             "migrations/.gitignore"
         ]
     },
+    "emileperron/tinymce-bundle": {
+        "version": "v3.1.0"
+    },
     "jms/serializer-bundle": {
         "version": "5.5",
         "recipe": {
@@ -34,6 +37,30 @@
             "version": "4.0",
             "ref": "cc04e10cf7171525b50c18b36004edf64cb478be"
         }
+    },
+    "karser/karser-recaptcha3-bundle": {
+        "version": "0.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "0.1",
+            "ref": "c51ce07c10331d506762efe25b6f5843c1a5ea17"
+        },
+        "files": [
+            "config/packages/karser_recaptcha3.yaml"
+        ]
+    },
+    "symfony/apache-pack": {
+        "version": "1.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.0",
+            "ref": "0f18b4decdf5695d692c1d0dfd65516a07a6adf1"
+        },
+        "files": [
+            "public/.htaccess"
+        ]
     },
     "symfony/console": {
         "version": "7.1",
