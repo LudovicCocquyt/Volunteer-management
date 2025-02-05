@@ -13,6 +13,7 @@ import { getActivities } from '../routes/ActivitiesRoutes';
 
 const TimelineCalendar = () => {
   const calendarRef                                   = useRef(null);
+  const divRef                                        = useRef(null);
   const [activities, setActivities]                   = useState([]);
   const [isDataLoaded, setIsDataLoaded]               = useState(false);
   const [events, setEvents]                           = useState([]);
@@ -23,8 +24,8 @@ const TimelineCalendar = () => {
   const [plans, setPlans]                             = useState({});
   const [subscriptions, setSubscriptions]             = useState([]);
   const [subscriptionsInPlan, setSubscriptionsInPlan] = useState([]);
-  const [info, setInfo]                               = useState({}); // Event information
-  const [isPopoverVisible, setPopoverVisible]         = useState(null); // popover comment vonlunteer
+  const [info, setInfo]                               = useState({});     // Event information
+  const [isPopoverVisible, setPopoverVisible]         = useState(null);   // popover comment vonlunteer
 
   const activitiesActive  = Object.keys(plans).map(key => key) || [];
   const element           = document.getElementById('Scheduler-wrapper');
@@ -71,7 +72,8 @@ const TimelineCalendar = () => {
     const d = Object.values(plans).map(plan => (
       plan.map(p => ({
         id: p.id,
-        title: p.title, // TODO: To update
+        title: p.title,
+        classNames: p.classNames,
         resourceId: p.activity.name,
         start: p.startDate,
         end: p.endDate
@@ -140,16 +142,16 @@ const TimelineCalendar = () => {
     });
     setShowForm(true);
     setIsEditing(false);
+    currenPlan(false, info);
   };
 
   const handleEventClick = (info) => {
     const event     = info.event;
     const startTime = new Date(event.start).toISOString().substring(11, 16);
     const endTime   = event.end ? new Date(event.end).toISOString().substring(11, 16) : '';
-
     setFormData({
       id: event.id,
-      nbPers: event.title.split(' / ')[0],
+      nbPers: event.title.split('/')[1],
       start: event.start.toISOString().substring(0, 10),
       end: event.end ? event.end.toISOString().substring(0, 10) : '',
       startTime: startTime,
@@ -159,10 +161,23 @@ const TimelineCalendar = () => {
     });
     setShowForm(true);
     setIsEditing(true);
-
     getApiPlanSubscriptions(info.event._def.publicId);
     getApiSubscriptions(new Date(event.start).toISOString(), new Date(event.end).toISOString());
     setInfo(info);
+    currenPlan(true, info);
+  };
+
+  const currenPlan = (bool, info) => {
+    // Remove the class bg-green-800 from all elements
+    const elements = document.getElementsByClassName('bg-green-800');
+    for (let i = 0; i < elements.length; i++) {
+      elements[i].classList.remove('bg-green-800');
+    }
+
+    if (bool)
+      info.el.classList.add('bg-green-800'); // Add the class to the clicked element 
+
+      divRef.current.scrollIntoView({ behavior: 'smooth' })
   };
 
   const handleFormChange = (e) => {
@@ -231,13 +246,13 @@ const TimelineCalendar = () => {
     eventClick: handleEventClick,
   };
 
-
   return (
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
       <h3 class="w-full flex items-center justify-between p-2 text-gray-900 " style="background-color: #e9eb91;">Planification</h3>
     <div className="mx-2">
       <div className='flex py-3 ml-2'>
-        <button id="dropdownSearchButton" data-dropdown-toggle="activities_choose" className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">Ajouter des activités <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+        <button id="dropdownSearchButton" data-dropdown-toggle="activities_choose"
+        className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-green-400 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400" type="button">Ajouter des activités <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
         </svg>
         </button>
@@ -384,7 +399,7 @@ const TimelineCalendar = () => {
           </div>
         )}
         </div>
-      <div className="my-6"></div>
+      <div className="my-12" ref={divRef}></div>
     </div>
   )
 };

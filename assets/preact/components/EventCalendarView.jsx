@@ -56,7 +56,8 @@ const EventCalendarView = () => {
     const d = Object.values(plans).map(plan => (
       plan.map(p => ({
         id: p.id,
-        title: p.title, // TODO: To update
+        title: p.title,
+        classNames: p.classNames,
         resourceId: p.activity.name,
         start: p.startDate,
         end: p.endDate
