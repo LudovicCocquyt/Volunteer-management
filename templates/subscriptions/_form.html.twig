@@ -2,7 +2,7 @@
 {% block body %}
 {{ form_errors(SubscriptionsForm) }}
 {{ form_start(SubscriptionsForm) }}
-    <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3 p-5">
+    <div class="subscriptionsForm grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3 p-5">
         <div class="hidden">
         {{ form_row(SubscriptionsForm.event, {
                 attr: {
@@ -48,7 +48,7 @@
         }) }}
     </div>
 
-    <div class="grid grid-cols-1 gap-4 px-5 pb-5">
+    <div class="subscriptionsForm grid grid-cols-1 gap-4 px-5 pb-5">
         {{ form_row(SubscriptionsForm.comment, {
             attr: {
                 class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"

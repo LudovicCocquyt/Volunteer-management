@@ -48,6 +48,6 @@ body {
     color: #111827;
 }
 
-#form-wrapper label.required {
+#form-wrapper .subscriptionsForm label {
     display: none;
 }
