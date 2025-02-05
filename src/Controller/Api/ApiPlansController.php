@@ -31,27 +31,19 @@ final class ApiPlansController extends AbstractController
         }
 
         $plans = array_map(function(Plans $plan) {
-            $name = "";
-            $loop = 0;
-            foreach ($plan->getSubscriptions() as $subscription) {
-                $loop++;
-                $name = $name . $subscription->getFirstname() . ' ' . $subscription->getLastname() . ', ';
-            }
-            if ($loop > 0) {
-                $name = $loop . "/" . $plan->getNbPers() . " " . substr($name, 0 , -2) ;
-            } else {
-                $name = $loop . "/" . $plan->getNbPers();
-            }
+            $name            = count($plan->getSubscriptions()) . "/" . $plan->getNbPers();
+            $backgroundColor = count($plan->getSubscriptions()) >= $plan->getNbPers() ? 'bg-gray-400 border-gray-400 hover:bg-gray-800' :'bg-green-400 border-green-400 hover:bg-green-800';
 
             return [
                 'id'        => $plan->getId(),
-                'startDate' => $plan->getStartDate()->format('Y-m-d\TH:i:s'), // 2024-09-25T09:00:00
+                'startDate' => $plan->getStartDate()->format('Y-m-d\TH:i:s'),   // 2024-09-25T09:00:00
                 'endDate'   => $plan->getEndDate()->format('Y-m-d\TH:i:s'),
                 'activity'  => [
                     'id'   => $plan->getActivity()->getId(),
                     'name' => $plan->getActivity()->getName(),
                 ],
-                "title" => $name
+                "title"      => $name,
+                "classNames" => $backgroundColor,
             ];
         }, $plans);
 
