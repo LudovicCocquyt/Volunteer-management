@@ -13,7 +13,7 @@ class ApiEventsController extends AbstractController
     #[Route('/api/public/events', name: 'api_events', methods: ['GET'])]
     public function index(EventsRepository $eventsRepo): JsonResponse
     {
-        $events = $eventsRepo->findAll();
+        $events = $eventsRepo->findBy([], ['published' => 'ASC', 'id' => 'ASC']);
         $events = array_map(function(Events $event) {
             return [
                 'id'          => $event->getId(),

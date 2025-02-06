@@ -17,15 +17,17 @@ const ChoiceOfVolunteers = () => {
   const [availability, setAvailability] = useState([]);
   const [description, setDescription]   = useState("");
 
-
   useEffect(() => {
     if (availability.length > 0)
       formWrapper.classList.remove('hidden'); // Show the form
     else
       formWrapper.classList.add('hidden'); // Hide the form
 
+    if (events.length == 1)
+      changeEvent(events[0].id);
+
     subscriptions_form_availabilities.value = [JSON.stringify(availability)]; // Set availabilities in the form
-  }, availability);
+  }, []);
 
   const changeEvent = (eventId) => {
     setCurrentEvent(eventId);
@@ -58,20 +60,24 @@ const ChoiceOfVolunteers = () => {
     setDescription(description);
   };
 
-  const HtmlRenderer = ({ mobile, htmlContent }) => {
-    if (mobile)
-      return <div className="tinymce-content text-sm font-normal text-gray-700 dark:text-gray-400 text-justify p-5" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
-
-    return (
-      <div className="tinymce-content hidden lg:block font-normal text-gray-700 dark:text-gray-400" dangerouslySetInnerHTML={{ __html: htmlContent }} />
-    );
+  const HtmlRenderer = ({ htmlContent }) => {
+    return <div className="tinymce-content text-sm font-normal text-gray-700 dark:text-gray-400 text-justify p-5" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
   };
+
   return (
     <div id="TimelineCalendarChooseTimes-wrapper" className='p-5'>
 
       <div id="events-wrapper">
-        <h4 className="mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white"><span style="color: #a62475">C</span><span style="color: #35b19a">hoisir un événement</span></h4>
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
+        {events.length == 0 &&
+          <h4 className="text-center mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+            <span style="color: #a62475">A</span><span style="color: #35b19a">ucun événement pour le moment !</span></h4>
+        }
+        {events && events.length > 1 &&
+          <h4 className="mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white"><span style="color: #a62475">C</span><span style="color: #35b19a">hoisir un événement</span></h4>
+        }
+
+
+        <div className={`grid sm:grid-cols-1 md:grid-cols-${events.length == 1 ? '1' : '2'} gap-4`}>
           {events && events.map((event) => (
             <div
               id={event.id}
@@ -80,13 +86,14 @@ const ChoiceOfVolunteers = () => {
             >
               <h5 className="mb-2 text-xl text-center font-bold tracking-tight text-gray-900 dark:text-white">{event.name}</h5>
               <p className="font-normal text-center text-gray-700 dark:text-gray-400 capitale">{moment(event.startAt.date).format('dddd')} {moment(event.startAt.date).format('LL')}</p>
-              <HtmlRenderer mobile={false} htmlContent={event.description} />
             </div>
           ))}
         </div>
-        <div className='lg:hidden mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center'>
-          <HtmlRenderer mobile={true} htmlContent={description} />
-        </div>
+        { description && description.length > 0 &&
+          <div class="p-6 mt-3 border border-gray-200 rounded-lg shadow bg-gray-100">
+            <HtmlRenderer htmlContent={description} />
+          </div>
+        }
       </div>
 
       {plans.length > 0 &&
