@@ -60,7 +60,7 @@ final class ApiPlansController extends AbstractController
     }
 
     #[Route('/public/plans/our_needs_by_event/{id}', name: 'api_our_needs_plans_by_event', methods: ['GET'])]
-    public function ourNeedsByEvent(int $id, PlansRepository $plansRepository): JsonResponse
+    public function ourNeedsByEvent(int $id, PlansRepository $plansRepository, SubscriptionsRepository $subRepo): JsonResponse
     {
         setlocale(LC_TIME, 'fr_FR.UTF-8');
         $format = 'Y-m-d\TH:i:s';
@@ -68,6 +68,21 @@ final class ApiPlansController extends AbstractController
         if (empty($plans)) {
             return new JsonResponse([], JsonResponse::HTTP_OK);
         }
+
+        $subscriptions       = $subRepo->findBy(['event' => $id]);
+        $volunteer_available = []; // Array to store the number of volunteers available for each slot
+        if (count($subscriptions) > 0) {
+            foreach ($subscriptions as $subscription) {
+                $slots_booked  = $subscription->getAvailabilities();
+                foreach ($slots_booked as $s) {
+                    if (array_key_exists($s['startDate'] ."/". $s['endDate'], $volunteer_available)) {
+                        $volunteer_available[$s['startDate'] ."/". $s['endDate']] += 1;
+                    } else {
+                        $volunteer_available[$s['startDate'] ."/". $s['endDate']] = 1;
+                    }
+                }
+            }
+        };
 
         $our_needs = [];
         foreach ($plans as $plan) {
@@ -87,12 +102,22 @@ final class ApiPlansController extends AbstractController
             }
 
             if ($plan->getNbPers() > 0) {
-                array_push($our_needs, [
-                    'startDate' => $plan->getStartDate()->format($format),
-                    'endDate'   => $plan->getEndDate()->format($format),
-                    'nbPers'    => $plan->getNbPers(),
-                    'available' => true
-                ]);
+                $startDate       = $plan->getStartDate()->format($format);
+                $endDate         = $plan->getEndDate()->format($format);
+                $availabilityKey = $startDate . "/" . $endDate;
+
+                // Check if there are any places available for this plan
+                if (
+                    !array_key_exists($availabilityKey, $volunteer_available) ||
+                    (array_key_exists($availabilityKey, $volunteer_available) && $volunteer_available[$availabilityKey] < $plan->getNbPers())
+                ) {
+                    array_push($our_needs, [
+                        'startDate' => $startDate,
+                        'endDate'   => $endDate,
+                        'nbPers'    => $plan->getNbPers(),
+                        'available' => true
+                    ]);
+                }
             }
         }
 
