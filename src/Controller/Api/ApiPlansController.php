@@ -31,8 +31,13 @@ final class ApiPlansController extends AbstractController
         }
 
         $plans = array_map(function(Plans $plan) {
-            $name            = count($plan->getSubscriptions()) . "/" . $plan->getNbPers();
+            $need            = count($plan->getSubscriptions()) . "/" . $plan->getNbPers();
             $backgroundColor = count($plan->getSubscriptions()) >= $plan->getNbPers() ? 'bg-gray-400 border-gray-400 hover:bg-gray-800' :'bg-green-400 border-green-400 hover:bg-green-800';
+
+            $people = ""; // Get the list of people who have subscribed to the plan for export pdf
+            foreach ($plan->getSubscriptions() as $subscription) {
+                $people = $people . $subscription->getFirstname() . ' ' . $subscription->getLastname() . ", \n ";
+            }
 
             return [
                 'id'        => $plan->getId(),
@@ -42,8 +47,9 @@ final class ApiPlansController extends AbstractController
                     'id'   => $plan->getActivity()->getId(),
                     'name' => $plan->getActivity()->getName(),
                 ],
-                "title"      => $name,
+                "title"      => $need,
                 "classNames" => $backgroundColor,
+                "people"     => $people,
             ];
         }, $plans);
 
@@ -101,22 +107,22 @@ final class ApiPlansController extends AbstractController
                 }
             }
 
+            // Add the plan to the our_needs array if getNbPers > 0
             if ($plan->getNbPers() > 0) {
-                $startDate       = $plan->getStartDate()->format($format);
-                $endDate         = $plan->getEndDate()->format($format);
-                $availabilityKey = $startDate . "/" . $endDate;
+                array_push($our_needs, [
+                    'startDate' => $plan->getStartDate()->format($format),
+                    'endDate'   => $plan->getEndDate()->format($format),
+                    'nbPers'    => $plan->getNbPers(),
+                    'available' => true
+                ]);
+            }
 
-                // Check if there are any places available for this plan
-                if (
-                    !array_key_exists($availabilityKey, $volunteer_available) ||
-                    (array_key_exists($availabilityKey, $volunteer_available) && $volunteer_available[$availabilityKey] < $plan->getNbPers())
-                ) {
-                    array_push($our_needs, [
-                        'startDate' => $startDate,
-                        'endDate'   => $endDate,
-                        'nbPers'    => $plan->getNbPers(),
-                        'available' => true
-                    ]);
+        }
+        if (count($our_needs) > 0) {
+            foreach ($our_needs as $key => $o) {
+                $availabilityKey = $o['startDate'] . "/" . $o['endDate'];
+                if (array_key_exists($availabilityKey, $volunteer_available) && $volunteer_available[$availabilityKey] >= $o['nbPers']) {
+                    unset($our_needs[$key]);
                 }
             }
         }

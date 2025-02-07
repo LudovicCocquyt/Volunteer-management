@@ -23,10 +23,15 @@ const ChoiceOfVolunteers = () => {
     else
       formWrapper.classList.add('hidden'); // Hide the form
 
-    if (events.length == 1)
-      changeEvent(events[0].id);
-
     subscriptions_form_availabilities.value = [JSON.stringify(availability)]; // Set availabilities in the form
+  }, availability);
+
+  useEffect(() => {
+    // If there is only one event, we select it by default
+    if (events.length == 1) {
+      changeEvent(events[0].id);
+      descriptionEvent(events[0].description);
+    }
   }, []);
 
   const changeEvent = (eventId) => {
@@ -75,7 +80,6 @@ const ChoiceOfVolunteers = () => {
         {events && events.length > 1 &&
           <h4 className="mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white"><span style="color: #a62475">C</span><span style="color: #35b19a">hoisir un événement</span></h4>
         }
-
 
         <div className={`grid sm:grid-cols-1 md:grid-cols-${events.length == 1 ? '1' : '2'} gap-4`}>
           {events && events.map((event) => (
