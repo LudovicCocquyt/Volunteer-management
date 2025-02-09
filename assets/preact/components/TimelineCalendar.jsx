@@ -9,6 +9,7 @@ import { Calendar } from '@fullcalendar/core';
 import { getPlans, addPlan, updatePlan, removePlan, assignVolunteer, getSubscriptions } from '../routes/PlansRoutes';
 import { getSubscriptionsByEvent } from '../routes/SubscriptionsRoutes';
 import { getActivities } from '../routes/ActivitiesRoutes';
+import { exportToPdf } from '../utils/ExportToPdf';
 
 
 const TimelineCalendar = () => {
@@ -26,6 +27,7 @@ const TimelineCalendar = () => {
   const [subscriptionsInPlan, setSubscriptionsInPlan] = useState([]);
   const [info, setInfo]                               = useState({});     // Event information
   const [isPopoverVisible, setPopoverVisible]         = useState(null);   // popover comment vonlunteer
+  const [hidePeople, setHidePeople]                   = useState(true);
 
   const activitiesActive  = Object.keys(plans).map(key => key) || [];
   const element           = document.getElementById('Scheduler-wrapper');
@@ -42,7 +44,7 @@ const TimelineCalendar = () => {
   useEffect(() => {
     const fetchData = async () => {
       await getApiActivities();
-      await getApiPlans(eventPreparedId);
+      await getApiPlans(eventPreparedId, false);
       setIsDataLoaded(true); // Refresh the calendar
     };
 
@@ -65,14 +67,14 @@ const TimelineCalendar = () => {
     }
   }, [events, calendarInstance]);
 
-  const getApiPlans = async (eventPreparedId) => {
+  const getApiPlans = async (eventPreparedId, displayPeople) => {
     const plans = await getPlans(eventPreparedId);
     setPlans(plans);
 
     const d = Object.values(plans).map(plan => (
       plan.map(p => ({
         id: p.id,
-        title: p.title,
+        title: displayPeople ? p.title + p.people : p.title,
         classNames: p.classNames,
         resourceId: p.activity.name,
         start: p.startDate,
@@ -107,7 +109,7 @@ const TimelineCalendar = () => {
     }
 
     if (validate) {
-      await getApiPlans(eventPreparedId);
+      await getApiPlans(eventPreparedId, false);
       setShowForm(false);
       setIsEditing(false);
       return validate;
@@ -118,7 +120,7 @@ const TimelineCalendar = () => {
     if (planId) {
       const validate = await removePlan(planId);
       if (validate) {
-        await getApiPlans(eventPreparedId);
+        await getApiPlans(eventPreparedId, false);
         setShowForm(false);
         setIsEditing(false);
         setIsDataLoaded(true); // Refresh the calendar
@@ -175,7 +177,7 @@ const TimelineCalendar = () => {
     }
 
     if (bool)
-      info.el.classList.add('bg-green-800'); // Add the class to the clicked element 
+      info.el.classList.add('bg-green-800'); // Add the class to the clicked element
 
       divRef.current.scrollIntoView({ behavior: 'smooth' })
   };
@@ -201,7 +203,7 @@ const TimelineCalendar = () => {
 
     const validate = await handleSubmit(form);
     if (validate) {
-      await getApiPlans(eventPreparedId);
+      await getApiPlans(eventPreparedId, false);
       setIsDataLoaded(true); // Refresh the calendar
     }
   };
@@ -210,7 +212,7 @@ const TimelineCalendar = () => {
     const validate = await assignVolunteer({ "assign": assign, "planId": planId, "subscription": subscription });
     if (validate) {
       handleEventClick(info); // Refresh the list of volunteers
-      await getApiPlans(eventPreparedId);
+      await getApiPlans(eventPreparedId, false);
       setIsDataLoaded(true); // Refresh the calendar
     }
   };
@@ -246,21 +248,42 @@ const TimelineCalendar = () => {
     eventClick: handleEventClick,
   };
 
+  const displayPeople = async(display) => {
+    if (display) {
+      await getApiPlans(eventPreparedId, true);
+      setHidePeople(false);
+    } else {
+      await getApiPlans(eventPreparedId, false);
+      setHidePeople(true);
+    }
+  };
+
+  const exportPdf = () => {
+    exportToPdf(calendarRef.current);
+  }
+
   return (
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
       <h3 class="w-full flex items-center justify-between p-2 text-gray-900 " style="background-color: #e9eb91;">Planification</h3>
     <div className="mx-2">
-      <div className='flex py-3 ml-2'>
+      <div className='flex py-3'>
         <button id="dropdownSearchButton" data-dropdown-toggle="activities_choose"
-        className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-green-400 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-400" type="button">Ajouter des activités <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-        </svg>
+        className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-green-400 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-400" type="button">Ajouter des activités <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/></svg>
         </button>
-        <button onClick={() => exportToPdf()} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-red-400 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400" type="button">Exporter en PDF
-          <svg class="ml-2 w-4 h-4 text-white-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 18">
-            <path d="M17 0h-5.768a1 1 0 1 0 0 2h3.354L8.4 8.182A1.003 1.003 0 1 0 9.818 9.6L16 3.414v3.354a1 1 0 0 0 2 0V1a1 1 0 0 0-1-1Z"/>
-            <path d="m14.258 7.985-3.025 3.025A3 3 0 1 1 6.99 6.768l3.026-3.026A3.01 3.01 0 0 1 8.411 2H2.167A2.169 2.169 0 0 0 0 4.167v11.666A2.169 2.169 0 0 0 2.167 18h11.666A2.169 2.169 0 0 0 16 15.833V9.589a3.011 3.011 0 0 1-1.742-1.604Z"/>
-          </svg>
+
+        {hidePeople && (
+          <button onClick={() => displayPeople(true)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400" type="button">Afficher les bénévoles
+            <i class="fa fa-eye ml-2" aria-hidden="true"></i>
+          </button>
+        )}
+        {!hidePeople && (
+          <button onClick={() => displayPeople(false)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400" type="button">Masquer les bénévoles
+            <i class="fa fa-eye-slash ml-2" aria-hidden="true"></i>
+          </button>
+        )}
+
+        <button onClick={exportPdf} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-red-400 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400" type="button">Exporter en PDF
+          <i class="fa fa-file-text ml-2" aria-hidden="true"></i>
         </button>
 
         <div id="activities_choose" className="z-10 hidden bg-white rounded-lg shadow w-60 dark:bg-gray-700">

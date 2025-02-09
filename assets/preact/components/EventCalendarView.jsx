@@ -7,13 +7,15 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import moment from 'moment';
 import { getPlans } from '../routes/PlansRoutes';
 import { Calendar } from '@fullcalendar/core';
+import { exportToPdf } from '../utils/ExportToPdf';
 
 const EventCalendarView = () => {
-  const calendarRef                                   = useRef(null);
-  const [isDataLoaded, setIsDataLoaded]               = useState(false);
-  const [events, setEvents]                           = useState([]);
-  const [calendarInstance, setCalendarInstance]       = useState(null);
-  const [plans, setPlans]                             = useState({});
+  const calendarRef                             = useRef(null);
+  const [isDataLoaded, setIsDataLoaded]         = useState(false);
+  const [events, setEvents]                     = useState([]);
+  const [calendarInstance, setCalendarInstance] = useState(null);
+  const [plans, setPlans]                       = useState({});
+  const [hidePeople, setHidePeople]             = useState(true);
 
   const element           = document.getElementById('EventCalendarView-wrapper');
   const eventPreparedId   = JSON.parse(element.getAttribute('data-eventId'));
@@ -21,12 +23,12 @@ const EventCalendarView = () => {
   const startCalendar     = JSON.parse(element.getAttribute('data-startCalendar'));
   const endCalendar       = JSON.parse(element.getAttribute('data-endCalendar'));
 
-  const slotMinTime            = startCalendar ? moment(startCalendar.date).format('HH:mm') : '12:00' //default start time;
-  const slotMaxTime            = endCalendar ? moment(endCalendar.date).format('HH:mm') : '23:00';
+  const slotMinTime = startCalendar ? moment(startCalendar.date).format('HH:mm') : '12:00'  //default start time;
+  const slotMaxTime = endCalendar ? moment(endCalendar.date).format('HH:mm') : '23:00';
 
   useEffect(() => {
     const fetchData = async () => {
-      await getApiPlans(eventPreparedId);
+      await getApiPlans(eventPreparedId, false);
       setIsDataLoaded(true); // Refresh the calendar
     };
 
@@ -47,16 +49,17 @@ const EventCalendarView = () => {
       calendarInstance.removeAllEvents();
       calendarInstance.addEventSource(events);
     }
-  }, [calendarInstance]);
+  }, [events, calendarInstance]);
 
-  const getApiPlans = async (eventPreparedId) => {
+  const getApiPlans = async (eventPreparedId, displayPeople) => {
     const plans = await getPlans(eventPreparedId);
     setPlans(plans);
 
+    console.log(displayPeople);
     const d = Object.values(plans).map(plan => (
       plan.map(p => ({
         id: p.id,
-        title: p.title,
+        title: displayPeople ? p.title + p.people : p.title,
         classNames: p.classNames,
         resourceId: p.activity.name,
         start: p.startDate,
@@ -94,11 +97,42 @@ const EventCalendarView = () => {
     })),
   };
 
+  const displayPeople = async(display) => {
+    if (display) {
+      await getApiPlans(eventPreparedId, true);
+      setHidePeople(false);
+    } else {
+      await getApiPlans(eventPreparedId, false);
+      setHidePeople(true);
+    }
+  };
+
+  const exportPdf = () => {
+    exportToPdf(calendarRef.current);
+  }
 
   return (
-    <div className="m-2">
-      {/* Calendar */}
-      <div ref={calendarRef}></div>
+    <div className="mx-2">
+      <div className='flex py-3'>
+        {hidePeople && (
+          <button onClick={() => displayPeople(true)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400" type="button">Afficher les bénévoles
+            <i class="fa fa-eye ml-2" aria-hidden="true"></i>
+          </button>
+        )}
+        {!hidePeople && (
+          <button onClick={() => displayPeople(false)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400" type="button">Masquer les bénévoles
+            <i class="fa fa-eye-slash ml-2" aria-hidden="true"></i>
+          </button>
+        )}
+
+        <button onClick={exportPdf} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-red-400 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400" type="button">Exporter en PDF
+          <i class="fa fa-file-text ml-2" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div className="m-2">
+        {/* Calendar */}
+        <div ref={calendarRef}></div>
+      </div>
     </div>
   )
 };

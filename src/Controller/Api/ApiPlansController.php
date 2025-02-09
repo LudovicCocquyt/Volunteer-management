@@ -36,7 +36,7 @@ final class ApiPlansController extends AbstractController
 
             $people = ""; // Get the list of people who have subscribed to the plan for export pdf
             foreach ($plan->getSubscriptions() as $subscription) {
-                $people = $people . $subscription->getFirstname() . ' ' . $subscription->getLastname() . ", \n ";
+                $people = $people . ucfirst($subscription->getFirstname()) . ' ' . ucfirst(substr($subscription->getLastname(), 0, 1)) . "\n";
             }
 
             return [
@@ -49,7 +49,7 @@ final class ApiPlansController extends AbstractController
                 ],
                 "title"      => $need,
                 "classNames" => $backgroundColor,
-                "people"     => $people,
+                "people"     => strlen($people) > 0 ? "\n" . $people . "\n": "",
             ];
         }, $plans);
 
