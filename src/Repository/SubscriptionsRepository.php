@@ -16,14 +16,41 @@ class SubscriptionsRepository extends ServiceEntityRepository
         parent::__construct($registry, Subscriptions::class);
     }
 
-    public function findAllByEvent(): array
+    public function findByEvent($id): array
     {
         return $this->createQueryBuilder('s')
+            ->join('s.event', 'e')
+            ->where('e.archived != true')
+            ->andWhere('e.id = :id')
+            ->setParameter('id', $id)
+            ->orderBy('e.id', 'ASC')
+            ->addOrderBy('s.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findAllByEvents(): array
+    {
+        $subscriptions = $this->createQueryBuilder('s')
             ->join('s.event', 'e')
             ->where('e.archived != true') // If not archived
             ->orderBy('e.id', 'ASC') // Order by event.id
             ->addOrderBy('s.id', 'ASC') // And Order by subscription.id
             ->getQuery()
             ->getResult();
+
+        $result = [];
+        foreach ($subscriptions as $subscription) {
+            $event = $subscription->getEvent();
+            $eventId = $event->getId();
+
+            if (!isset($result[$eventId])) {
+                $result[$eventId] = [];
+            }
+
+            $result[$eventId][] = $subscription;
+        }
+
+        return $result;
     }
 }

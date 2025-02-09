@@ -125,7 +125,7 @@ const EventCalendarView = () => {
           </button>
         )}
 
-        <button onClick={exportPdf} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-red-400 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400" type="button">Exporter en PDF
+        <button onClick={exportPdf} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-pink-400 rounded-lg hover:bg-pink-800 focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-400" type="button">Exporter en PDF
           <i class="fa fa-file-text ml-2" aria-hidden="true"></i>
         </button>
       </div>

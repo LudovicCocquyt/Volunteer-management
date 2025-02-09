@@ -6,6 +6,7 @@ use App\Entity\Subscriptions;
 use App\Form\SubscriptionsFormType;
 use App\Repository\EventsRepository;
 use App\Repository\SubscriptionsRepository;
+use App\Service\ExcelExporter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,11 +15,45 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class SubscriptionsController extends AbstractController
 {
+    private $excelExporter;
+
+    public function __construct(ExcelExporter $excelExporter)
+    {
+        $this->excelExporter = $excelExporter;
+    }
+
+    #[Route('/export/{id}', name: 'export_excel', methods: ['GET'])]
+    public function export(Request $request, SubscriptionsRepository $subscriptionsRepository): Response
+    {
+        $subscriptions = $subscriptionsRepository->findByEvent($request->get('id'));
+        foreach ($subscriptions as $subscription) {
+            $export[] = [
+                $subscription->getId(),
+                $subscription->getFirstname(),
+                $subscription->getLastname(),
+                $subscription->getEmail(),
+                $subscription->getPhone(),
+                $subscription->getChildName(),
+                $subscription->getClass(),
+            ];
+        }
+        $content = $this->excelExporter->export($export);
+
+        return new Response(
+            $content,
+            200,
+            [
+                'Content-Type'        => 'application/vnd.ms-excel',
+                'Content-Disposition' => 'attachment; filename="export.xls"',
+            ]
+        );
+    }
+
     #[Route('/subscriptions', name: 'app_subscriptions_index', methods: ['GET'])]
     public function index(SubscriptionsRepository $subscriptionsRepository): Response
     {
         return $this->render('subscriptions/index.html.twig', [
-            'subscriptions' => $subscriptionsRepository->findAllByEvent(),
+            'subscriptionByEvent' => $subscriptionsRepository->findAllByEvents(),
         ]);
     }
 

@@ -272,17 +272,17 @@ const TimelineCalendar = () => {
         </button>
 
         {hidePeople && (
-          <button onClick={() => displayPeople(true)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400" type="button">Afficher les bénévoles
+          <button onClick={() => displayPeople(true)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300" type="button">Afficher les bénévoles
             <i class="fa fa-eye ml-2" aria-hidden="true"></i>
           </button>
         )}
         {!hidePeople && (
-          <button onClick={() => displayPeople(false)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400" type="button">Masquer les bénévoles
+          <button onClick={() => displayPeople(false)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300" type="button">Masquer les bénévoles
             <i class="fa fa-eye-slash ml-2" aria-hidden="true"></i>
           </button>
         )}
 
-        <button onClick={exportPdf} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-red-400 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400" type="button">Exporter en PDF
+        <button onClick={exportPdf} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-pink-400 rounded-lg hover:bg-pink-800 focus:ring-4 focus:outline-none focus:ring-pink-300" type="button">Exporter en PDF
           <i class="fa fa-file-text ml-2" aria-hidden="true"></i>
         </button>
 
