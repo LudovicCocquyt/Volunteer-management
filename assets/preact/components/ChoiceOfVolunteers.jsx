@@ -90,6 +90,9 @@ const ChoiceOfVolunteers = () => {
             >
               <h5 className="mb-2 text-xl text-center font-bold tracking-tight text-gray-900 dark:text-white">{event.name}</h5>
               <p className="font-normal text-center text-gray-700 dark:text-gray-400 capitale">{moment(event.startAt.date).format('dddd')} {moment(event.startAt.date).format('LL')}</p>
+              { event.location.length > 0 &&
+                <p className="font-normal text-center text-gray-700 dark:text-gray-400 capitale">{event.location}</p>
+              }
             </div>
           ))}
         </div>
