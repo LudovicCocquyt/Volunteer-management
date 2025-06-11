@@ -7,7 +7,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import moment from 'moment';
 import { getPlans } from '../routes/PlansRoutes';
 import { Calendar } from '@fullcalendar/core';
-import { exportToPdf } from '../utils/ExportToPdf';
+import { exportList, exportCalendar } from '../utils/ExportToPdf';
+import { exportListXls } from '../utils/ExportToXls';
 
 const EventCalendarView = () => {
   const calendarRef                             = useRef(null);
@@ -108,26 +109,64 @@ const EventCalendarView = () => {
   };
 
   const exportPdf = () => {
-    exportToPdf(calendarRef.current);
+    if (Object.keys(plans).length === 0)
+      return alert('Aucune planification à exporter! \nVeuillez ajouter des activités.');
+
+    const data = Object.fromEntries(Object.entries(plans).reverse()); // Reverse the order of the plans
+    exportVolunteers(data); // Export the data to PDF
+  }
+
+  const exportData = (type) => {
+    if (Object.keys(plans).length === 0)
+      return alert('Aucune planification à exporter! \nVeuillez ajouter des activités.');
+
+    if (type === 'calendar')
+      exportCalendar(calendarRef.current); // Export the calendar to PDF
+
+    if (type === 'list') {
+      const data = Object.fromEntries(Object.entries(plans).reverse()); // Reverse the order of the plans
+      exportList(data); // Export the data to PDF
+    }
+    if (type === 'xls') {
+      exportListXls(plans);
+    }
   }
 
   return (
     <div className="mx-2">
-      <div className='flex py-3'>
+<div className="inline-flex rounded-md shadow-xs flex py-3" role="group">
         {hidePeople && (
-          <button onClick={() => displayPeople(true)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400" type="button">Afficher les bénévoles
-            <i class="fa fa-eye ml-2" aria-hidden="true"></i>
+          <button onClick={() => displayPeople(true)} className="rounded-s-lg inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800" type="button">Afficher les bénévoles
+            <i className="fa fa-eye ml-2" aria-hidden="true"></i>
           </button>
         )}
         {!hidePeople && (
-          <button onClick={() => displayPeople(false)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400" type="button">Masquer les bénévoles
-            <i class="fa fa-eye-slash ml-2" aria-hidden="true"></i>
+          <button onClick={() => displayPeople(false)} className="rounded-s-lg inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800" type="button">Masquer les bénévoles
+            <i className="fa fa-eye-slash ml-2" aria-hidden="true"></i>
           </button>
         )}
 
-        <button onClick={exportPdf} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-pink-400 rounded-lg hover:bg-pink-800 focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-400" type="button">Exporter en PDF
-          <i class="fa fa-file-text ml-2" aria-hidden="true"></i>
+        <button id="dropdownExport" data-dropdown-toggle="exportTo" className="px-4 text-sm font-medium rounded-e-lg inline-flex items-center text-white bg-pink-400 hover:bg-pink-800 dark:bg-pink-600 dark:hover:bg-pink-700" type="button">
+          Exporter
+          <i className="fa fa-file-text ml-2" aria-hidden="true"></i>
+          <svg className="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+          </svg>
         </button>
+
+        <div id="exportTo" className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
+            <ul className="px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownExport">
+              <li>
+                <span onClick={() => exportData("calendar")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Planning.pdf</span>
+              </li>
+              <li>
+                <span onClick={() => exportData("list")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Liste.pdf</span>
+              </li>
+              <li>
+                <span onClick={() => exportData("xls")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Liste.xls</span>
+              </li>
+            </ul>
+        </div>
       </div>
       <div className="m-2">
         {/* Calendar */}

@@ -9,7 +9,8 @@ import { Calendar } from '@fullcalendar/core';
 import { getPlans, addPlan, updatePlan, removePlan, assignVolunteer, getSubscriptions } from '../routes/PlansRoutes';
 import { getSubscriptionsByEvent } from '../routes/SubscriptionsRoutes';
 import { getActivities } from '../routes/ActivitiesRoutes';
-import { exportToPdf } from '../utils/ExportToPdf';
+import { exportList, exportCalendar } from '../utils/ExportToPdf';
+import { exportListXls } from '../utils/ExportToXls';
 
 
 const TimelineCalendar = () => {
@@ -101,6 +102,7 @@ const TimelineCalendar = () => {
   };
 
   const handleSubmit = async (form) => {
+    console.log(form);
     let validate = false
     if (form.id) {
       validate = await updatePlan(form);
@@ -170,14 +172,14 @@ const TimelineCalendar = () => {
   };
 
   const currenPlan = (bool, info) => {
-    // Remove the class bg-green-800 from all elements
+    // Remove the className bg-green-800 from all elements
     const elements = document.getElementsByClassName('bg-green-800');
     for (let i = 0; i < elements.length; i++) {
       elements[i].classList.remove('bg-green-800');
     }
 
     if (bool)
-      info.el.classList.add('bg-green-800'); // Add the class to the clicked element
+      info.el.classList.add('bg-green-800'); // Add the className to the clicked element
 
       divRef.current.scrollIntoView({ behavior: 'smooth' })
   };
@@ -258,39 +260,69 @@ const TimelineCalendar = () => {
     }
   };
 
-  const exportPdf = () => {
-    exportToPdf(calendarRef.current);
+  const exportData = (type) => {
+    if (Object.keys(plans).length === 0)
+      return alert('Aucune planification à exporter! \nVeuillez ajouter des activités.');
+
+    if (type === 'calendar')
+      exportCalendar(calendarRef.current); // Export the calendar to PDF
+
+    if (type === 'list') {
+      const data = Object.fromEntries(Object.entries(plans).reverse()); // Reverse the order of the plans
+      exportList(data); // Export the data to PDF
+    }
+    if (type === 'xls') {
+      exportListXls(plans);
+    }
   }
 
   return (
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-      <h3 class="w-full flex items-center justify-between p-2 text-gray-900 " style="background-color: #e9eb91;">Planification</h3>
+    <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <h3 className="w-full flex items-center justify-between p-2 text-gray-900 " style="background-color: #e9eb91;">Planification</h3>
     <div className="mx-2">
-      <div className='flex py-3'>
-        <button id="dropdownSearchButton" data-dropdown-toggle="activities_choose"
-        className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-green-400 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-400" type="button">Ajouter des activités <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/></svg>
+      <div className="inline-flex rounded-md shadow-xs flex py-3" role="group">
+        <button id="dropdownSearchButton" data-dropdown-toggle="activities_choose" className="px-4 text-sm font-medium rounded-s-lg inline-flex items-center text-center text-white bg-green-400 hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700" type="button">
+          Ajouter des activités
+          <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/></svg>
         </button>
-
         {hidePeople && (
-          <button onClick={() => displayPeople(true)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300" type="button">Afficher les bénévoles
-            <i class="fa fa-eye ml-2" aria-hidden="true"></i>
+          <button onClick={() => displayPeople(true)} className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800" type="button">Afficher les bénévoles
+            <i className="fa fa-eye ml-2" aria-hidden="true"></i>
           </button>
         )}
         {!hidePeople && (
-          <button onClick={() => displayPeople(false)} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-blue-400 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300" type="button">Masquer les bénévoles
-            <i class="fa fa-eye-slash ml-2" aria-hidden="true"></i>
+          <button onClick={() => displayPeople(false)} className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800" type="button">Masquer les bénévoles
+            <i className="fa fa-eye-slash ml-2" aria-hidden="true"></i>
           </button>
         )}
 
-        <button onClick={exportPdf} className="inline-flex items-center px-4 py-2 mx-1 text-sm font-medium text-center text-white bg-pink-400 rounded-lg hover:bg-pink-800 focus:ring-4 focus:outline-none focus:ring-pink-300" type="button">Exporter en PDF
-          <i class="fa fa-file-text ml-2" aria-hidden="true"></i>
+        <button id="dropdownExport" data-dropdown-toggle="exportTo" className="px-4 text-sm font-medium rounded-e-lg inline-flex items-center text-white bg-pink-400 hover:bg-pink-800 dark:bg-pink-600 dark:hover:bg-pink-700" type="button">
+          Exporter
+          <i className="fa fa-file-text ml-2" aria-hidden="true"></i>
+          <svg className="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+          </svg>
         </button>
+
+        <div id="exportTo" className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
+            <ul className="px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownExport">
+              <li>
+                <span onClick={() => exportData("calendar")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Planning.pdf</span>
+              </li>
+              <li>
+                <span onClick={() => exportData("list")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Liste.pdf</span>
+              </li>
+              <li>
+                <span onClick={() => exportData("xls")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Liste.xls</span>
+              </li>
+            </ul>
+        </div>
 
         <div id="activities_choose" className="z-10 hidden bg-white rounded-lg shadow w-60 dark:bg-gray-700">
           <ul className="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownSearchButton">
             {activities && activities.map((activity) => (
               <li>
-                <div className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                <div className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
                   <input
                     id={`activity-${activity.id}`}
                     type="checkbox"
@@ -310,8 +342,8 @@ const TimelineCalendar = () => {
       <div ref={calendarRef}></div>
 
       {showForm && (
-        <div class="pt-5">
-          <form class="flex form-plan py-2 rounded border rounded-lg shadow" style="background-color: #e9eb91;" onSubmit={(e) => { e.preventDefault(); handleSubmit(formData); }}>
+        <div className="pt-5">
+          <form className="flex form-plan py-2 rounded border rounded-lg shadow" style="background-color: #e9eb91;" onSubmit={(e) => { e.preventDefault(); handleSubmit(formData); }}>
             <p className="flex items-center capitale underline">{formData.resourceId}:</p>
             <label>
               Nombre de personnes:
@@ -327,40 +359,53 @@ const TimelineCalendar = () => {
             </label>
             <label>
               Heure de début:
-              <input type="time" name="startTime" value={formData.startTime || ''} onChange={handleFormChange} required
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 ml-2 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              <input
+                type="time"
+                name="startTime"
+                {...(subscriptionsInPlan.length > 0 ? { disabled: true } : {})}
+                value={formData.startTime || ''}
+                onChange={handleFormChange}
+                required
+                className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 ml-2 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${subscriptionsInPlan.length > 0 ? "!bg-gray-200" : ""}`}
               />
             </label>
             <label>
               Heure de fin:
-              <input type="time" name="endTime" value={formData.endTime || ''} onChange={handleFormChange} required
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 ml-2 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              <input
+                type="time"
+                name="endTime"
+                {...(subscriptionsInPlan.length > 0 ? { disabled: true } : {})}
+                value={formData.endTime || ''}
+                onChange={handleFormChange}
+                required
+                className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 ml-2 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${subscriptionsInPlan.length > 0 ? "!bg-gray-200" : ""}`}
               />
             </label>
 
-            <button class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium my-2" type="submit">{isEditing ? 'Modifer' : 'Valider'}</button>
+            <button className="px-2 text-white bg-blue-400 hover:bg-blue-800 rounded-lg" type="submit">{isEditing ? 'Modifer' : 'Valider'}</button>
 
             {formData.id &&
-              <a class="bg-red-100 text-red-700 dark:bg-red-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium my-2" onClick={ () => {remove(formData.id)}}>Supprimer</a>
+             subscriptionsInPlan.length < 1 &&
+              <button className="px-2 text-white rounded-lg py-2 bg-red-400 hover:bg-red-800" onClick={ () => {remove(formData.id)}}>Supprimer</button>
             }
           </form>
-          <hr class={`${isEditing ? "my-2" : "hidden" }`} />
+          <hr className={`${isEditing ? "my-2" : "hidden" }`} />
           {isEditing &&
             (subscriptions.length > 0 || subscriptionsInPlan.length > 0) &&
             <div id="subscriptions-wrapper" className="pt-2 flex justify-between items-center">
               {/* List of available volunteers  */}
-              <div class={`grid ${ subscriptions.length > 0 ? "grid-cols-4" : "grid-cols-2"} gap-4 bg-green-100 p-2 rounded border rounded-lg shadow `}>
+              <div className={`grid ${ subscriptions.length > 0 ? "grid-cols-4" : "grid-cols-2"} gap-4 bg-green-100 p-2 rounded border rounded-lg shadow w-full`}>
               {subscriptions.length > 0 ? (
                 subscriptions.map((sub, key) => (
                   <div
                     key={key}
                     id={sub.id}
-                    className="flex border rounded-lg shadow p-2"
+                    className="flex border rounded-lg shadow p-2 text-center"
                     onClick={() => {
                       AddAndRemoveVolunteers(true, formData.id, sub)
                     }}
                     >
-                    <p className='text-sm'><span>{sub.lastname + " " + sub.firstname }</span></p>
+                    <p className='w-full text-sm'><span>{sub.lastname + " " + sub.firstname }</span></p>
                     {sub.comment && sub.comment.length > 0 &&
                       <div className="relative">
                         <svg data-popover-target={`popover-${sub.id}`} className="pl-2 w-6 h-6 text-blue-500 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18" onMouseEnter={() => setPopoverVisible(sub.id)} onMouseLeave={() => setPopoverVisible(null)} >
@@ -368,7 +413,7 @@ const TimelineCalendar = () => {
                         </svg>
 
                         <div id={`popover-${sub.id}`} role="tooltip" className={`absolute z-10 inline-block w-64 text-sm text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-sm dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800 ${isPopoverVisible == sub.id ? 'opacity-100 visible' : 'opacity-0 invisible'}`} >
-                          <div class="px-3 py-2"> <p>{sub.comment}</p></div>
+                          <div className="px-3 py-2"> <p>{sub.comment}</p></div>
                           <div data-popper-arrow></div>
                         </div>
                       </div>
@@ -376,30 +421,30 @@ const TimelineCalendar = () => {
                   </div>
                   ))
                 ) : (
-                <div className="border rounded-lg shadow p-2">
-                  <p className='text-sm'><span>Aucun bénévole disponible pour le moment</span></p>
+                <div className="border rounded-lg shadow p-2 text-center">
+                  <p className='w-full text-sm'><span>Aucun bénévole disponible pour le moment</span></p>
                 </div>
               )}
               </div>
               {/* Center icon change */}
-              <div>
-                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
+              <div className="flex justify-center mx-4 my-4">
+                <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
                   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 14 3-3m-3 3 3 3m-3-3h16v-3m2-7-3 3m3-3-3-3m3 3H3v3"/>
                 </svg>
               </div>
               {/* List of volunteers assigned */}
-              <div class={`grid ${ subscriptionsInPlan.length > 0 ? "grid-cols-4" : "grid-cols-2"} gap-4 bg-blue-100 p-2 rounded border rounded-lg shadow `}>
+              <div className={`grid ${ subscriptionsInPlan.length > 0 ? "grid-cols-4" : "grid-cols-2"} gap-4 bg-blue-100 p-2 rounded border rounded-lg shadow w-full`}>
                 {subscriptionsInPlan.length > 0 ? (
                   subscriptionsInPlan.map((sub, key) => (
                   <div
                     key={key}
                     id={sub.id}
-                    className="flex border rounded-lg shadow p-2"
+                    className="flex border rounded-lg shadow p-2 text-center"
                     onClick={() => {
                       AddAndRemoveVolunteers(false, formData.id, sub)
                     }}
                     >
-                      <p className='text-sm'><span>{ sub.lastname + " " + sub.firstname }</span></p>
+                      <p className='w-full text-sm'><span>{ sub.lastname + " " + sub.firstname }</span></p>
                       {sub.comment && sub.comment.length > 0 &&
                       <div className="relative">
                         <svg data-popover-target={`popover-${sub.id}`} className="pl-2 w-6 h-6 text-blue-500 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18" onMouseEnter={() => setPopoverVisible(sub.id)} onMouseLeave={() => setPopoverVisible(null)} >
@@ -407,7 +452,7 @@ const TimelineCalendar = () => {
                         </svg>
 
                         <div id={`popover-${sub.id}`} role="tooltip" className={`absolute z-10 inline-block w-64 text-sm text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-sm dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800 ${isPopoverVisible == sub.id ? 'opacity-100 visible' : 'opacity-0 invisible'}`} >
-                          <div class="px-3 py-2"> <p>{sub.comment}</p></div>
+                          <div className="px-3 py-2"> <p>{sub.comment}</p></div>
                           <div data-popper-arrow></div>
                         </div>
                       </div>
@@ -423,7 +468,7 @@ const TimelineCalendar = () => {
               </div>
             }
             {subscriptions.length === 0 && subscriptionsInPlan.length === 0 &&
-              <div class="text-center text-sm text-gray-600 dark:text-gray-300">Aucun bénévole disponible pour le moment !</div>
+              <div className="text-center text-sm text-gray-600 dark:text-gray-300">Aucun bénévole disponible pour le moment !</div>
             }
           </div>
         )}

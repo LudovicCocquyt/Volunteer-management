@@ -194,7 +194,15 @@ final class ApiPlansController extends AbstractController
             $entityManager->persist($plan);
             $entityManager->flush();
 
-            $jsonPlan = $this->serializer->serialize($plan, 'json', ['ignored_attributes' => ['event']]);
+            $jsonPlan = $this->serializer->serialize(
+                $plan,
+                'json',
+                [
+                'ignored_attributes' => ['event', 'subscriptions'],
+                'groups'             => ['plan:read', 'subscription:read'],
+                'enable_max_depth'   => true
+                ]
+            );
 
             return new JsonResponse(
                 [
