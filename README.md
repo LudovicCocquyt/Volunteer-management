@@ -5,13 +5,14 @@ Private event creation, public volunteer registration form, volunteer planning m
 Volunteer Management is a web application designed to streamline the process of managing volunteers for various events and organizations. It allows administrators to create and manage volunteer opportunities, and volunteers to sign up and track their participation.
 
 ## Features
-- **Event Creation:** Administrators can create and manage volunteer events.
-- **Volunteer Sign-Up:** Volunteers can sign up for events.
-- **Event Management:** Track volunteer attendance and performance.
-- **User Management:** Manage user roles and permissions.
+- **Event Creation    :** Administrators can create and manage volunteer events.
+- **Volunteer Sign-Up :** Volunteers can sign up for events.
+- **Event Management  :** Track volunteer attendance and performance.
+- **User Management   :** Manage user roles and permissions.
 
 ## Technologies Used
 - Symfony 7 (PHP framework)
+- Preact (JS framework)
 - Doctrine ORM
 - Twig (templating engine)
 - tailwindcss (CSS framework)
@@ -20,7 +21,7 @@ Volunteer Management is a web application designed to streamline the process of 
 ## Installation
 
 ### Prerequisites
-- PHP 7.4 or higher
+- PHP 8.2 or higher
 - Composer
 - MySQL or PostgreSQL
 
@@ -38,6 +39,12 @@ Volunteer Management is a web application designed to streamline the process of 
 
 3. Set up the database:
     ```bash
+    cp .env.example .env
+    # Edit .env to configure your database connection and other settings
+    ```
+
+4. Configure environment variables:
+    ```bash
     php bin/console doctrine:database:create
     php bin/console doctrine:shema:update -f
 
@@ -46,19 +53,19 @@ Volunteer Management is a web application designed to streamline the process of 
         * INSERT INTO "user"("roles","firstname","email","password","lastname","id") VALUES('[]','Test','test@test.com','$2y$13$pOw4nno9Msgvz2mzJORuieFdAZHxyFlNZjHoV1JV9SfgnMsPmDy6O','Test',1);
     ```
 
-4. Configure environment variables:
-    ```bash
-    cp .env.example .env
-    # Edit .env to configure your database connection and other settings
-    ```
-
-5. Start the development server:
+5. Start the dev server:
     ```bash
     php: symfony server:start
-    node 20: npm run watch
+    nvm use 20
+    node: npm run watch
     ```
 
-6. Access the application at `http://localhost:8000`.
+6. Access the application at `symfony server URL`.
+
+## Prod
+composer install
+APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear
+./node_modules/.bin/yarn encore production
 
 ## Usage
 - **Administrators:** Login and create/manage events and users.
@@ -73,10 +80,3 @@ Contributions are welcome! Please follow these steps:
 
 ## License
 This project is free to use and does not have any specific license. You are welcome to use, modify, and distribute it as you see fit. However, please note that there is no warranty or liability for its use.
-
-## Contact
-For questions or support, please contact [ludovic] at [cocquyt.ludovic@gmail.com].
-
----
-
-Feel free to customize this README to better fit your project's specific details and requirements. If you have any other questions or need further assistance, just let me know!
