@@ -3,6 +3,17 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block body %}
-    <div class="flex justify-center">
+    <div class="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
+    {% for e in events %}
+        <a href="{{ path('app_events_show', {'id': e.id}) }}" class="p-6 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 {{ e.published ? "bg-pink-200" : "bg-white"}} hover:bg-gray-100">
+
+            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ e.name }}</h5>
+            <p class="font-normal text-gray-700 dark:text-gray-400 grid lg:flex justify-between">
+                <span>{{ e.date }}</span>
+                <span>{{ e.location }}</span>
+                <span>Bénévoles: {{e.NbSubscriptions}} / {{e.NbPlans}}</span>
+            </p>
+        </a>
+    {% endfor %}
     </div>
 {% endblock %}

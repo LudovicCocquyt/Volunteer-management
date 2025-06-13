@@ -16,13 +16,15 @@ class ApiEventsController extends AbstractController
         $events = $eventsRepo->findBy([], ['published' => 'ASC', 'id' => 'ASC']);
         $events = array_map(function(Events $event) {
             return [
-                'id'          => $event->getId(),
-                'name'        => $event->getName(),
-                'description' => $event->getDescription(),
-                'date'        => $event->getStartAt()->format('H:i d-m-Y'),
-                'location'    => $event->getLocation(),
-                'published'   => $event->isPublished(),
-                'archived'    => $event->isArchived(),
+                'id'            => $event->getId(),
+                'name'          => $event->getName(),
+                'description'   => $event->getDescription(),
+                'date'          => $event->getStartAt()->format('H:i d-m-Y'),
+                'location'      => $event->getLocation(),
+                'published'     => $event->isPublished(),
+                'archived'      => $event->isArchived(),
+                'plans'         => $event->getNbPersonsByEvent(),
+                'subscriptions' => $event->getSubscriptions()->count(),
             ];
         }, $events);
 

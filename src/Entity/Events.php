@@ -147,6 +147,15 @@ class Events
         return $this;
     }
 
+    public function getNbPersonsByEvent(): int
+    {
+        $nbPersons = 0;
+        foreach ($this->plans as $plan) {
+            $nbPersons += $plan->getNbPers();
+        }
+        return $nbPersons;
+    }
+
     /**
      * @return Array<int, Plans>
      */
