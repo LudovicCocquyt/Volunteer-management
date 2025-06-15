@@ -24,7 +24,7 @@ class ApiEventsController extends AbstractController
                 'published'     => $event->isPublished(),
                 'archived'      => $event->isArchived(),
                 'plans'         => $event->getNbPersonsByEvent(),
-                'subscriptions' => $event->getSubscriptions()->count(),
+                'subscriptions' => $event->reservedAvailability(),
             ];
         }, $events);
 

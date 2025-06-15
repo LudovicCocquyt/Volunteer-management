@@ -48,7 +48,7 @@ final class EventsController extends AbstractController
         return $this->render('events/show.html.twig', [
             'event'           => $event,
             'NbPlans'         => $event->getNbPersonsByEvent(),
-            'NbSubscriptions' => $event->getSubscriptions()->count(),
+            'NbSubscriptions' => $event->reservedAvailability(),
         ]);
     }
 
@@ -68,7 +68,7 @@ final class EventsController extends AbstractController
             'event'           => $event,
             'EventsForm'      => $form,
             'NbPlans'         => $event->getNbPersonsByEvent(),
-            'NbSubscriptions' => $event->getSubscriptions()->count(),
+            'NbSubscriptions' => $event->reservedAvailability(),
         ]);
     }
 

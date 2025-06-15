@@ -156,6 +156,15 @@ class Events
         return $nbPersons;
     }
 
+    public function reservedAvailability(): int
+    {
+        $reserved = 0;
+        foreach ($this->subscriptions as $subscription) {
+            $reserved += count($subscription->getAvailabilities());
+        }
+        return $reserved;
+    }
+
     /**
      * @return Array<int, Plans>
      */

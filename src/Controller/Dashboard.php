@@ -23,7 +23,7 @@ class Dashboard extends AbstractController
                 'location'        => $event->getLocation(),
                 'published'       => $event->isPublished(),
                 'NbPlans'         => $event->getNbPersonsByEvent(),
-                'NbSubscriptions' => $event->getSubscriptions()->count(),
+                'NbSubscriptions' => $event->reservedAvailability(),
             ];
         }, $events);
 
