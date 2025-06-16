@@ -14,7 +14,7 @@ class Dashboard extends AbstractController
     #[Route(path: '/dashboard', name: 'app_dashboard', methods: ['GET'])]
     public function dashboard(EventsRepository $eventsRepository): Response
     {
-        $events = $eventsRepository->findBy([], ['startAt' => 'DESC']);
+        $events = $eventsRepository->findBy(['archived' => false], ['startAt' => 'DESC']);
         $events = array_map(function(Events $event) {
             return [
                 'id'                   => $event->getId(),
