@@ -33,7 +33,7 @@ final class EventsController extends AbstractController
             $entityManager->persist($event);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_events', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_dashboard', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('events/new.html.twig', [
@@ -82,6 +82,6 @@ final class EventsController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_events', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_dashboard', [], Response::HTTP_SEE_OTHER);
     }
 }
