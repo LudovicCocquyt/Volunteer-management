@@ -17,12 +17,13 @@
         </div>
         <br>
         <div id="Scheduler-wrapper"
-            data-eventId         = "{{ event.id|json_encode }}"
-            data-eventStartAt    = "{{ event.startAt|json_encode }}"
-            data-startCalendar   = "{{ event.startCalendar|json_encode }}"
-            data-endCalendar     = "{{ event.endCalendar|json_encode }}"
-            data-NbPlans         = "{{ NbPlans|json_encode }}"
-            data-NbSubscriptions = "{{ NbSubscriptions|json_encode }}"
+            data-eventId              = "{{ event.id|json_encode }}"
+            data-eventStartAt         = "{{ event.startAt|json_encode }}"
+            data-startCalendar        = "{{ event.startCalendar|json_encode }}"
+            data-endCalendar          = "{{ event.endCalendar|json_encode }}"
+            data-nbPlans              = "{{ nbPlans|json_encode }}"
+            data-nbSubscriptions      = "{{ nbSubscriptions|json_encode }}"
+            data-reservedAvailability = "{{ reservedAvailability|json_encode }}"
         >
         </div>
     </div>

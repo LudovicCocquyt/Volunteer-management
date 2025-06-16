@@ -14,7 +14,24 @@
         </div>
 
         {% for key, subscriptions in subscriptionByEvent %}
-            <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+            {% set reservedAvailability = 0 %}
+            {% for subscription in subscriptions|reverse %}
+                {# Count total reserved availability #}
+                {% set reservedAvailability = reservedAvailability + subscription.availabilities|length %}
+            {% endfor %}
+
+            {% set eventId = "" %}
+            {% for subscription in subscriptions|reverse %}
+                {% if eventId != subscription.event.id %}
+                    <div class="md:flex overflow-x-auto shadow-md sm:rounded-t-lg bg-pink-200 border-b text-sm text-gray-500 uppercase justify-between">
+                        <p class="px-6 py-1 font-bold">{{ subscription.event.name }}</p>
+                        <p class="px-6 py-1 font-bold">{{ subscriptions|length }} Bénévole{{ subscriptions|length > 1 ? "s" : "" }}</p>
+                        <p class="px-6 py-1 font-bold">{{ reservedAvailability }} Disponibilité{{ reservedAvailability > 1 ? "s" : "" }}</p>
+                    </div>
+                    {% set eventId = subscription.event.id %}
+                {% endif %}
+            {% endfor %}
+            <div class="relative overflow-x-auto shadow-md">
                 <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
@@ -31,18 +48,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                    {% set eventId = "" %}
                     {% for subscription in subscriptions|reverse %}
-                        {% if eventId != subscription.event.id %}
-                            <tr class="bg-pink-200 border-b dark:border-gray-700">
-                                <td class="px-6 font-bold">{{ subscription.event.name }}</td>
-                            </tr>
-                            {% set eventId = subscription.event.id %}
-                        {% endif %}
                         <tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
                             <td class="px-2 py-1 md:px-6 md:py-4">
                                 {% for availability in subscription.availabilities %}
-                                    <p> {{ availability.startDate|date("H:i") }} à {{ availability.endDate|date("H:i \\l\\e d M") }}</p>
+                                    <p> {{ availability.startDate|date("H:i") }} à {{ availability.endDate|date("H:i \\- d\\/m", "Europe/Paris", "fr") }}</p>
                                 {% endfor %}
                             </td>
                             <td class="flex px-2 py-1 md:px-6 md:py-4">

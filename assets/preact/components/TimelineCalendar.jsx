@@ -36,8 +36,9 @@ const TimelineCalendar = () => {
   const eventPreparedDate = JSON.parse(element.getAttribute('data-eventStartAt'));
   const startCalendar     = JSON.parse(element.getAttribute('data-startCalendar'));
   const endCalendar       = JSON.parse(element.getAttribute('data-endCalendar'));
-  const NbPlans           = JSON.parse(element.getAttribute('data-NbPlans'));
-  const NbSubscriptions   = JSON.parse(element.getAttribute('data-NbSubscriptions'));
+  const nbPlans           = JSON.parse(element.getAttribute('data-nbPlans'));
+  const nbSubscriptions   = JSON.parse(element.getAttribute('data-nbSubscriptions'));
+  const reservedAvailability   = JSON.parse(element.getAttribute('data-reservedAvailability'));
 
   const slotMinTime            = startCalendar ? moment(startCalendar.date).format('HH:mm') : '12:00' //default start time;
   const slotMaxTime            = endCalendar ? moment(endCalendar.date).format('HH:mm') : '23:00';
@@ -280,7 +281,9 @@ const TimelineCalendar = () => {
 
   return (
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-      <h3 className="w-full flex items-center justify-between p-2 text-gray-900 " style="background-color: #e9eb91;">Planification<span>Bénévoles: {NbSubscriptions} / {NbPlans}</span></h3>
+      <h3 className="w-full flex items-center justify-between p-2 text-gray-900 " style="background-color: #e9eb91;">Planification
+        <span>{nbSubscriptions} Bénévole{nbSubscriptions > 1 ? "s" : ""} ({reservedAvailability}/{nbPlans})</span>
+      </h3>
     <div className="mx-2">
       <div className="inline-flex rounded-md shadow-xs flex py-3" role="group">
         <button id="dropdownSearchButton" data-dropdown-toggle="activities_choose" className="px-4 text-sm font-medium rounded-s-lg inline-flex items-center text-center text-white bg-green-400 hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700" type="button">
