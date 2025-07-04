@@ -42,7 +42,7 @@ const Activities = () => {
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
                 <h3 class="w-full flex items-center justify-between p-2 text-gray-900" style="background-color: #a5f9e9;">Activités</h3>
                 <div className='flex py-3 ml-2'>
-                    <button type="button" onClick={() => setOpen(!open)} style="margin-right: 10px;" class="text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:focus:ring-blue-800 dark:hover:bg-blue-500">
+                    <button type="button" onClick={() => setOpen(!open)} style="margin-right: 10px;" class="text-green-700 border border-green-700 hover:bg-green-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:border-green-500 dark:text-green-500 dark:hover:text-white dark:focus:ring-green-800 dark:hover:bg-green-500">
                         <svg class="w-6 h-6 text-white-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"/>
                             </svg>
@@ -55,7 +55,7 @@ const Activities = () => {
 
                         <textarea id="description" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white ml-1 mr-1" placeholder="Description ..." onChange={(e) => setForm({...form, 'description': e.target.value})} />
 
-                        <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 ml-1 mr-1">Enregistrer</button>
+                        <button type="submit" class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-full py-1 px-16">Enregistrer</button>
                     </form>
                 }
                 </div>
@@ -77,8 +77,29 @@ const Activities = () => {
                                     <td class="px-6 py-4">{ activity.name }</td>
                                     <td class="px-6 py-4">{ activity.description }</td>
                                     <td class="flex px-6 py-4">
-                                        <button onClick={() => goToUpdateActivity(activity.id)} class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium mr-1">Modifer</button>
-                                        <button onClick={() => ApiDeleteActivity(activity.id)} class="bg-red-100 text-red-700 dark:bg-red-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium">Supprimer</button>
+                                        <div dir="ltr">
+                                            <button
+                                                onClick={() => goToUpdateActivity(activity.id)}
+                                                class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-s-lg px-2 py-1 text-xs font-medium"
+                                            >
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                        </div>
+                                        <p class="bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-white px-2 py-1 text-xs font-medium text-center" style="min-width: 50px;">
+                                            { activity.id }
+                                        </p>
+                                        <div dir="rtl">
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm(`Êtes-vous sûr de vouloir supprimer (${activity.name}) ?`)) {
+                                                        ApiDeleteActivity(activity.id)}
+                                                    }
+                                                }
+                                                class="bg-red-100 text-red-700 dark:bg-red-700 dark:text-white rounded-s-lg px-2 py-1 text-xs font-medium"
+                                            >
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                             </tr>
                             ))}

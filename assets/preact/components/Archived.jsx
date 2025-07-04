@@ -43,10 +43,26 @@ const Archived = () => {
                                     <td class="px-6 py-4">{ event.name }</td>
                                     <td class="px-6 py-4">{ event.date }</td>
                                     <td class="px-6 py-4">{ event.location }</td>
-                                    <td class="px-6 py-4">
-                                        <button onClick={() => goToEvent(event.id)} class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium mr-1">Voir</button>
-                                        <button onClick={() => goToUpdateEvent(event.id)} class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium mr-1">Modifer</button>
-                                        {/* <button onClick={() => ApiDeleteEvent(event.id)} class="bg-red-100 text-red-700 dark:bg-red-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium">Supprimer</button> */}
+                                    <td class="flex px-6 py-4">
+                                        <div dir="ltr">
+                                            <button
+                                                onClick={() => goToEvent(event.id)}
+                                                class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white rounded-s-lg px-2 py-1 text-xs font-medium"
+                                            >
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <p class="bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-white px-2 py-1 text-xs font-medium text-center" style="min-width: 50px;">
+                                            { event.id }
+                                        </p>
+                                        <div dir="rtl">
+                                            <button
+                                                onClick={() => goToUpdateEvent(event.id)}
+                                                class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-s-lg px-2 py-1 text-xs font-medium"
+                                            >
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                         ))}
