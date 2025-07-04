@@ -14,16 +14,18 @@ import Activities from './preact/components/Activities';
 import Events from './preact/components/Events';
 import Archived from './preact/components/Archived';
 import TimelineCalendar from './preact/components/TimelineCalendar';
-import ChoiceOfVolunteers from './preact/components/ChoiceOfVolunteers';
+import SubscriptionNew from './preact/components/SubscriptionNew';
+import SubscriptionEdit from './preact/components/SubscriptionEdit';
 import EventCalendarView from './preact/components/EventCalendarView';
 
-const usersWrapper              = document.getElementById('Users-wrapper');
-const activitiesWrapper         = document.getElementById('Activities-wrapper');
-const eventsWrapper             = document.getElementById('Events-wrapper');
-const archivedWrapper           = document.getElementById('Archived-wrapper');
-const schedulerWrapper          = document.getElementById('Scheduler-wrapper');
-const ChoiceOfVolunteersWrapper = document.getElementById('ChoiceOfVolunteers-wrapper');
-const EventCalendarViewWrapper  = document.getElementById('EventCalendarView-wrapper');
+const usersWrapper             = document.getElementById('Users-wrapper');
+const activitiesWrapper        = document.getElementById('Activities-wrapper');
+const eventsWrapper            = document.getElementById('Events-wrapper');
+const archivedWrapper          = document.getElementById('Archived-wrapper');
+const schedulerWrapper         = document.getElementById('Scheduler-wrapper');
+const SubscriptionNewWrapper   = document.getElementById('SubscriptionNew-wrapper');
+const SubscriptionEditWrapper   = document.getElementById('SubscriptionEdit-wrapper');
+const EventCalendarViewWrapper = document.getElementById('EventCalendarView-wrapper');
 
 if (usersWrapper)
     render(<Users />, usersWrapper);
@@ -40,8 +42,11 @@ if (archivedWrapper)
 if (schedulerWrapper)
     render(<TimelineCalendar />, schedulerWrapper);
 
-if (ChoiceOfVolunteersWrapper)
-    render(<ChoiceOfVolunteers />, ChoiceOfVolunteersWrapper);
+if (SubscriptionNewWrapper)
+    render(<SubscriptionNew />, SubscriptionNewWrapper);
+
+if (SubscriptionEditWrapper)
+    render(<SubscriptionEdit />, SubscriptionEditWrapper);
 
 if (EventCalendarViewWrapper)
     render(<EventCalendarView />, EventCalendarViewWrapper);

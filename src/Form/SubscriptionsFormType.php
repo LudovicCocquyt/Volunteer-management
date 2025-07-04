@@ -2,9 +2,11 @@
 
 namespace App\Form;
 
+use App\Entity\Events;
 use App\Entity\Subscriptions;
 use Karser\Recaptcha3Bundle\Form\Recaptcha3Type;
 use Karser\Recaptcha3Bundle\Validator\Constraints\Recaptcha3;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -60,19 +62,28 @@ class SubscriptionsFormType extends AbstractType
                     '3e'                  => '3e'
                 ]
             ])
-            ->add('event', HiddenType::class, [])
-            ->add('availabilities', HiddenType::class, [])
+            // ->add('event', HiddenType::class, [
+            //     'data'   => json_encode($options['data']->getEvent() ?? []),
+            // ])
+            ->add('event', EntityType::class, [
+                'class' => Events::class,
+                'choice_label' => 'name',
+              ])
+            ->add('availabilities', HiddenType::class, [
+                'data'   => json_encode($options['data']->getAvailabilities() ?? []),
+                'mapped' => false // facultatif selon si tu veux lier à l'entité ou non
+            ])
             ->add('comment', null, [
                 'attr' => array(
                     'placeholder' => 'Vous avez une préférence de stand? Vous souhaitez être sur le même stand qu\'un autre bénévole? Vous avez des impératifs (enfants...)?
                     N\'hésitez pas à nous en faire part, nous ferons notre possible pour répondre à vos attentes.'
                 )
             ])
-            ->add('captcha', Recaptcha3Type::class, [
-                'constraints' => new Recaptcha3(),
-                'action_name' => 'SubscriptionsForm',
-                'locale'      => 'fr',
-            ]);
+            // ->add('captcha', Recaptcha3Type::class, [
+            //     'constraints' => new Recaptcha3(),
+            //     'action_name' => 'SubscriptionsForm',
+            //     'locale'      => 'fr',
+            // ]);
         ;
     }
 

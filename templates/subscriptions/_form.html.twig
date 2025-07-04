@@ -2,6 +2,16 @@
 {% block body %}
 {{ form_errors(SubscriptionsForm) }}
 {{ form_start(SubscriptionsForm) }}
+    {# Only for the edition of a subscription #}
+    {% if eventId is defined %}
+    {% set fullname = SubscriptionsForm.lastname.vars.value ~ " " ~ SubscriptionsForm.firstname.vars.value %}
+        <div id="SubscriptionEdit-wrapper"
+            data-eventId        = "{{ eventId }}"
+            data-availabilities = {{ SubscriptionsForm.availabilities.vars.value | json_encode | e('html_attr') }}
+            data-fullname       = {{ fullname | json_encode | e('html_attr') }}
+        >
+        </div>
+    {% endif %}
     <div class="subscriptionsForm grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3 p-5">
         <div class="hidden">
         {{ form_row(SubscriptionsForm.event, {
@@ -13,7 +23,8 @@
                 attr: {
                     class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 }
-            }) }}
+            })
+        }}
         </div>
         {{ form_row(SubscriptionsForm.lastname, {
             attr: {
@@ -57,7 +68,7 @@
     </div>
 
     <div class="flex flex-wrap justify-center mt-5">
-        <button type="submit" class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white rounded-full py-1 px-16">Envoyer</button>
+        <button type="submit" class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-full py-1 px-16">Enregistrer</button>
     </div>
     {{ form_end(SubscriptionsForm) }}
 {% endblock %}

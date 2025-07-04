@@ -113,32 +113,30 @@ final class SubscriptionsController extends AbstractController
         ]);
     }
 
-    #[Route('/subscriptions/{id}', name: 'app_subscriptions_show', methods: ['GET'])]
-    public function show(Subscriptions $subscription): Response
+    #[Route('/subscriptions/{id}/edit', name: 'app_subscriptions_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Subscriptions $subscription, EntityManagerInterface $entityManager): Response
     {
-        dd($subscription);
-        return $this->render('subscriptions/show.html.twig', [
-            'subscription' => $subscription,
+        $form = $this->createForm(SubscriptionsFormType::class, $subscription);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Check if the form has availabilities and replace the data
+            $data           = $request->request->all();
+            $availabilities = json_decode($data['subscriptions_form']['availabilities'], true);
+            unset($data['subscriptions_form']['availabilities']);
+            $subscription->setAvailabilities($availabilities);
+
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_subscriptions_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('subscriptions/edit.html.twig', [
+            'subscription'      => $subscription,
+            'SubscriptionsForm' => $form,
+            'eventId'           => $subscription->getEvent() ? $subscription->getEvent()->getId() : null,
         ]);
     }
-
-    // #[Route('/subscriptions/{id}/edit', name: 'app_subscriptions_edit', methods: ['GET', 'POST'])]
-    // public function edit(Request $request, Subscriptions $subscription, EntityManagerInterface $entityManager): Response
-    // {
-    //     $form = $this->createForm(SubscriptionsFormType::class, $subscription);
-    //     $form->handleRequest($request);
-
-    //     if ($form->isSubmitted() && $form->isValid()) {
-    //         $entityManager->flush();
-
-    //         return $this->redirectToRoute('app_subscriptions_index', [], Response::HTTP_SEE_OTHER);
-    //     }
-
-    //     return $this->render('subscriptions/edit.html.twig', [
-    //         'subscription'      => $subscription,
-    //         'SubscriptionsForm' => $form,
-    //     ]);
-    //}
 
     #[Route('/subscriptions/{id}', name: 'app_subscriptions_delete', methods: ['POST'])]
     public function delete(Request $request, Subscriptions $subscription, EntityManagerInterface $entityManager): Response

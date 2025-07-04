@@ -3,11 +3,8 @@
 {% block title %}Edit Subscriptions{% endblock %}
 
 {% block body %}
-    <h1>Edit Subscriptions</h1>
+    <a href="{{ path('app_subscriptions_index') }}" class="bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-white rounded-lg px-2 py-1 text-xs font-medium">Retour</a>
 
     {{ include('subscriptions/_form.html.twig', {'button_label': 'Update'}) }}
 
-    <a href="{{ path('app_subscriptions_index') }}">back to list</a>
-
-    {{ include('subscriptions/_delete_form.html.twig') }}
 {% endblock %}
