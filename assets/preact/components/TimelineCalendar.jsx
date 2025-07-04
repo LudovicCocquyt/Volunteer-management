@@ -387,11 +387,11 @@ const TimelineCalendar = () => {
               />
             </label>
 
-            <button className="px-2 text-white bg-blue-400 hover:bg-blue-800 rounded-lg" type="submit">{isEditing ? 'Modifer' : 'Valider'}</button>
+            <button className="bg-green-100 text-green-400 dark:bg-green-400 dark:text-white hover:bg-green-800 hover:text-white rounded-full py-1 px-5" type="submit">{isEditing ? 'Modifier' : 'Enregistrer'}</button>
 
             {formData.id &&
              subscriptionsInPlan.length < 1 &&
-              <button className="px-2 text-white rounded-lg py-2 bg-red-400 hover:bg-red-800" onClick={ () => {remove(formData.id)}}>Supprimer</button>
+              <button className="bg-red-100 text-red-700 dark:bg-red-700 dark:text-white rounded-full py-1 px-5 hover:bg-red-800 hover:text-white" onClick={ () => {remove(formData.id)}}>Supprimer</button>
             }
           </form>
           <hr className={`${isEditing ? "my-2" : "hidden" }`} />
