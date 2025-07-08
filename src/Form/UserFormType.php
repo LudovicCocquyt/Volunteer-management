@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class UserFormType extends AbstractType
 {
@@ -33,9 +34,15 @@ class UserFormType extends AbstractType
             //     'choice_attr' => function($choice, $key, $value) { return ['class' => 'w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600']; },
             // ])
             ->add('password', PasswordType::class, [
-                'attr'        => ['autocomplete' => 'new-password'],
-                'required'    => false,
-                'empty_data' => ''
+                'mapped'   => false,
+                'attr'     => ['autocomplete' => 'new-password'],
+                'required' => false,
+                'constraints' => [
+                    new Assert\Length([
+                        'min' => 6,
+                        'minMessage' => 'Votre mot de passe doit contenir au moins {{ limit }} caractères.',
+                    ]),
+                ]
             ])
         ;
     }
