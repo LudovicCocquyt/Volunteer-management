@@ -50,6 +50,7 @@ final class EventsController extends AbstractController
             'nbPlans'              => $event->getNbPersonsByEvent(),
             'reservedAvailability' => $event->reservedAvailability(),
             'nbSubscriptions'      => $event->getSubscriptions()->count(),
+            'canDelete'            => (count($event->getPlans()) < 1 && $event->getSubscriptions()->isEmpty())
         ]);
     }
 
@@ -71,6 +72,7 @@ final class EventsController extends AbstractController
             'nbPlans'              => $event->getNbPersonsByEvent(),
             'reservedAvailability' => $event->reservedAvailability(),
             'nbSubscriptions'      => $event->getSubscriptions()->count(),
+            'canDelete'            => (count($event->getPlans()) < 1 && $event->getSubscriptions()->isEmpty())
         ]);
     }
 

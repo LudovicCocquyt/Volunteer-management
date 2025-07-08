@@ -1,4 +1,13 @@
-<form method="post" action="{{ path('app_events_delete', {'id': event.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet élément ?');">
-    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}" >
-    <button class="bg-red-100 text-red-700 dark:bg-red-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium">Supprimer</button>
-</form>
+{% if canDelete %}
+    <form method="post" action="{{ path('app_events_delete', {'id': event.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet élément ?');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}" >
+        <button class="bg-red-100 text-red-700 dark:bg-red-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium">Supprimer</button>
+    </form>
+{% else %}
+    <button data-tooltip-target="tooltip-bottom" data-tooltip-placement="bottom" type="button" class="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium">Supprimer</button>
+
+    <div id="tooltip-bottom" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-red-700 bg-white border border-red-700 rounded-lg shadow-xs opacity-0 tooltip">
+        Vous devez d'abord supprimer les bénévoles inscrits et les activités associés à cet événement avant de pouvoir le supprimer.
+        <div class="tooltip-arrow" data-popper-arrow></div>
+    </div>
+{% endif %}

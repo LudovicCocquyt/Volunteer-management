@@ -4,7 +4,7 @@
 
 {% block body %}
     <div class="flex items-center justify-between">
-        <a href="{{ path('app_events_show', {'id': event.id}) }}" class="bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-white rounded-lg px-2 py-1 text-xs font-medium">Retour</a>
+        <a href="{{ path('app_events_show', {'id': event.id}) }}" class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium">Retour</a>
         {{ include('events/_delete_form.html.twig') }}
     </div>
 
