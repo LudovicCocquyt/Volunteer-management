@@ -16,6 +16,8 @@ import { exportListXls } from '../utils/ExportToXls';
 const TimelineCalendar = () => {
   const calendarRef                                   = useRef(null);
   const divRef                                        = useRef(null);
+  const nbPersInput                                   = useRef(null);
+
   const [activities, setActivities]                   = useState([]);
   const [isDataLoaded, setIsDataLoaded]               = useState(false);
   const [events, setEvents]                           = useState([]);
@@ -105,7 +107,6 @@ const TimelineCalendar = () => {
   };
 
   const handleSubmit = async (form) => {
-    console.log(form);
     let validate = false
     if (form.id) {
       validate = await updatePlan(form);
@@ -148,6 +149,10 @@ const TimelineCalendar = () => {
       eventId: eventPreparedId
     });
     setShowForm(true);
+    setTimeout(() => {
+      // After open the form, give focus on the number of people input field
+      nbPersInput.current?.focus();
+    }, 100);
     setIsEditing(false);
     currenPlan(false, info);
   };
@@ -167,6 +172,10 @@ const TimelineCalendar = () => {
       eventId: eventPreparedId
     });
     setShowForm(true);
+    setTimeout(() => {
+      // After open the form, give focus on the number of people input field
+      nbPersInput.current?.focus();
+    }, 100);
     setIsEditing(true);
     getApiPlanSubscriptions(info.event._def.publicId);
     getApiSubscriptions(new Date(event.start).toISOString(), new Date(event.end).toISOString());
@@ -353,6 +362,7 @@ const TimelineCalendar = () => {
             <label>
               Nombre de personnes:
               <input
+                ref={nbPersInput}
                 type="number"
                 name="nbPers"
                 min="0"
