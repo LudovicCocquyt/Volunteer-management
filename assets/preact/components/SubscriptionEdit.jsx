@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState, useRef } from 'preact/hooks';
 import { getOurNeedsByEvent } from '../routes/PlansRoutes';
 import moment from 'moment';
 import 'moment/locale/fr';
@@ -10,6 +10,7 @@ const SubscriptionEdit = () => {
   const eventId                 = JSON.parse(element.getAttribute('data-eventId') || null);
   const availabilitiesVolunteer = JSON.parse(element.getAttribute('data-availabilities') || []);
   const fullname                = JSON.parse(element.getAttribute('data-fullname') || '');
+  const invalideMessage         = useRef(null);
 
   const [plans, setPlans]                   = useState([]);
   const [availabilities, setAvailabilities] = useState(JSON.parse(availabilitiesVolunteer));
@@ -40,11 +41,17 @@ const SubscriptionEdit = () => {
   };
 
   const moveAvailability = (plan) => {
+    // Hide the error message if it was previously shown
+    invalideMessage.current.classList.add('hidden');
+    if (!plan.available) {
+      // If the plan is not available, show an error message
+      invalideMessage.current.classList.remove('hidden');
+      return;
+    }
     // remove plan from availability
     if (inAvailabilities(plan)) {
       setAvailabilities(availabilities.filter((item) => item.startDate !== plan.startDate && item.endDate !== plan.endDate));
     }
-
     // add plan to availability
     if (!inAvailabilities(plan)) {
       setAvailabilities([...availabilities, plan]);
@@ -56,8 +63,6 @@ const SubscriptionEdit = () => {
     return availabilities.some((a) => a.startDate === plan.startDate && a.endDate === plan.endDate);
   };
 
-  console.log('availabilities', availabilities);
-
   return (
     <div id="ChooseTimes-wrapper" className='p-5'>
       {plans.length > 0 &&
@@ -68,8 +73,9 @@ const SubscriptionEdit = () => {
              <div
               key={key}
               id={plan.id}
-              className={`p-6 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 
+              className={`p-6 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700
                 ${ inAvailabilities(plan) ? 'bg-green-200' : 'bg-white hover:bg-gray-100'}
+                ${ plan.available ? 'border border-gray-200' : 'border-2 border-red-200'}
                 `}
               onClick={() => { moveAvailability(plan) }}
               >
@@ -78,6 +84,9 @@ const SubscriptionEdit = () => {
                   <br />
                   <span>{moment(plan.endDate).format('dddd D MMM')}</span>
                 </p>
+                  { !plan.available &&
+                      <p ref={invalideMessage} className='hidden text-red-700 text-center text-sm'>Vous devez retirer ce créneau de l'événement, car il a déjà été assigné !</p>
+                  }
               </div>
             ))}
           </div>
