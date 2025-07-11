@@ -42,7 +42,8 @@ const SubscriptionEdit = () => {
 
   const moveAvailability = (plan) => {
     // Hide the error message if it was previously shown
-    invalideMessage.current.classList.add('hidden');
+    if (invalideMessage.current)
+      invalideMessage.current.classList.add('hidden');
     if (!plan.available) {
       // If the plan is not available, show an error message
       invalideMessage.current.classList.remove('hidden');
