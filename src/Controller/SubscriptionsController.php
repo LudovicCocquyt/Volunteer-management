@@ -7,6 +7,7 @@ use App\Form\SubscriptionsFormType;
 use App\Repository\EventsRepository;
 use App\Repository\SubscriptionsRepository;
 use App\Service\ExcelExporter;
+use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,9 +18,12 @@ final class SubscriptionsController extends AbstractController
 {
     private $excelExporter;
 
-    public function __construct(ExcelExporter $excelExporter)
+    private $emailService;
+
+    public function __construct(ExcelExporter $excelExporter, EmailService $emailService)
     {
-        $this->excelExporter = $excelExporter;
+        $this->excelExporter              = $excelExporter;
+        $this->emailService               = $emailService;
     }
 
     #[Route('/export/{id}', name: 'export_excel', methods: ['GET'])]
@@ -102,6 +106,8 @@ final class SubscriptionsController extends AbstractController
             $entityManager->flush();
             $message = true;
 
+            $params = $this->emailService->prepareEmailToNewVolunteer($subscription, $event);
+            $succes = !empty($params) ? $this->emailService->send($params) : null;
         }
 
         return $this->render('subscriptions/new.html.twig', [
@@ -109,7 +115,8 @@ final class SubscriptionsController extends AbstractController
             'SubscriptionsForm' => $form,
             'events'            => $eventsRepo->findPublishedEvents(),
             "message"           => $message,
-            'error'             => $error
+            'error'             => $error,
+            'mailSent'          => $succes ?? null
         ]);
     }
 

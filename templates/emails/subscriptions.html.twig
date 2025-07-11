@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <title>Nouveau bénévole</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f3f4f6;
+        padding: 20px;
+      }
+      .container {
+        background-color: white;
+        border-radius: 8px;
+        padding: 30px;
+        max-width: 600px;
+        margin: auto;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #10b981;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Bonjour 👋</h1>
+      <p>{{ message|nl2br }}</p>
+      <a href="{{ url('app_login') }}" class="btn">Accéder au site</a>
+    </div>
+  </body>
+</html>

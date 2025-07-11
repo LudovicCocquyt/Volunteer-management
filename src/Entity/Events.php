@@ -19,6 +19,7 @@ use Doctrine\ORM\Mapping as ORM;
 // | OneToMany Subscriptions array |
 // | StartCalendar datetime        |
 // | EndCalendar datetime          |
+// | SendingEmail string           |
 
 #[ORM\Entity(repositoryClass: EventsRepository::class)]
 class Events
@@ -63,6 +64,9 @@ class Events
 
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $endCalendar = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $sendingEmail = null;
 
     public function __construct()
     {
@@ -245,6 +249,18 @@ class Events
     public function setEndCalendar(?\DateTimeInterface $endCalendar): static
     {
         $this->endCalendar = $endCalendar;
+
+        return $this;
+    }
+
+    public function getSendingEmail(): ?string
+    {
+        return $this->sendingEmail;
+    }
+
+    public function setSendingEmail(?string $sendingEmail): static
+    {
+        $this->sendingEmail = $sendingEmail;
 
         return $this;
     }

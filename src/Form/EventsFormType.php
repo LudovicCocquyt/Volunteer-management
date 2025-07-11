@@ -26,6 +26,7 @@ class EventsFormType extends AbstractType
             ->add('startCalendar')
             ->add('endCalendar')
             ->add('location')
+            ->add('sendingEmail')
             ->add('published')
             ->add('archived')
         ;

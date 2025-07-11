@@ -27,5 +27,16 @@
         {{ include('subscriptions/_form.html.twig') }}
     </div>
 
-
+    {% if mailSent is defined %}
+        <!--This block is used to display the status of the email sent after form submission -->
+        <div id="statusEmail" class="hidden">
+            {% if mailSent == true %}
+                Email envoyé avec succès.
+            {% elseif mailSent is null %}
+                Aucun mail envoyé.
+            {% else %}
+                Échec de l’envoi de l’email. Détail : {{ mailSent }}
+            {% endif %}
+        </div>
+    {% endif %}
 {% endblock %}

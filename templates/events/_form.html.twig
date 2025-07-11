@@ -16,7 +16,15 @@
         {{ form_row(EventsForm.location, {
             label: 'Lieu',
             attr: {
-                class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
+                placeholder: "Salle, école, collège, etc."
+            }
+        }) }}
+        {{ form_row(EventsForm.sendingEmail, {
+            label: 'Envoi d\'email',
+            attr: {
+                class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
+                placeholder: "Ajoutez les destinataires séparés par des virgules"
             }
         }) }}
         {{ form_row(EventsForm.startCalendar, {

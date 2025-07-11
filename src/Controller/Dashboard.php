@@ -25,6 +25,7 @@ class Dashboard extends AbstractController
                 'nbPlans'              => $event->getNbPersonsByEvent(),
                 'reservedAvailability' => $event->reservedAvailability(),
                 'nbSubscriptions'      => $event->getSubscriptions()->count(),
+                'sendingEmail'         => strlen($event->getSendingEmail()) >  0 ? true : false,
             ];
         }, $events);
 
