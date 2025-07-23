@@ -47,9 +47,11 @@ class EmailService
             }
 
             $this->mailer->send($email);
+            error_log('[MAIL] Email envoyé avec succès ', 3, __DIR__ . '/../../error_log');
             return true;
         } catch (\Exception $e) {
             // Log the exception or handle it as needed
+            error_log('[MAIL] Erreur lors de l\'envoi de l\'email : ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return $e->getMessage();
         }
     }
