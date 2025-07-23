@@ -25,7 +25,9 @@
                         <td class="px-6 py-4">{{ event.startAt ? event.startAt|date('Y-m-d H:i:s') : '' }}</td>
                         <td class="px-6 py-4">{{ event.location }}</td>
                         <td class="px-6 py-4">{{ event.published ? 'Oui' : 'Non' }}</td>
-                        <td class="px-6 py-4">{{ event.sendingEmail|length ? 'Oui' : 'Non' }}</td>
+                        <td class="px-6 py-4">
+                            {{ event.sendingEmail|length ? event.sendingEmail|replace({',': '<br>'})|raw : 'Non' }}
+                        </td>
                         <td class="flex px-6 py-4">
                             <a href="{{ path('app_events_edit', {'id': event.id}) }}" class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium mr-2">Modifer</a>
                             {{ include('events/_delete_form.html.twig') }}
