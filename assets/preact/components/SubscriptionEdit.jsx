@@ -40,11 +40,12 @@ const SubscriptionEdit = () => {
     return plans
   };
 
-  const moveAvailability = (plan) => {
-    // Hide the error message if it was previously shown
-    if (invalideMessage.current)
-      invalideMessage.current.classList.add('hidden');
-    if (!plan.available) {
+  const moveAvailability = (plan, open) => {
+      // Hide the error message if it was previously shown
+      if (invalideMessage.current)
+        invalideMessage.current.classList.add('hidden');
+
+    if (!open) {
       // If the plan is not available, show an error message
       invalideMessage.current.classList.remove('hidden');
       return;
@@ -54,14 +55,14 @@ const SubscriptionEdit = () => {
       setAvailabilities(availabilities.filter((item) => item.startDate !== plan.startDate && item.endDate !== plan.endDate));
     }
     // add plan to availability
-    if (!inAvailabilities(plan)) {
+    if (inAvailabilities(plan).length < 1) {
       setAvailabilities([...availabilities, plan]);
     }
   };
 
-  // Check if a plan is in availabilities
+  // Check if a plan is in availabilities and return it
   const inAvailabilities = (plan) => {
-    return availabilities.some((a) => a.startDate === plan.startDate && a.endDate === plan.endDate);
+    return availabilities.filter((a) => a.startDate === plan.startDate && a.endDate === plan.endDate);
   };
 
   return (
@@ -69,27 +70,29 @@ const SubscriptionEdit = () => {
       {plans.length > 0 &&
         <div id="times-wrapper" className="pt-10">
           <h4 className="mb-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white"><span style="color: #a62475">M</span><span style="color: #35b19a">odifier les disponibilités de { fullname }</span></h4>
+          <p ref={invalideMessage} className='hidden text-red-700 text-center text-sm'>Vous devez retirer ce créneau de l'événement, car il a déjà été assigné !</p>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {plans.map((plan, key) => (
-             <div
-              key={key}
-              id={plan.id}
-              className={`p-6 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700
-                ${ inAvailabilities(plan) ? 'bg-green-200' : 'bg-white hover:bg-gray-100'}
-                ${ plan.available ? 'border border-gray-200' : 'border-2 border-red-200'}
+          {plans.map((plan, key) => {
+            const p    = inAvailabilities(plan);
+            const open = p.length > 0 ? p[0].available : true; // Check if the plan is available
+            return (
+              <div
+                key={key}
+                id={plan.id}
+                className={`p-6 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700
+                  ${p.length > 0 ? 'bg-green-200' : 'bg-white hover:bg-gray-100'}
+                  ${p.length > 0 && !open ? 'border-2 border-red-200' : 'border border-gray-200'}
                 `}
-              onClick={() => { moveAvailability(plan) }}
+                onClick={() => { moveAvailability(plan, open); }}
               >
                 <p className='text-center'>
                   <span>{moment(plan.startDate).format('HH:mm')} à {moment(plan.endDate).format('HH:mm')}</span>
                   <br />
                   <span>{moment(plan.endDate).format('dddd D MMM')}</span>
                 </p>
-                  { !plan.available &&
-                      <p ref={invalideMessage} className='hidden text-red-700 text-center text-sm'>Vous devez retirer ce créneau de l'événement, car il a déjà été assigné !</p>
-                  }
               </div>
-            ))}
+            );
+          })}
           </div>
         </div>
       }
