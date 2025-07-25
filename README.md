@@ -41,6 +41,9 @@ Volunteer Management is a web application designed to streamline the process of 
     ```bash
     cp .env.example .env
     # Edit .env to configure your database connection and other settings
+    # Edit .env to configure your recaptcha connection
+    # Edit .env to configure your mailer connection
+    # Edit .env to configure your fullcalendar connection, default development
     ```
 
 4. Configure environment variables:
@@ -79,4 +82,5 @@ Contributions are welcome! Please follow these steps:
 4. Submit a pull request.
 
 ## License
-This project is free to use and does not have any specific license. You are welcome to use, modify, and distribute it as you see fit. However, please note that there is no warranty or liability for its use.
+This project is free to use, but it is subject to a specific licence @fullcalendar see conditions and pricing ( https://fullcalendar.io/ ). You are free to use, modify and distribute it as you see fit. However, please note that there is no guarantee or liability regarding its use.
+
