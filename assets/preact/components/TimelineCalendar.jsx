@@ -19,6 +19,7 @@ const TimelineCalendar = () => {
   const divRef                                        = useRef(null);
   const nbPersInput                                   = useRef(null);
 
+  const [licenseKey, setLicenseKey]                   = useState("");
   const [activities, setActivities]                   = useState([]);
   const [isDataLoaded, setIsDataLoaded]               = useState(false);
   const [events, setEvents]                           = useState([]);
@@ -48,6 +49,17 @@ const TimelineCalendar = () => {
   const slotMaxTime            = endCalendar ? moment(endCalendar.date).format('HH:mm') : '23:00';
   // Add 1 hour in slotMinTime
   const slotMinTimePlusOneHour = startCalendar ? moment(startCalendar.date).add(1, 'hours').format('HH:mm') : '13:00' //default start time;
+
+  useEffect(() => {
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        setLicenseKey(data.schedulerLicenseKey);
+      })
+      .catch(err => {
+        console.error('Erreur de chargement de la licence :', err);
+      });
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -239,7 +251,7 @@ const TimelineCalendar = () => {
   };
 
   const calendarConfig = {
-    schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
+    schedulerLicenseKey: licenseKey,
     headerToolbar: {
       left: '',
       center: 'title',

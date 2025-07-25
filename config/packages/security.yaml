@@ -40,6 +40,8 @@ security:
         # /api/public/api_our_needs_plans_by_event/ - GET
         # /api/public/events - GET
         - { path: ^/api/public/, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/config, roles: IS_AUTHENTICATED_FULLY }
+
 
         # APP PUBLIC ACCESS
         - { path: ^/login, roles: PUBLIC_ACCESS, methods: [GET] }
