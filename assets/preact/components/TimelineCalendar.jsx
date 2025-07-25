@@ -174,10 +174,13 @@ const TimelineCalendar = () => {
       eventId: eventPreparedId
     });
     setShowForm(true);
-    setTimeout(() => {
-      // After open the form, give focus on the number of people input field
-      nbPersInput.current?.focus();
-    }, 100);
+    console.log("222", widthScreen);
+    if (widthScreen > 1080) { // Does not give focus on mobile and tablet in edition plan
+      setTimeout(() => {
+        // After open the form, give focus on the number of people input field
+        nbPersInput.current?.focus();
+      }, 100);
+    }
     setIsEditing(true);
     getApiPlanSubscriptions(info.event._def.publicId);
     getApiSubscriptions(new Date(event.start).toISOString(), new Date(event.end).toISOString());
