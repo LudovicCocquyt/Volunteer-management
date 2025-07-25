@@ -1,22 +1,35 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="w-full p-2 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <div class="w-full p-2 bg-white border border-gray-200 rounded-lg shadow">
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg w-full">
 
             <h3 class="w-full flex items-center justify-between p-2 text-gray-900 bg-pink-200">Évènement</h3>
-
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            {# Mobile #}
+            <div class="block lg:hidden">
+                <div class="p-4">
+                    <div class="flex justify-between">
+                        <a href="{{ path('app_events_edit', {'id': event.id}) }}" class="bg-green-100 text-green-700 rounded-full px-2 py-1 text-xs font-medium mr-2">Modifer</a>
+                        {{ include('events/_delete_form.html.twig') }}
+                    </div>
+                    <hr class="my-2">
+                    <p><strong>Nom :</strong> {{ event.name }}</p>
+                    <p><strong>Date :</strong> {{ event.startAt|date('Y-m-d H:i:s') }}</p>
+                    <p><strong>Lieu :</strong> {{ event.location }}</p>
+                    <p><strong>Publié :</strong> {{ event.published ? 'Oui' : 'Non' }}</p>
+                    <p><strong>Notification :</strong> {{ event.sendingEmail|length ? event.sendingEmail|replace({',': '<br>'})|raw : 'Non' }}</p>
+                </div>
+            </div>
+            {# Desktop #}
+            <table id="table" class="hidden  text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                     <tr>
-                    <th scope="col" class="px-6 py-3">Nom</th>
-                    <th scope="col" class="px-6 py-3">Date</th>
-                    <th scope="col" class="px-6 py-3">Lieu</th>
-                    <th scope="col" class="px-6 py-3">Publié</th>
-                    <th scope="col" class="px-6 py-3">Notification</th>
-                        <th scope="col" class="px-6 py-3">
-                            Action
-                        </th>
+                        <th scope="col" class="px-6 py-3">Nom</th>
+                        <th scope="col" class="px-6 py-3">Date</th>
+                        <th scope="col" class="px-6 py-3">Lieu</th>
+                        <th scope="col" class="px-6 py-3">Publié</th>
+                        <th scope="col" class="px-6 py-3">Notification</th>
+                        <th scope="col" class="px-6 py-3">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,13 +42,16 @@
                             {{ event.sendingEmail|length ? event.sendingEmail|replace({',': '<br>'})|raw : 'Non' }}
                         </td>
                         <td class="flex px-6 py-4">
-                            <a href="{{ path('app_events_edit', {'id': event.id}) }}" class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium mr-2">Modifer</a>
+                            <a href="{{ path('app_events_edit', {'id': event.id}) }}" class="bg-green-100 text-green-700 rounded-full px-2 py-1 text-xs font-medium mr-2">Modifer</a>
                             {{ include('events/_delete_form.html.twig') }}
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <div class="px-6 py-4 tinymce-content">{{ event.description|raw }}</div>
+            {% if event.description|length > 0 %}
+                <hr class="mx-4">
+                <div class="px-6 py-4 tinymce-content">{{ event.description|raw }}</div>
+            {% endif %}
         </div>
         <br>
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -53,4 +69,22 @@
 
         </div>
     </div>
+<script>
+  const table = document.getElementById('table');
+  // Masque la table sur mobile et tablet, l'affiche sur desktop
+  function updateTableClass() {
+    if (window.innerWidth < 1024) {
+      table.classList.add("hidden");
+      table.classList.remove("w-full", "table-fixed", "text-sm", "text-left", "text-gray-500");
+    } else {
+      table.classList.remove("hidden");
+      table.classList.add("w-full", "table-fixed", "text-sm", "text-left", "text-gray-500");
+    }
+  }
+  // Appliquer au chargement
+  updateTableClass();
+  // Réagir aux redimensionnements
+  window.addEventListener("resize", updateTableClass);
+</script>
+
 {% endblock %}
