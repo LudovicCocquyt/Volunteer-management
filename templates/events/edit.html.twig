@@ -4,12 +4,12 @@
 
 {% block body %}
     <div class="flex items-center justify-between">
-        <a href="{{ path('app_events_show', {'id': event.id}) }}" class="bg-green-100 text-green-700 dark:bg-green-700 dark:text-white rounded-full px-2 py-1 text-xs font-medium">Retour</a>
+        <a href="{{ path('app_events_show', {'id': event.id}) }}" class="bg-green-100 text-green-700 rounded-full px-2 py-1 text-xs font-medium">Retour</a>
         {{ include('events/_delete_form.html.twig') }}
     </div>
 
-    <div class="w-full p-2 mb-10 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 mt-3">
-        <div class="relative overflow-x-auto shadow-md sm:rounded-lg pb-3">
+    <div class="w-full p-2 mb-10 bg-white border border-gray-200 rounded-lg shadow mt-3">
+        <div class="relative overflow-x-auto shadow-md rounded-lg pb-3">
             <h3 class="w-full flex items-center justify-between p-2 text-gray-900 bg-pink-200"  style="background-color: #f9cee8;">Modication de {{ event.name }}
                 <i id="close" class="fa-solid fa-up-down"></i></h3>
             <div id="form" class="mx-2">

@@ -1,4 +1,4 @@
-import { h } from 'preact';
+import { h, Fragment } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -11,6 +11,7 @@ import { getSubscriptionsByEvent } from '../routes/SubscriptionsRoutes';
 import { getActivities } from '../routes/ActivitiesRoutes';
 import { exportList, exportCalendar } from '../utils/ExportToPdf';
 import { exportListXls } from '../utils/ExportToXls';
+import { UseWindowSize } from '../utils/UseWindowSize';
 
 
 const TimelineCalendar = () => {
@@ -32,15 +33,16 @@ const TimelineCalendar = () => {
   const [isPopoverVisible, setPopoverVisible]         = useState(null);   // popover comment vonlunteer
   const [hidePeople, setHidePeople]                   = useState(true);
 
-  const activitiesActive  = Object.keys(plans).map(key => key) || [];
-  const element           = document.getElementById('Scheduler-wrapper');
-  const eventPreparedId   = JSON.parse(element.getAttribute('data-eventId'));
-  const eventPreparedDate = JSON.parse(element.getAttribute('data-eventStartAt'));
-  const startCalendar     = JSON.parse(element.getAttribute('data-startCalendar'));
-  const endCalendar       = JSON.parse(element.getAttribute('data-endCalendar'));
-  const nbPlans           = JSON.parse(element.getAttribute('data-nbPlans'));
-  const nbSubscriptions   = JSON.parse(element.getAttribute('data-nbSubscriptions'));
-  const reservedAvailability   = JSON.parse(element.getAttribute('data-reservedAvailability'));
+  const activitiesActive     = Object.keys(plans).map(key => key) || [];
+  const element              = document.getElementById('Scheduler-wrapper');
+  const eventPreparedId      = JSON.parse(element.getAttribute('data-eventId'));
+  const eventPreparedDate    = JSON.parse(element.getAttribute('data-eventStartAt'));
+  const startCalendar        = JSON.parse(element.getAttribute('data-startCalendar'));
+  const endCalendar          = JSON.parse(element.getAttribute('data-endCalendar'));
+  const nbPlans              = JSON.parse(element.getAttribute('data-nbPlans'));
+  const nbSubscriptions      = JSON.parse(element.getAttribute('data-nbSubscriptions'));
+  const reservedAvailability = JSON.parse(element.getAttribute('data-reservedAvailability'));
+  const widthScreen          = UseWindowSize();
 
   const slotMinTime            = startCalendar ? moment(startCalendar.date).format('HH:mm') : '12:00' //default start time;
   const slotMaxTime            = endCalendar ? moment(endCalendar.date).format('HH:mm') : '23:00';
@@ -193,7 +195,9 @@ const TimelineCalendar = () => {
     if (bool)
       info.el.classList.add('bg-green-800'); // Add the className to the clicked element
 
-      divRef.current.scrollIntoView({ behavior: 'smooth' })
+    setTimeout(() => {
+        divRef.current.scrollIntoView({ behavior: 'smooth' })
+    }, 200);
   };
 
   const handleFormChange = (e) => {
@@ -289,45 +293,61 @@ const TimelineCalendar = () => {
   }
 
   return (
-    <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <div className="relative overflow-x-auto shadow-md rounded-lg">
       <h3 className="w-full flex items-center justify-between p-2 text-gray-900 " style="background-color: #e9eb91;">Planification
         <span>{nbSubscriptions} Bénévole{nbSubscriptions > 1 ? "s" : ""} ({reservedAvailability}/{nbPlans})</span>
       </h3>
     <div className="mx-2">
-      <div className="inline-flex rounded-md shadow-xs flex py-3" role="group">
-        <button id="dropdownSearchButton" data-dropdown-toggle="activities_choose" className="px-4 text-sm font-medium rounded-s-lg inline-flex items-center text-center text-white bg-green-400 hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700" type="button">
-          Ajouter des activités
-          <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/></svg>
-        </button>
-        {hidePeople && (
-          <button onClick={() => displayPeople(true)} className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800" type="button">Afficher les bénévoles
-            <i className="fa fa-eye ml-2" aria-hidden="true"></i>
+      <div className="md:flex rounded-md shadow-xs py-3" role="group">
+        <div className={`flex flex-wrap rounded-md shadow-xs py-3 justify-center md:justify-start ${widthScreen < 878 ? 'gap-2' : ''}`} role="group">
+          {/* Bouton Ajouter des activités */}
+          <button
+            id="dropdownSearchButton"
+            data-dropdown-toggle="activities_choose"
+            className={`w-full md:w-auto px-4 py-2 text-sm font-medium flex justify-center items-center text-white bg-green-400 hover:bg-green-800 ${ widthScreen < 878 ? 'rounded-lg' : 'rounded-s-lg' }`}
+            type="button"
+          >
+            Ajouter des activités
+            <svg className="w-2.5 h-2.5 ml-2.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
+            </svg>
           </button>
-        )}
-        {!hidePeople && (
-          <button onClick={() => displayPeople(false)} className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800" type="button">Masquer les bénévoles
-            <i className="fa fa-eye-slash ml-2" aria-hidden="true"></i>
+
+          {/* Afficher/Masquer bénévoles */}
+          <button
+            onClick={() => displayPeople(hidePeople)}
+            className={`w-full md:w-auto px-4 py-2 text-sm font-medium flex justify-center items-center text-white bg-blue-400 hover:bg-blue-800 ${ widthScreen < 878 ? 'rounded-lg' : '' }`}
+            type="button"
+          >
+            {hidePeople ? 'Afficher les bénévoles' : 'Masquer les bénévoles'}
+            <i className={`fa ${hidePeople ? 'fa-eye' : 'fa-eye-slash'} ml-2`} aria-hidden="true"></i>
           </button>
-        )}
 
-        <button id="dropdownExport" data-dropdown-toggle="exportTo" className="px-4 text-sm font-medium rounded-e-lg inline-flex items-center text-white bg-pink-400 hover:bg-pink-800 dark:bg-pink-600 dark:hover:bg-pink-700" type="button">
-          Exporter
-          <i className="fa fa-file-text ml-2" aria-hidden="true"></i>
-          <svg className="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-          </svg>
-        </button>
+          {/* Exporter */}
+          <button
+            id="dropdownExport"
+            data-dropdown-toggle="exportTo"
+            className={`w-full md:w-auto px-4 py-2 text-sm font-medium flex justify-center items-center text-white bg-pink-400 hover:bg-pink-800 ${ widthScreen < 878 ? 'rounded-lg' : 'rounded-e-lg'} `}
+            type="button"
+          >
+            Exporter
+            <i className="fa fa-file-text ml-2" aria-hidden="true"></i>
+            <svg className="w-2.5 h-2.5 ml-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
+            </svg>
+          </button>
+        </div>
 
-        <div id="exportTo" className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
-            <ul className="px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownExport">
+        <div id="exportTo" className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44">
+            <ul className="px-3 pb-3 overflow-y-auto text-sm text-gray-700" aria-labelledby="dropdownExport">
               <li>
-                <span onClick={() => exportData("calendar")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Planning.pdf</span>
+                <span onClick={() => exportData("calendar")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100">Planning.pdf</span>
               </li>
               <li>
-                <span onClick={() => exportData("list")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Liste.pdf</span>
+                <span onClick={() => exportData("list")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100">Liste.pdf</span>
               </li>
               <li>
-                <span onClick={() => exportData("xls")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Liste.xls</span>
+                <span onClick={() => exportData("xls")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100">Liste.xls</span>
               </li>
             </ul>
         </div>
@@ -336,7 +356,7 @@ const TimelineCalendar = () => {
           <ul className="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownSearchButton">
             {activities && activities.map((activity) => (
               <li>
-                <div className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                <div className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100">
                   <input
                     id={`activity-${activity.id}`}
                     type="checkbox"
@@ -357,10 +377,18 @@ const TimelineCalendar = () => {
 
       {showForm && (
         <div className="pt-5">
-          <form className="flex form-plan py-2 rounded border rounded-lg shadow" style="background-color: #e9eb91;" onSubmit={(e) => { e.preventDefault(); handleSubmit(formData); }}>
-            <p className="flex items-center capitale underline">{formData.resourceId}:</p>
-            <label>
-              Nombre de personnes:
+          <form
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 p-4 rounded border shadow"
+            style={{ backgroundColor: '#e9eb91' }}
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSubmit(formData)
+            }}
+          >
+            <p className="sm:col-span-2 lg:col-span-6 md:hidden font-semibold underline">{formData.resourceId}</p>
+
+            <label className="flex flex-col">
+              Nb de personnes
               <input
                 ref={nbPersInput}
                 type="number"
@@ -369,11 +397,12 @@ const TimelineCalendar = () => {
                 value={~~formData.nbPers}
                 onChange={handleFormChange}
                 required
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 ml-2 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-1 p-2.5"
               />
             </label>
-            <label>
-              Heure de début:
+
+            <label className="flex flex-col">
+              Heure de début
               <input
                 type="time"
                 name="startTime"
@@ -381,11 +410,14 @@ const TimelineCalendar = () => {
                 value={formData.startTime || ''}
                 onChange={handleFormChange}
                 required
-                className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 ml-2 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${subscriptionsInPlan.length > 0 ? "!bg-gray-200" : ""}`}
+                className={`w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-1 p-2.5 ${
+                  subscriptionsInPlan.length > 0 ? '!bg-gray-200' : ''
+                }`}
               />
             </label>
-            <label>
-              Heure de fin:
+
+            <label className="flex flex-col">
+              Heure de fin
               <input
                 type="time"
                 name="endTime"
@@ -393,92 +425,118 @@ const TimelineCalendar = () => {
                 value={formData.endTime || ''}
                 onChange={handleFormChange}
                 required
-                className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 ml-2 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${subscriptionsInPlan.length > 0 ? "!bg-gray-200" : ""}`}
+                className={`w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-1 p-2.5 ${
+                  subscriptionsInPlan.length > 0 ? '!bg-gray-200' : ''
+                }`}
               />
             </label>
 
-            <button className="bg-green-100 text-green-400 dark:bg-green-400 dark:text-white hover:bg-green-800 hover:text-white rounded-full py-1 px-5" type="submit">{isEditing ? 'Modifier' : 'Enregistrer'}</button>
+            <p className="sm:col-span-2 lg:col-span-6 hidden md:block font-semibold underline">{formData.resourceId}</p>
 
-            {formData.id &&
-             subscriptionsInPlan.length < 1 &&
-              <button className="bg-red-100 text-red-700 dark:bg-red-700 dark:text-white rounded-full py-1 px-5 hover:bg-red-800 hover:text-white" onClick={ () => {remove(formData.id)}}>Supprimer</button>
-            }
+            <button
+              className="bg-green-100 text-green-700 hover:bg-green-800 hover:text-white rounded-lg py-2 px-5 sm:col-span-2 lg:col-span-1 mt-2"
+              type="submit"
+            >
+              {isEditing ? 'Modifier' : 'Enregistrer'}
+            </button>
+
+            {formData.id && subscriptionsInPlan.length < 1 && (
+              <button
+                className="bg-red-100 text-red-700 hover:bg-red-800 hover:text-white rounded-lg py-2 px-5 sm:col-span-2 lg:col-span-1 mt-2"
+                onClick={() => remove(formData.id)}
+              >
+                Supprimer
+              </button>
+            )}
           </form>
+
           <hr className={`${isEditing ? "my-2" : "hidden" }`} />
           {isEditing &&
             (subscriptions.length > 0 || subscriptionsInPlan.length > 0) &&
-            <div id="subscriptions-wrapper" className="pt-2 flex justify-between items-center">
+            <div id="subscriptions-wrapper" className="pt-2 flex flex-col md:flex-row gap-4 items-start">
               {/* List of available volunteers  */}
-              <div className={`grid ${ subscriptions.length > 0 ? "grid-cols-4" : "grid-cols-2"} gap-4 bg-green-100 p-2 rounded border rounded-lg shadow w-full`}>
-              {subscriptions.length > 0 ? (
-                subscriptions.map((sub, key) => (
-                  <div
-                    key={key}
-                    id={sub.id}
-                    className="flex border rounded-lg shadow p-2 text-center"
-                    onClick={() => {
-                      AddAndRemoveVolunteers(true, formData.id, sub)
-                    }}
-                    >
-                    <p className='w-full text-sm'><span>{sub.lastname + " " + sub.firstname }</span></p>
-                    {sub.comment && sub.comment.length > 0 &&
-                      <div className="relative">
-                        <svg data-popover-target={`popover-${sub.id}`} className="pl-2 w-6 h-6 text-blue-500 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18" onMouseEnter={() => setPopoverVisible(sub.id)} onMouseLeave={() => setPopoverVisible(null)} >
-                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5h9M5 9h5m8-8H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4l3.5 4 3.5-4h5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z" />
-                        </svg>
+              <div class="w-full md:w-[45%]">
+                <div className="bg-green-100 p-2 rounded-lg border shadow">
+                  <h3 className="text-center">Bénévoles disponibles</h3>
+                  <hr className="mb-2" />
+                  <div className={`grid grid-cols-1  ${subscriptions.length > 0 ? "sm:grid-cols-2 md:grid-cols-2" : ""} gap-2`}>
+                  {subscriptions.length > 0 ? (
+                    subscriptions.map((sub, key) => (
+                      <div
+                        key={key}
+                        id={sub.id}
+                        className="flex border rounded-lg shadow p-2 text-center"
+                        onClick={() => {
+                          AddAndRemoveVolunteers(true, formData.id, sub)
+                        }}
+                        >
+                        <p className='w-full text-sm'><span>{sub.lastname + " " + sub.firstname }</span></p>
+                        {sub.comment && sub.comment.length > 0 &&
+                          <div className="relative">
+                            <svg data-popover-target={`popover-${sub.id}`} className="pl-2 w-6 h-6 text-blue-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18" onMouseEnter={() => setPopoverVisible(sub.id)} onMouseLeave={() => setPopoverVisible(null)} >
+                              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5h9M5 9h5m8-8H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4l3.5 4 3.5-4h5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z" />
+                            </svg>
 
-                        <div id={`popover-${sub.id}`} role="tooltip" className={`absolute z-10 inline-block w-64 text-sm text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-sm dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800 ${isPopoverVisible == sub.id ? 'opacity-100 visible' : 'opacity-0 invisible'}`} >
-                          <div className="px-3 py-2"> <p>{sub.comment}</p></div>
-                          <div data-popper-arrow></div>
-                        </div>
+                            <div id={`popover-${sub.id}`} role="tooltip" className={`absolute z-10 inline-block w-64 text-sm text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-sm ${isPopoverVisible == sub.id ? 'opacity-100 visible' : 'opacity-0 invisible'}`} >
+                              <div className="px-3 py-2"> <p>{sub.comment}</p></div>
+                              <div data-popper-arrow></div>
+                            </div>
+                          </div>
+                        }
                       </div>
-                    }
+                      ))
+                    ) : (
+                    <div className="border rounded-lg shadow p-2 text-center">
+                      <p className=' text-sm'><span>Aucun bénévole pour le moment</span></p>
+                    </div>
+                  )}
                   </div>
-                  ))
-                ) : (
-                <div className="border rounded-lg shadow p-2 text-center">
-                  <p className='w-full text-sm'><span>Aucun bénévole disponible pour le moment</span></p>
                 </div>
-              )}
               </div>
               {/* Center icon change */}
-              <div className="flex justify-center mx-4 my-4">
-                <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
+              <div className={`w-full md:w-auto flex justify-center items-center ${ widthScreen > 767 ? "my-3" : ""}`}>
+                <svg className={`w-6 h-6 text-gray-800 ${ widthScreen < 768 ? "rotate-90" : ""}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
                   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 14 3-3m-3 3 3 3m-3-3h16v-3m2-7-3 3m3-3-3-3m3 3H3v3"/>
                 </svg>
               </div>
               {/* List of volunteers assigned */}
-              <div className={`grid ${ subscriptionsInPlan.length > 0 ? "grid-cols-4" : "grid-cols-2"} gap-4 bg-blue-100 p-2 rounded border rounded-lg shadow w-full`}>
-                {subscriptionsInPlan.length > 0 ? (
-                  subscriptionsInPlan.map((sub, key) => (
-                  <div
-                    key={key}
-                    id={sub.id}
-                    className="flex border rounded-lg shadow p-2 text-center"
-                    onClick={() => {
-                      AddAndRemoveVolunteers(false, formData.id, sub)
-                    }}
-                    >
-                      <p className='w-full text-sm'><span>{ sub.lastname + " " + sub.firstname }</span></p>
-                      {sub.comment && sub.comment.length > 0 &&
-                      <div className="relative">
-                        <svg data-popover-target={`popover-${sub.id}`} className="pl-2 w-6 h-6 text-blue-500 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18" onMouseEnter={() => setPopoverVisible(sub.id)} onMouseLeave={() => setPopoverVisible(null)} >
-                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5h9M5 9h5m8-8H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4l3.5 4 3.5-4h5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z" />
-                        </svg>
+              <div class="w-full md:w-[45%]">
+                <div className="bg-blue-100 p-2 rounded-lg border shadow">
+                  <h3 className="text-center">Bénévoles assignés</h3>
+                  <hr className="mb-2" />
+                  <div className={`grid grid-cols-1 ${subscriptionsInPlan.length > 0 ? "sm:grid-cols-2 md:grid-cols-2" : ""} gap-4`}>
+                    {subscriptionsInPlan.length > 0 ? (
+                      subscriptionsInPlan.map((sub, key) => (
+                      <div
+                        key={key}
+                        id={sub.id}
+                        className="flex border rounded-lg shadow p-2 text-center"
+                        onClick={() => {
+                          AddAndRemoveVolunteers(false, formData.id, sub)
+                        }}
+                        >
+                          <p className='w-full text-sm'><span>{ sub.lastname + " " + sub.firstname }</span></p>
+                          {sub.comment && sub.comment.length > 0 &&
+                          <div className="relative">
+                            <svg data-popover-target={`popover-${sub.id}`} className="pl-2 w-6 h-6 text-blue-500 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18" onMouseEnter={() => setPopoverVisible(sub.id)} onMouseLeave={() => setPopoverVisible(null)} >
+                              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5h9M5 9h5m8-8H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4l3.5 4 3.5-4h5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z" />
+                            </svg>
 
-                        <div id={`popover-${sub.id}`} role="tooltip" className={`absolute z-10 inline-block w-64 text-sm text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-sm dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800 ${isPopoverVisible == sub.id ? 'opacity-100 visible' : 'opacity-0 invisible'}`} >
-                          <div className="px-3 py-2"> <p>{sub.comment}</p></div>
-                          <div data-popper-arrow></div>
-                        </div>
+                            <div id={`popover-${sub.id}`} role="tooltip" className={`absolute z-10 inline-block w-64 text-sm text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-sm dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800 ${isPopoverVisible == sub.id ? 'opacity-100 visible' : 'opacity-0 invisible'}`} >
+                              <div className="px-3 py-2"> <p>{sub.comment}</p></div>
+                              <div data-popper-arrow></div>
+                            </div>
+                          </div>
+                        }
                       </div>
-                    }
-                  </div>
-                  ))
-                ) : (
-                    <div className="border rounded-lg shadow p-2">
-                      <p className='text-sm'><span>Aucun bénévole assigné pour le moment</span></p>
+                      ))
+                    ) : (
+                        <div className="border rounded-lg shadow p-2 text-center">
+                          <p className='text-sm'><span>Aucun bénévole assigné pour le moment</span></p>
+                        </div>
+                    )}
                     </div>
-                )}
+                  </div>
                 </div>
               </div>
             }
