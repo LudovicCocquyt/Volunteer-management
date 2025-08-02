@@ -51,3 +51,7 @@ body {
 #form-wrapper .subscriptionsForm label {
     display: none;
 }
+
+#addActivityInput::placeholder {
+    color: #fff;
+}

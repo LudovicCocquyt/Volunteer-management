@@ -2,7 +2,7 @@ import { useState, useEffect } from 'preact/hooks';
 import { h } from 'preact';
 import { getEvents } from '../routes/EventsRoutes';
 
-const Activities = () => {
+const Events = () => {
     const [events, setEvents] = useState([]);
 
     useEffect(() => {
@@ -55,4 +55,4 @@ const Activities = () => {
     );
 };
 
-export default Activities;
+export default Events;

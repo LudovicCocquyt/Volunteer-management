@@ -8,19 +8,19 @@ import moment from 'moment';
 import { Calendar } from '@fullcalendar/core';
 import { getPlans, addPlan, updatePlan, removePlan, assignVolunteer, getSubscriptions } from '../routes/PlansRoutes';
 import { getSubscriptionsByEvent } from '../routes/SubscriptionsRoutes';
-import { getActivities } from '../routes/ActivitiesRoutes';
 import { exportList, exportCalendar } from '../utils/ExportToPdf';
 import { exportListXls } from '../utils/ExportToXls';
 import { UseWindowSize } from '../utils/UseWindowSize';
 
 
 const TimelineCalendar = () => {
-  const calendarRef                                   = useRef(null);
-  const divRef                                        = useRef(null);
-  const nbPersInput                                   = useRef(null);
+  const calendarRef      = useRef(null);
+  const divRef           = useRef(null);
+  const nbPersInput      = useRef(null);
+  const addActivityInput = useRef(null);
 
   const [licenseKey, setLicenseKey]                   = useState("");
-  const [activities, setActivities]                   = useState([]);
+  const [isLicenseLoaded, setIsLicenseLoaded]         = useState(false);
   const [isDataLoaded, setIsDataLoaded]               = useState(false);
   const [events, setEvents]                           = useState([]);
   const [calendarInstance, setCalendarInstance]       = useState(null);
@@ -34,7 +34,6 @@ const TimelineCalendar = () => {
   const [isPopoverVisible, setPopoverVisible]         = useState(null);   // popover comment vonlunteer
   const [hidePeople, setHidePeople]                   = useState(true);
 
-  const activitiesActive     = Object.keys(plans).map(key => key) || [];
   const element              = document.getElementById('Scheduler-wrapper');
   const eventPreparedId      = JSON.parse(element.getAttribute('data-eventId'));
   const eventPreparedDate    = JSON.parse(element.getAttribute('data-eventStartAt'));
@@ -55,6 +54,7 @@ const TimelineCalendar = () => {
       .then(res => res.json())
       .then(data => {
         setLicenseKey(data.schedulerLicenseKey);
+        setIsLicenseLoaded(true); // indique que la licence est chargée
       })
       .catch(err => {
         console.error('Erreur de chargement de la licence :', err);
@@ -62,30 +62,31 @@ const TimelineCalendar = () => {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      await getApiActivities();
-      await getApiPlans(eventPreparedId, false);
-      setIsDataLoaded(true); // Refresh the calendar
-    };
+    if (isLicenseLoaded) {
+      const fetchData = async () => {
+        await getApiPlans(eventPreparedId, false);
+        setIsDataLoaded(true); // Refresh the calendar
+      };
 
-    fetchData();
-  }, []);
+      fetchData();
+    }
+  }, [isLicenseLoaded]);
 
   useEffect(() => {
-    if (isDataLoaded) {
+    if (isDataLoaded && isLicenseLoaded) {
       const calendar = new Calendar(calendarRef.current, calendarConfig);
       calendar.render();
       setCalendarInstance(calendar);
       setIsDataLoaded(false);
     }
-  }, [isDataLoaded]);
+  }, [isDataLoaded, isLicenseLoaded]);
 
   useEffect(() => {
-    if (calendarInstance) {
+    if (calendarInstance && isLicenseLoaded) {
       calendarInstance.removeAllEvents();
       calendarInstance.addEventSource(events);
     }
-  }, [events, calendarInstance]);
+  }, [events, calendarInstance, isLicenseLoaded]);
 
   const getApiPlans = async (eventPreparedId, displayPeople) => {
     const plans = await getPlans(eventPreparedId);
@@ -96,17 +97,12 @@ const TimelineCalendar = () => {
         id: p.id,
         title: displayPeople ? p.title + p.people : p.title,
         classNames: p.classNames,
-        resourceId: p.activity.name,
+        resourceId: p.activityName,
         start: p.startDate,
         end: p.endDate
       }))
     ));
     setEvents(d.flat());
-  };
-
-  const getApiActivities = async () => {
-    const activities = await getActivities();
-    setActivities(activities);
   };
 
   const getApiSubscriptions = async (start, end) => {
@@ -186,7 +182,6 @@ const TimelineCalendar = () => {
       eventId: eventPreparedId
     });
     setShowForm(true);
-    console.log("222", widthScreen);
     if (widthScreen > 1080) { // Does not give focus on mobile and tablet in edition plan
       setTimeout(() => {
         // After open the form, give focus on the number of people input field
@@ -223,9 +218,14 @@ const TimelineCalendar = () => {
     }));
   };
 
-  const addActivity = async (activityName) => {
+  const addActivity = async () => {
+    const activityName = addActivityInput.current.value;
+    if (!activityName) {
+      return alert('Veuillez entrer un nom d\'activité.');
+    }
+
     const form = {
-      "resourceId": activityName,
+      "resourceId": String(activityName),
       "eventId": eventPreparedId,
       "nbPers": 0,
       "start": eventPreparedDate.date,
@@ -236,6 +236,7 @@ const TimelineCalendar = () => {
 
     const validate = await handleSubmit(form);
     if (validate) {
+      addActivityInput.current.value = ''; // Clear the input field
       await getApiPlans(eventPreparedId, false);
       setIsDataLoaded(true); // Refresh the calendar
     }
@@ -315,18 +316,31 @@ const TimelineCalendar = () => {
     <div className="mx-2">
       <div className="md:flex rounded-md shadow-xs py-3" role="group">
         <div className={`flex flex-wrap rounded-md shadow-xs py-3 justify-center md:justify-start ${widthScreen < 878 ? 'gap-2' : ''}`} role="group">
+
           {/* Bouton Ajouter des activités */}
-          <button
-            id="dropdownSearchButton"
-            data-dropdown-toggle="activities_choose"
-            className={`w-full md:w-auto px-4 py-2 text-sm font-medium flex justify-center items-center text-white bg-green-400 hover:bg-green-800 ${ widthScreen < 878 ? 'rounded-lg' : 'rounded-s-lg' }`}
-            type="button"
-          >
-            Ajouter des activités
-            <svg className="w-2.5 h-2.5 ml-2.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
-            </svg>
-          </button>
+          <div className={`flex ${widthScreen < 768 ? 'w-full' : ''}`}>
+            <input
+                type        = "text"
+                id          = "addActivityInput"
+                ref         = {addActivityInput}
+                className   = {`md:w-auto px-4 py-2 text-sm font-medium flex justify-center items-center text-white bg-green-400 hover:bg-green-800 focus:outline-none focus:ring-0 rounded-s-lg ${widthScreen < 768 ? 'w-full' : ''} ${widthScreen < 878 ? 'text-center' : ''}`}
+                placeholder = " Ajouter une activité"
+                onKeyDown   = {e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addActivity();
+                  }
+                }}
+            />
+            <button
+              id="addActivityButton"
+              type="button"
+              className={`bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 ${widthScreen < 878 ? 'rounded-e-lg' : ''} `}
+              onClick={() => {addActivity()}}
+            >
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
 
           {/* Afficher/Masquer bénévoles */}
           <button
@@ -366,26 +380,6 @@ const TimelineCalendar = () => {
               </li>
             </ul>
         </div>
-
-        <div id="activities_choose" className="z-10 hidden bg-white rounded-lg shadow w-60 dark:bg-gray-700">
-          <ul className="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownSearchButton">
-            {activities && activities.map((activity) => (
-              <li>
-                <div className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100">
-                  <input
-                    id={`activity-${activity.id}`}
-                    type="checkbox"
-                    onClick={() => addActivity(activity.name)}
-                    checked={activitiesActive.includes(activity.name)}
-                    disabled={activitiesActive.includes(activity.name)}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                  />
-                  <label for={`activity-${activity.id}`} className="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">{ activity.name }</label>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
       {/* Calendar */}
       <div ref={calendarRef}></div>
@@ -397,7 +391,6 @@ const TimelineCalendar = () => {
             style={{ backgroundColor: '#e9eb91' }}
             onSubmit={(e) => {
               e.preventDefault()
-              handleSubmit(formData)
             }}
           >
             <p className="sm:col-span-2 lg:col-span-6 md:hidden font-semibold underline">{formData.resourceId}</p>
@@ -451,6 +444,7 @@ const TimelineCalendar = () => {
             <button
               className="bg-green-100 text-green-700 hover:bg-green-800 hover:text-white rounded-lg py-2 px-5 sm:col-span-2 lg:col-span-1 mt-2"
               type="submit"
+              onClick={() => handleSubmit(formData)}
             >
               {isEditing ? 'Modifier' : 'Enregistrer'}
             </button>

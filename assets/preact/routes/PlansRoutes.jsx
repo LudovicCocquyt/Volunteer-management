@@ -3,7 +3,6 @@ export const getPlans = async (id) => {
         const response = await fetch(`/api/plans/by_event/${id}`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             }
         });

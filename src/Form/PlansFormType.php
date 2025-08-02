@@ -2,7 +2,6 @@
 
 namespace App\Form;
 
-use App\Entity\Activities;
 use App\Entity\Events;
 use App\Entity\Plans;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -22,10 +21,7 @@ class PlansFormType extends AbstractType
                 'widget' => 'single_text',
             ])
             ->add('nbPers')
-            ->add('activity', EntityType::class, [
-                'class' => Activities::class,
-                'choice_label' => 'name',
-            ])
+            ->add('activityName')
             ->add('event', EntityType::class, [
                 'class' => Events::class,
                 'choice_label' => 'id',

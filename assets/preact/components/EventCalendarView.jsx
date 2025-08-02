@@ -17,6 +17,8 @@ const EventCalendarView = () => {
   const [calendarInstance, setCalendarInstance] = useState(null);
   const [plans, setPlans]                       = useState({});
   const [hidePeople, setHidePeople]             = useState(true);
+  const [licenseKey, setLicenseKey]             = useState(null);
+  const [isLicenseLoaded, setIsLicenseLoaded]   = useState(false);
 
   const element           = document.getElementById('EventCalendarView-wrapper');
   const eventPreparedId   = JSON.parse(element.getAttribute('data-eventId'));
@@ -28,41 +30,54 @@ const EventCalendarView = () => {
   const slotMaxTime = endCalendar ? moment(endCalendar.date).format('HH:mm') : '23:00';
 
   useEffect(() => {
-    const fetchData = async () => {
-      await getApiPlans(eventPreparedId, false);
-      setIsDataLoaded(true); // Refresh the calendar
-    };
-
-    fetchData();
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        setLicenseKey(data.schedulerLicenseKey);
+        setIsLicenseLoaded(true); // indique que la licence est chargée
+      })
+      .catch(err => {
+        console.error('Erreur de chargement de la licence :', err);
+      });
   }, []);
 
   useEffect(() => {
-    if (isDataLoaded) {
+    if (isLicenseLoaded) {
+      const fetchData = async () => {
+        await getApiPlans(eventPreparedId, false);
+        setIsDataLoaded(true);
+      };
+
+      fetchData();
+    }
+  }, [isLicenseLoaded]);
+
+  useEffect(() => {
+    if (isDataLoaded && isLicenseLoaded) {
       const calendar = new Calendar(calendarRef.current, calendarConfig);
       calendar.render();
       setCalendarInstance(calendar);
       setIsDataLoaded(false);
     }
-  }, [isDataLoaded]);
+  }, [isDataLoaded, isLicenseLoaded]);
 
   useEffect(() => {
-    if (calendarInstance) {
+    if (calendarInstance && isLicenseLoaded) {
       calendarInstance.removeAllEvents();
       calendarInstance.addEventSource(events);
     }
-  }, [events, calendarInstance]);
+  }, [events, calendarInstance, isLicenseLoaded]);
 
   const getApiPlans = async (eventPreparedId, displayPeople) => {
     const plans = await getPlans(eventPreparedId);
     setPlans(plans);
 
-    console.log(displayPeople);
     const d = Object.values(plans).map(plan => (
       plan.map(p => ({
         id: p.id,
         title: displayPeople ? p.title + p.people : p.title,
         classNames: p.classNames,
-        resourceId: p.activity.name,
+        resourceId: p.activityName,
         start: p.startDate,
         end: p.endDate
       }))
@@ -71,7 +86,7 @@ const EventCalendarView = () => {
   };
 
   const calendarConfig = {
-    schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
+    schedulerLicenseKey: licenseKey,
     headerToolbar: {
       left: '',
       center: 'title',
@@ -108,14 +123,6 @@ const EventCalendarView = () => {
     }
   };
 
-  const exportPdf = () => {
-    if (Object.keys(plans).length === 0)
-      return alert('Aucune planification à exporter! \nVeuillez ajouter des activités.');
-
-    const data = Object.fromEntries(Object.entries(plans).reverse()); // Reverse the order of the plans
-    exportVolunteers(data); // Export the data to PDF
-  }
-
   const exportData = (type) => {
     if (Object.keys(plans).length === 0)
       return alert('Aucune planification à exporter! \nVeuillez ajouter des activités.');
@@ -134,7 +141,7 @@ const EventCalendarView = () => {
 
   return (
     <div className="mx-2">
-<div className="inline-flex rounded-md shadow-xs flex py-3" role="group">
+      <div className="inline-flex rounded-md shadow-xs flex py-3" role="group">
         {hidePeople && (
           <button onClick={() => displayPeople(true)} className="rounded-s-lg inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800" type="button">Afficher les bénévoles
             <i className="fa fa-eye ml-2" aria-hidden="true"></i>

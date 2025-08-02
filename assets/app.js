@@ -10,7 +10,6 @@ import './styles/app.css';
 import './styles/tinymce.css';
 import { h, render } from 'preact';
 import Users from './preact/components/Users';
-import Activities from './preact/components/Activities';
 import Events from './preact/components/Events';
 import Archived from './preact/components/Archived';
 import TimelineCalendar from './preact/components/TimelineCalendar';
@@ -19,7 +18,6 @@ import SubscriptionEdit from './preact/components/SubscriptionEdit';
 import EventCalendarView from './preact/components/EventCalendarView';
 
 const usersWrapper             = document.getElementById('Users-wrapper');
-const activitiesWrapper        = document.getElementById('Activities-wrapper');
 const eventsWrapper            = document.getElementById('Events-wrapper');
 const archivedWrapper          = document.getElementById('Archived-wrapper');
 const schedulerWrapper         = document.getElementById('Scheduler-wrapper');
@@ -29,9 +27,6 @@ const EventCalendarViewWrapper = document.getElementById('EventCalendarView-wrap
 
 if (usersWrapper)
     render(<Users />, usersWrapper);
-
-if (activitiesWrapper)
-    render(<Activities />, activitiesWrapper);
 
 if (eventsWrapper)
         render(<Events />, eventsWrapper);
