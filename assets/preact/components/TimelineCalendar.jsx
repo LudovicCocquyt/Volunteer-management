@@ -468,7 +468,10 @@ const TimelineCalendar = () => {
           <hr className={`${isEditing ? "my-2" : "hidden" }`} />
           {isEditing &&
             (subscriptions.length > 0 || subscriptionsInPlan.length > 0) &&
-            <div id="subscriptions-wrapper" className="pt-2 flex flex-col md:flex-row gap-4 items-start">
+            <div id="subscriptions-wrapper"
+              className="flex flex-col md:flex-row gap-4 items-start p-4 rounded border shadow"
+              style="background-color: rgb(233, 235, 145);"
+            >
               {/* List of available volunteers  */}
               <div class="w-full md:w-[45%]">
                 <div className="bg-green-100 p-2 rounded-lg border shadow">
@@ -555,8 +558,14 @@ const TimelineCalendar = () => {
                 </div>
               </div>
             }
-            {subscriptions.length === 0 && subscriptionsInPlan.length === 0 &&
-              <div className="text-center text-sm text-gray-600 dark:text-gray-300">Aucun bénévole disponible pour le moment !</div>
+            {
+              subscriptions.length === 0 && subscriptionsInPlan.length === 0 &&
+              formData && "id" in formData &&
+                <div
+                  className="p-4 rounded border shadow text-center"
+                  style="background-color: rgb(233, 235, 145);"
+                >Aucun bénévole disponible pour le moment !
+                </div>
             }
           </div>
         )}
