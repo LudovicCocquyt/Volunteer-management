@@ -5,11 +5,10 @@ namespace App\Controller;
 use App\Entity\Events;
 use App\Repository\EventsRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class Dashboard extends AbstractController
+class DashboardController extends AbstractController
 {
     #[Route(path: '/dashboard', name: 'app_dashboard', methods: ['GET'])]
     public function dashboard(EventsRepository $eventsRepository): Response
@@ -29,6 +28,6 @@ class Dashboard extends AbstractController
             ];
         }, $events);
 
-        return $this->render('Dashboard/index.html.twig', [ "events" => $events]);
+        return $this->render('dashboard/index.html.twig', [ "events" => $events]);
     }
 }

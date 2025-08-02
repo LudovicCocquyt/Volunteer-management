@@ -79,11 +79,11 @@ class SubscriptionsFormType extends AbstractType
                     N\'hésitez pas à nous en faire part, nous ferons notre possible pour répondre à vos attentes.'
                 )
             ])
-            // ->add('captcha', Recaptcha3Type::class, [
-            //     'constraints' => new Recaptcha3(),
-            //     'action_name' => 'SubscriptionsForm',
-            //     'locale'      => 'fr',
-            // ]);
+            ->add('captcha', Recaptcha3Type::class, [
+                'constraints' => new Recaptcha3(),
+                'action_name' => 'SubscriptionsForm',
+                'locale'      => 'fr',
+            ]);
         ;
     }
 

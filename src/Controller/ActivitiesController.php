@@ -2,9 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Activities;
 use App\Form\ActivitiesFormType;
-use App\Form\ActivitiesType;
 use App\Repository\ActivitiesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
