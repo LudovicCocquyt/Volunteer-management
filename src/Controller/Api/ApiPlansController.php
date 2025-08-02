@@ -2,7 +2,7 @@
 
 namespace App\Controller\Api;
 
-use App\Repository\{PlansRepository, ActivitiesRepository, EventsRepository, SubscriptionsRepository};
+use App\Repository\{PlansRepository, EventsRepository, SubscriptionsRepository};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\Serializer\SerializerInterface;
@@ -40,29 +40,26 @@ final class ApiPlansController extends AbstractController
             }
 
             return [
-                'id'        => $plan->getId(),
-                'startDate' => $plan->getStartDate()->format('Y-m-d\TH:i:s'),   // 2024-09-25T09:00:00
-                'endDate'   => $plan->getEndDate()->format('Y-m-d\TH:i:s'),
-                'activity'  => [
-                    'id'   => $plan->getActivity()->getId(),
-                    'name' => $plan->getActivity()->getName(),
-                ],
-                "title"      => $need,
-                "classNames" => $backgroundColor,
-                "people"     => strlen($people) > 0 ? "\n" . $people . "\n": "",
+                'id'           => $plan->getId(),
+                'startDate'    => $plan->getStartDate()->format('Y-m-d\TH:i:s'),     // 2024-09-25T09:00:00
+                'endDate'      => $plan->getEndDate()->format('Y-m-d\TH:i:s'),
+                'activityName' => $plan->getActivityName(),
+                "title"        => $need,
+                "classNames"   => $backgroundColor,
+                "people"       => strlen($people) > 0 ? "\n" . $people . "\n": "",
             ];
         }, $plans);
 
-        $activities   = [];
-        $activityName = [];
+        $activities = [];
         foreach ($plans as $plan) {
-            $activityName = $plan['activity']['name'];
+            $activityName = (string) $plan['activityName'];
             if (!isset($activities[$activityName])) {
                 $activities[$activityName] = [];
             }
             array_push($activities[$activityName], $plan);
         }
-        return new JsonResponse(array_reverse($activities), JsonResponse::HTTP_OK);
+
+        return new JsonResponse($activities, JsonResponse::HTTP_OK);
     }
 
     #[Route('/public/plans/our_needs_by_event/{id}', name: 'api_our_needs_plans_by_event', methods: ['GET'])]
@@ -135,17 +132,15 @@ final class ApiPlansController extends AbstractController
     }
 
     #[Route('/plan/new', name: 'api_plan_new', methods: ['POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, ActivitiesRepository $activitiesRepo, EventsRepository $eventsRepo): JsonResponse
+    public function new(Request $request, EntityManagerInterface $entityManager, EventsRepository $eventsRepo): JsonResponse
     {
         try {
             $params   = json_decode($request->getContent(), true);
             if (empty($params['nbPers'])) {
                 $params['nbPers'] = 0;
             }
-            $activity = $activitiesRepo->findOneBy(['name' => $params['resourceId']]);
-            $event    = $eventsRepo->find($params['eventId']);
-
-            if (empty($activity) || empty($event)) {
+            $event = $eventsRepo->find($params['eventId']);
+            if (empty($params['resourceId']) || empty($event)) {
                 return new JsonResponse(['status' => 'Error', 'message' => 'Params not found'], JsonResponse::HTTP_BAD_REQUEST);
             }
             $date = substr($params['start'], 0, 10);
@@ -154,7 +149,7 @@ final class ApiPlansController extends AbstractController
 
             $plan = new Plans();
             $plan->setEvent($event);
-            $plan->setActivity($activity);
+            $plan->setActivityName(strval($params['resourceId'])); //Activity name is the resourceId
             $plan->setNbPers(intval($params['nbPers']));
             $plan->setStartDate($start);
             $plan->setEndDate($end);
@@ -170,7 +165,7 @@ final class ApiPlansController extends AbstractController
 
             return new JsonResponse(
                 [
-                    'status' => 'activity created!',
+                    'status' => 'Plan created!',
                     'plan'   => json_decode($jsonPlan)
                 ], JsonResponse::HTTP_OK
             );
@@ -206,7 +201,7 @@ final class ApiPlansController extends AbstractController
 
             return new JsonResponse(
                 [
-                    'status' => 'activity updated!',
+                    'status' => 'Plan updated!',
                     'plan'   => json_decode($jsonPlan)
                 ], JsonResponse::HTTP_OK
             );

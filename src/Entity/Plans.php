@@ -30,16 +30,15 @@ class Plans
     #[ORM\JoinColumn(nullable: false)]
     private ?Events $event = null;
 
-    #[ORM\ManyToOne(inversedBy: 'plans')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Activities $activity = null;
-
     /**
      * @var Collection<int, Subscriptions>
      * @Groups({"plan:read", "plan:write"})
      */
     #[ORM\ManyToMany(targetEntity: Subscriptions::class, mappedBy: 'plans')]
     private Collection $subscriptions;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $activityName = null;
 
     public function __construct()
     {
@@ -126,14 +125,14 @@ class Plans
         return $this;
     }
 
-    public function getActivity(): ?Activities
+    public function getActivityName(): ?string
     {
-        return $this->activity;
+        return $this->activityName;
     }
 
-    public function setActivity(?Activities $activity): static
+    public function setActivityName(?string $activityName): static
     {
-        $this->activity = $activity;
+        $this->activityName = $activityName;
 
         return $this;
     }
