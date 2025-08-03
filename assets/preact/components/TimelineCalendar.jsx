@@ -318,27 +318,29 @@ const TimelineCalendar = () => {
         <div className={`flex flex-wrap rounded-md shadow-xs py-3 justify-center md:justify-start ${widthScreen < 878 ? 'gap-2' : ''}`} role="group">
 
           {/* Bouton Ajouter des activités */}
-          <input
-              type        = "text"
-              id          = "addActivityInput"
-              ref         = {addActivityInput}
-              className   = {`w-full md:w-auto px-4 py-2 text-sm font-medium flex justify-center items-center text-white bg-green-400 hover:bg-green-800 focus:outline-none focus:ring-0 ${ widthScreen < 878 ? 'rounded-lg' : 'rounded-s-lg' }`}
-              placeholder = " Ajouter une activité"
-              onKeyDown   = {e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  addActivity();
-                }
-              }}
-          />
-          <button
-            id="addActivityButton"
-            type="button"
-            className="bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-            onClick={() => {addActivity()}}
-          >
-            <i class="fa-solid fa-plus"></i>
-          </button>
+          <div className={`flex ${widthScreen < 768 ? 'w-full' : ''}`}>
+            <input
+                type        = "text"
+                id          = "addActivityInput"
+                ref         = {addActivityInput}
+                className   = {`md:w-auto px-4 py-2 text-sm font-medium flex justify-center items-center text-white bg-green-400 hover:bg-green-800 focus:outline-none focus:ring-0 rounded-s-lg ${widthScreen < 768 ? 'w-full' : ''} ${widthScreen < 878 ? 'text-center' : ''}`}
+                placeholder = " Ajouter une activité"
+                onKeyDown   = {e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addActivity();
+                  }
+                }}
+            />
+            <button
+              id="addActivityButton"
+              type="button"
+              className={`bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 ${widthScreen < 878 ? 'rounded-e-lg' : ''} `}
+              onClick={() => {addActivity()}}
+            >
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
 
           {/* Afficher/Masquer bénévoles */}
           <button
