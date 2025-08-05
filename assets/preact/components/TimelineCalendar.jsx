@@ -145,6 +145,7 @@ const TimelineCalendar = () => {
   };
 
   const handleDateClick = (info) => {
+    setSubscriptionsInPlan([]); // Reset subscriptionsInPlan when clicking on a date
     const clickedTime = new Date(info.dateStr);
     const startTime   = clickedTime.toISOString().substring(11, 16);  // Extract time in HH:MM format
     clickedTime.setHours(clickedTime.getHours() + 1);
