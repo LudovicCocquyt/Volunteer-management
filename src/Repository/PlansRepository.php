@@ -33,4 +33,12 @@ class PlansRepository extends ServiceEntityRepository
 
         return $plansWithEventName;
     }
+    public function findByActivityName(string $name): array
+{
+    return $this->createQueryBuilder('p')
+        ->andWhere('p.activityName = :name')
+        ->setParameter('name', $name)
+        ->getQuery()
+        ->getResult();
+}
 }

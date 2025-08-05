@@ -175,17 +175,26 @@ final class ApiPlansController extends AbstractController
     }
 
     #[Route('/plan/edit/{id}', name: 'api_plan_edit', methods: ['PUT'])]
-    public function edit(Plans $plan, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    public function edit(Plans $plan, Request $request, EntityManagerInterface $entityManager, PlansRepository $plansRepo): JsonResponse
     {
         try {
+            $status = '[Plans updated]';
             $params = json_decode($request->getContent(), true);
-            $date  = $params['start'];
-            $start = DateTime::createFromFormat("Y-m-d\TH:i:sP", $date . "T" . $params['startTime'] . ":00+02:00");
-            $end   = DateTime::createFromFormat("Y-m-d\TH:i:sP", $date . "T" . $params['endTime'] . ":00+02:00");
+            $date   = $params['start'];
+            $start  = DateTime::createFromFormat("Y-m-d\TH:i:sP", $date . "T" . $params['startTime'] . ":00+02:00");
+            $end    = DateTime::createFromFormat("Y-m-d\TH:i:sP", $date . "T" . $params['endTime'] . ":00+02:00");
 
             $plan->setStartDate($start);
             $plan->setEndDate($end);
             $plan->setNbPers(intval($params['nbPers']));
+
+            // If the activityName change, all plans with the same name must be modified.
+            if ($plan->getActivityName() != $params['resourceId']) {
+                $plans = $plansRepo->findByActivityName($plan->getActivityName());
+                $this->changeActivityNameOfManyPlans($plans, $params['resourceId'], $entityManager);
+                $status = '[Plans updated] With the same activity name, all plans have been updated.';
+            }
+
             $entityManager->persist($plan);
             $entityManager->flush();
 
@@ -201,7 +210,7 @@ final class ApiPlansController extends AbstractController
 
             return new JsonResponse(
                 [
-                    'status' => 'Plan updated!',
+                    'status' => $status,
                     'plan'   => json_decode($jsonPlan)
                 ], JsonResponse::HTTP_OK
             );
@@ -258,5 +267,13 @@ final class ApiPlansController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['status' => 'Deleted!'], JsonResponse::HTTP_OK);
+    }
+
+    private function changeActivityNameOfManyPlans(array $plans, string $newActivityName, $entityManager): void
+    {
+        foreach ($plans as $plan) {
+            $plan->setActivityName($newActivityName);
+            $entityManager->persist($plan);
+        }
     }
 }

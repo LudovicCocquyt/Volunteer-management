@@ -392,9 +392,7 @@ const TimelineCalendar = () => {
             onSubmit={(e) => {
               e.preventDefault()
             }}
-          >
-            <p className="sm:col-span-2 lg:col-span-6 md:hidden font-semibold underline">{formData.resourceId}</p>
-
+            >
             <label className="flex flex-col">
               Nb de personnes
               <input
@@ -439,12 +437,26 @@ const TimelineCalendar = () => {
               />
             </label>
 
-            <p className="sm:col-span-2 lg:col-span-6 hidden md:block font-semibold underline">{formData.resourceId}</p>
+            <label className="flex flex-col">
+              Nom de l'activité
+              <input
+                type="text"
+                name="resourceId"
+                {...(formData.id == undefined ? { disabled: true } : {})}
+                value={formData.resourceId}
+                onChange={handleFormChange}
+                required
+                className={`w-full ${formData.id == undefined ? 'bg-gray-300' : 'bg-gray-50'} border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-1 p-2.5`}
+              />
+            </label>
 
             <button
               className="bg-green-100 text-green-700 hover:bg-green-800 hover:text-white rounded-lg py-2 px-5 sm:col-span-2 lg:col-span-1 mt-2"
               type="submit"
-              onClick={() => handleSubmit(formData)}
+              onClick={async () => {
+              await handleSubmit(formData);
+              setIsDataLoaded(true); // Rafraîchir le calendrier
+              }}
             >
               {isEditing ? 'Modifier' : 'Enregistrer'}
             </button>
@@ -453,14 +465,14 @@ const TimelineCalendar = () => {
               <button
                 className="bg-red-100 text-red-700 hover:bg-red-800 hover:text-white rounded-lg py-2 px-5 sm:col-span-2 lg:col-span-1 mt-2"
                 onClick={() => remove(formData.id)}
-              >
+                >
                 Supprimer
               </button>
             )}
-          </form>
+            </form>
 
-          <hr className={`${isEditing ? "my-2" : "hidden" }`} />
-          {isEditing &&
+            <hr className={`${isEditing ? "my-2" : "hidden" }`} />
+            {isEditing &&
             (subscriptions.length > 0 || subscriptionsInPlan.length > 0) &&
             <div id="subscriptions-wrapper"
               className="flex flex-col md:flex-row gap-4 items-start p-4 rounded border shadow"
