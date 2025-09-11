@@ -49,6 +49,8 @@ const TimelineCalendar = () => {
   // Add 1 hour in slotMinTime
   const slotMinTimePlusOneHour = startCalendar ? moment(startCalendar.date).add(1, 'hours').format('HH:mm') : '13:00' //default start time;
 
+  const [currentDate, setCurrentDate] = useState(localStorage.getItem('calendarDate') || eventPreparedDate.date);
+
   useEffect(() => {
     fetch('/api/config')
       .then(res => res.json())
@@ -252,6 +254,17 @@ const TimelineCalendar = () => {
     }
   };
 
+  // When the calendar date range changes (e.g., user navigates to a different month/week/day)
+  const handleDatesSet = (arg) => {
+    const newDate = arg.startStr;
+    if (localStorage.getItem('calendarDate') == null) {
+      localStorage.setItem('calendarDate', eventPreparedDate.date);
+    } else {
+      localStorage.setItem('calendarDate', newDate);
+    }
+    setCurrentDate(newDate);
+  };
+
   const calendarConfig = {
     schedulerLicenseKey: licenseKey,
     headerToolbar: {
@@ -271,7 +284,13 @@ const TimelineCalendar = () => {
     locale: 'fr',
     plugins: [dayGridPlugin, resourceTimelinePlugin, interactionPlugin],
     initialView: 'resourceTimelineDay',
-    initialDate: eventPreparedDate.date,
+    headerToolbar: {
+      left: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth',
+      center: 'title',
+      right: 'prev,next',
+    },
+    initialDate: currentDate,
+    datesSet: handleDatesSet,
     locale: frLocale,
     height: 'auto',
     resources: Object.keys(plans).map(key => ({
