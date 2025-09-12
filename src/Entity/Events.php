@@ -11,7 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
 // | Id int                        |
 // | Name string                   |
 // | StartAt datetime              |
+// | DisplayStartDate bool         |
 // | Location string               |
+// | DisplayLocation bool          |
 // | Published bool                |
 // | Archived bool                 |
 // | Description text              |
@@ -35,8 +37,14 @@ class Events
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $startAt = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    private ?bool $displayStartAt = true;
+
+    #[ORM\Column(type: Types::STRING, nullable: true, length: 255)]
     private ?string $location = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    private ?bool $displayLocation = null;
 
     #[ORM\Column]
     private ?bool $published = null;
@@ -46,6 +54,9 @@ class Events
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $schedulingAuto = null;
 
     /**
      * @var Collection<int, Plans>
@@ -261,6 +272,42 @@ class Events
     public function setSendingEmail(?string $sendingEmail): static
     {
         $this->sendingEmail = $sendingEmail;
+
+        return $this;
+    }
+
+    public function isDisplayStartAt(): ?bool
+    {
+        return $this->displayStartAt;
+    }
+
+    public function setDisplayStartAt(bool $displayStartAt): static
+    {
+        $this->displayStartAt = $displayStartAt;
+
+        return $this;
+    }
+
+    public function isDisplayLocation(): ?bool
+    {
+        return $this->displayLocation;
+    }
+
+    public function setDisplayLocation(bool $displayLocation): static
+    {
+        $this->displayLocation = $displayLocation;
+
+        return $this;
+    }
+
+    public function isSchedulingAuto(): ?bool
+    {
+        return $this->schedulingAuto;
+    }
+
+    public function setSchedulingAuto(bool $schedulingAuto): static
+    {
+        $this->schedulingAuto = $schedulingAuto;
 
         return $this;
     }

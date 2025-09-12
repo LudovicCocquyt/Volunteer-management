@@ -15,6 +15,7 @@ class EventsFormType extends AbstractType
         $builder
             ->add('name')
             ->add('description', TinymceType::class, [
+                'label' => 'Description de l\'événement:',
                 'attr' => [
                     'toolbar'               => 'undo redo | formatselect | bold italic underline | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code fullscreen',
                     'plugins'               => 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
@@ -25,9 +26,12 @@ class EventsFormType extends AbstractType
             ->add('startAt', null, [
                 'widget' => 'single_text',
             ])
+            ->add('displayStartAt', )
+            ->add('schedulingAuto')
             ->add('startCalendar')
             ->add('endCalendar')
             ->add('location')
+            ->add('displayLocation')
             ->add('sendingEmail')
             ->add('published')
             ->add('archived')
