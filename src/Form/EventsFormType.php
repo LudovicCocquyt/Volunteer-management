@@ -16,10 +16,12 @@ class EventsFormType extends AbstractType
             ->add('name')
             ->add('description', TinymceType::class, [
                 'attr' => [
-                    'class' => 'tinymce',
+                    'toolbar'               => 'undo redo | formatselect | bold italic underline | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code fullscreen',
+                    'plugins'               => 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
+                    'menubar'               => 'file edit view insert format tools table help',
+                    'height'                => '400',
                 ]
-            ]
-            )
+            ])
             ->add('startAt', null, [
                 'widget' => 'single_text',
             ])
