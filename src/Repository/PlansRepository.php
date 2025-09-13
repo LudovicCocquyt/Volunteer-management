@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Events;
 use App\Entity\Plans;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -34,11 +35,29 @@ class PlansRepository extends ServiceEntityRepository
         return $plansWithEventName;
     }
     public function findByActivityName(string $name): array
-{
-    return $this->createQueryBuilder('p')
-        ->andWhere('p.activityName = :name')
-        ->setParameter('name', $name)
-        ->getQuery()
-        ->getResult();
-}
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.activityName = :name')
+            ->setParameter('name', $name)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByOneResultByTimes(string $startDate, string $endDate, Events $event): Plans|array
+    {
+        $plans = $this->createQueryBuilder('p')
+            ->andWhere('p.startDate >= :startDate')
+            ->andWhere('p.endDate <= :endDate')
+            ->andWhere('p.event = :event')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->setParameter('event', $event)
+            ->getQuery()
+            ->getResult();
+
+        if (!empty($plans)) {
+            return $plans[0];
+        }
+        return [];
+    }
 }

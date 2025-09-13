@@ -98,4 +98,45 @@ class EmailService
 
         return $params;
     }
+    /**
+     * Prepare the email to be sent to the admin if auto-assignment fails.
+     *
+     * @param Subscriptions $subscription
+     * @param Events $event
+     * @return array
+     */
+    public function prepareEmailToAdminAutoAssignFailed($subscription, $event): array
+    {
+        $params = [];
+        // Check if the event has a sending email
+        if (
+            !is_null($this->appSendingEmail) &&
+            !is_null($event->getSendingEmail()) &&
+            !empty($event->getSendingEmail())
+        ) {
+            // Prepare the email message
+            $availabilityMessage = "";
+            foreach ($subscription->getAvailabilities() as $availability) {
+                $startDate = new \DateTime($availability['startDate']);
+                $endDate   = new \DateTime($availability['endDate']);
+
+                $availabilityMessage .= $startDate->format('d/m/Y \d\e H:i') . " à " . $endDate->format('H:i') . "\n";
+            }
+
+            $text = "L'auto-assignation du bénévole " . $subscription->getFirstname() . " " . $subscription->getLastname() . " a échoué pour l'événement " .    $event->getName() . ".\n \n" .
+            "Voici les détails des disponibilités:\n" .
+            $availabilityMessage;
+
+            // Params for email
+            $params = [
+                'from'     => $this->appSendingEmail,
+                'to'       => $event->getSendingEmail(),
+                'subject'  => "Échec de l'auto-assignation pour " . $event->getName(),
+                'message'  => $text,
+                'template' => 'auto_assign_failed',
+            ];
+        }
+
+        return $params;
+    }
 }

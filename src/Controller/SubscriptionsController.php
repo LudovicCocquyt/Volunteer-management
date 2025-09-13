@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Service\ManageVolunteerSercive;
 
 final class SubscriptionsController extends AbstractController
 {
@@ -62,7 +63,7 @@ final class SubscriptionsController extends AbstractController
     }
 
     #[Route('/public/subscriptions/new', name: 'app_subscriptions_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, EventsRepository $eventsRepo): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, EventsRepository $eventsRepo, ManageVolunteerSercive $manageVolunteer): Response
     {
         $subscription   = new Subscriptions();
         $form           = $this->createForm(SubscriptionsFormType::class, $subscription);
@@ -106,8 +107,22 @@ final class SubscriptionsController extends AbstractController
             $entityManager->flush();
             $message = true;
 
-            $params = $this->emailService->prepareEmailToNewVolunteer($subscription, $event);
-            $succes = !empty($params) ? $this->emailService->send($params) : null;
+            if (!empty($event->getSendingEmail())) {
+                // Prepare and send the email to the new volunteer
+                $params = $this->emailService->prepareEmailToNewVolunteer($subscription, $event);
+                $succes = !empty($params) ? $this->emailService->send($params) : null;
+
+                if ($event->isSchedulingAuto()) {
+                    $result = $manageVolunteer->assignAuto($subscription);
+                    if (!$result) {
+                        // If the automatic assignment fails, send an error email to the admin
+                        $adminParams = $this->emailService->prepareEmailToAdminAutoAssignFailed($subscription, $event);
+                        if (!empty($adminParams)) {
+                            $this->emailService->send($adminParams);
+                        }
+                    }
+                }
+            }
         }
 
         return $this->render('subscriptions/new.html.twig', [

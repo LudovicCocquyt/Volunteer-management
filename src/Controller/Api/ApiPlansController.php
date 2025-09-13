@@ -228,10 +228,10 @@ final class ApiPlansController extends AbstractController
             $subscription = $subRepo->find(intval($params["subscription"]["id"]));
             if (!array_key_exists('assign', $params)) {
                 // Error data
-                return new JsonResponse(['status' => 'Error', 'message' => 'Assign key not found'], JsonResponse::HTTP_BAD_REQUEST);
+                return new JsonResponse(['status' => 'Error', 'message' => 'assign key not found'], JsonResponse::HTTP_BAD_REQUEST);
             } elseif ($params['assign']) {
                 // Add subscription to the plan
-                $subscription = $manageVolunteer->Assign($plan, $subscription);
+                $subscription = $manageVolunteer->assign($plan, $subscription);
                 $plan->addSubscription($subscription);
             } else {
                 // Remove subscription from the plan
