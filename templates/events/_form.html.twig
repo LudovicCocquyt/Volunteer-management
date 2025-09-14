@@ -6,7 +6,7 @@
             <div class="space-y-6">
                 <!-- Paramètres de l'événement -->
                 <section>
-                    <h3 class="mb-2 underline">Paramètres de l'événement</h3>
+                    <h3 class="mb-1 underline">Paramètres de l'événement</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {{ form_row(EventsForm.name, { label: 'Nom *', attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5", placeholder: "Nom de l'événement" } }) }}
                         {{ form_row(EventsForm.startAt, { label: 'Date *', attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" } }) }}
@@ -15,7 +15,7 @@
                 </section>
 
                 <section>
-                    <h3 class="mb-2 underline">Paramètres du calendrier</h3>
+                    <h3 class="mb-1 underline">Paramètres du calendrier</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {{ form_row(EventsForm.startCalendar, { label: 'Début du calendrier', attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" } }) }}
                         {{ form_row(EventsForm.endCalendar, { label: 'Fin du calendrier', attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" } }) }}
@@ -23,7 +23,7 @@
                 </section>
 
                 <section>
-                    <h3 class="mb-2 underline">Envoi d'email</h3>
+                    <h3 class="mb-1 underline">Envoi d'email</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-3">
                         {{ form_row(EventsForm.sendingEmail, { label: 'Adresse email(s)', attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5", placeholder: "Ajoutez les destinataires..." } }) }}
                     </div>
@@ -31,11 +31,11 @@
             </div>
 
             <!-- Colonne 2 -->
-            <div class="space-y-6">
+            <div class="space-y-2">
                 <!-- Envoi d'email -->
                 <section>
-                    <h3 class="mb-2 underline">Statut de l'événement</h3>
-                    <div class="grid grid-cols-1 gap-2">
+                    <h3 class="mb-1 underline">Statut de l'événement</h3>
+                    <div class="grid grid-cols-1 gap-1">
                         <label for="{{ EventsForm.published.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
                             <span class="text-sm text-gray-900 dark:text-neutral-400">Publier</span>
                             {{ form_widget(EventsForm.published, { attr: { class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" } }) }}
@@ -52,16 +52,16 @@
                 </section>
 
                 <section>
-                    <h3 class="mb-2 underline">Options d'affichage
+                    <h3 class="mb-1 underline">Options d'affichage
                     <div class="relative group inline-block">
-                        <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold bg-blue-200 text-white rounded-full cursor-help hover:bg-gray-300">?</span>
+                        <i class="fa-solid fa-circle-info text-blue-600"></i>
                     <!-- Tooltip -->
                         <div class="absolute z-10 left-1/2 -translate-x-1/2 mt-2 px-3 py-2 text-sm text-white bg-gray-900 rounded shadow-lg opacity-0 invisible transition-opacity duration-200 group-hover:opacity-100 group-hover:visible">
                             Affichage pour l'inscription des bénévoles.
                         </div>
                     </div>
                 </h3>
-                <div class="grid grid-cols- gap-2">
+                <div class="grid grid-cols-1 gap-1">
                     <label for="{{ EventsForm.displayStartAt.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
                         <span class="text-sm text-gray-900 dark:text-neutral-400">Afficher la date</span>
                         {{ form_widget(EventsForm.displayStartAt, {
@@ -78,20 +78,36 @@
                         }
                         }) }}
                     </label>
+                    <label for="{{ EventsForm.displayCommentForSubscription.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
+                        <span class="text-sm text-gray-900 dark:text-neutral-400">Autoriser les commentaires</span>
+                        {{ form_widget(EventsForm.displayCommentForSubscription, {
+                        attr: {
+                            class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                        }
+                        }) }}
+                    </label>
+                    <label for="{{ EventsForm.displayPeopleName.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
+                        <span class="text-sm text-gray-900 dark:text-neutral-400">Afficher les bénévoles Inscrits</span>
+                        {{ form_widget(EventsForm.displayPeopleName, {
+                        attr: {
+                            class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                        }
+                        }) }}
+                    </label>
                 </div>
                 </section>
 
                 <section>
-                    <h3 class="mb-2 underline">Assignation des bénévoles
+                    <h3 class="mb-1 underline">Assignation des bénévoles
                     <div class="relative group inline-block">
-                        <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold bg-blue-200 text-white rounded-full cursor-help hover:bg-gray-300">?</span>
+                        <i class="fa-solid fa-circle-info text-blue-600"></i>
                         <!-- Tooltip -->
                         <div class="absolute z-10 left-1/2 -translate-x-1/2 mt-2 px-3 py-2 text-sm text-white bg-gray-900 rounded shadow-lg opacity-0 invisible transition-opacity duration-200 group-hover:opacity-100 group-hover:visible">
                             Possibilité de laisser le système assigner automatiquement les bénévoles aux créneaux disponibles.
                         </div>
                     </div>
                 </h3>
-                <div class="grid grid-cols- gap-2">
+                <div class="grid grid-cols-1 gap-1">
                     <label for="{{ EventsForm.schedulingAuto.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
                         <span class="text-sm text-gray-900 dark:text-neutral-400">Automatique</span>
                         {{ form_widget(EventsForm.schedulingAuto, {

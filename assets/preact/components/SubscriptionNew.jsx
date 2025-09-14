@@ -1,4 +1,4 @@
-import { h } from 'preact';
+import { h, Fragment } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { getOurNeedsByEvent } from '../routes/PlansRoutes';
 import moment from 'moment';
@@ -12,10 +12,13 @@ const SubscriptionNew = () => {
   const subscriptions_form_event          = document.getElementById('subscriptions_form_event');
   const formWrapper                       = document.getElementById('form-wrapper');
 
-  const [plans, setPlans]               = useState([]);
-  const [currentEvent, setCurrentEvent] = useState(null);
-  const [availability, setAvailability] = useState([]);
-  const [description, setDescription]   = useState("");
+  const [plans, setPlans]                                                 = useState([]);
+  const [currentEvent, setCurrentEvent]                                   = useState(null);
+  const [availability, setAvailability]                                   = useState([]);
+  const [description, setDescription]                                     = useState("");
+  const [isDisplayPeopleName, setIsDisplayPeopleName]                     = useState(false);
+  const [displayCommentForSubscription, setDisplayCommentForSubscription] = useState(true);
+  const [displayLocation, setDisplayLocation]                             = useState(false);
 
   useEffect(() => {
     if (availability.length > 0)
@@ -33,6 +36,12 @@ const SubscriptionNew = () => {
       descriptionEvent(events[0].description);
     }
   }, []);
+  useEffect(() => {
+    const commentField = document.querySelector('#subscriptions_form_comment');
+    if (commentField) {
+      commentField.style.display = displayCommentForSubscription ? "block" : "none";
+    }
+  }, [displayCommentForSubscription]);
 
   const changeEvent = (eventId) => {
     setCurrentEvent(eventId);
@@ -86,11 +95,21 @@ const SubscriptionNew = () => {
             <div
               id={event.id}
               className={`p-6 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 ${event.id === currentEvent ? 'bg-green-200' : 'bg-white hover:bg-gray-100'}`}
-              onClick={() => {changeEvent(event.id), descriptionEvent(event.description)}}
+              onClick={() => {
+                changeEvent(event.id),
+                descriptionEvent(event.description);
+                setIsDisplayPeopleName(event.displayPeopleName);
+                setDisplayCommentForSubscription(event.displayCommentForSubscription),
+                setDisplayLocation(event.displayLocation);
+              }}
             >
               <h5 className="mb-2 text-xl text-center font-bold tracking-tight text-gray-900 dark:text-white">{event.name}</h5>
-              <p className="font-normal text-center text-gray-700 dark:text-gray-400 capitale">{moment(event.startAt.date).format('dddd')} {moment(event.startAt.date).format('LL')}</p>
-              <p className="font-normal text-center text-gray-700 dark:text-gray-400 capitale">{event.location ?? ""}</p>
+              { event.displayStartAt &&
+                <p className="font-normal text-center text-gray-700 dark:text-gray-400 capitale">{moment(event.startAt.date).format('dddd')} {moment(event.startAt.date).format('LL')}</p>
+              }
+              { event.displayLocation &&
+                <p className="font-normal text-center text-gray-700 dark:text-gray-400 capitale">{event.location ?? ""}</p>
+              }
             </div>
           ))}
         </div>
@@ -109,14 +128,36 @@ const SubscriptionNew = () => {
              <div
               key={key}
               id={plan.id}
-              className={`p-6 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 ${availability.includes(plan) ? 'bg-green-200' : 'bg-white hover:bg-gray-100'}`}
-              onClick={() => { moveAvailability(plan) }} >
-                <p className='text-center'>
+              className={`flex justify-between items-center p-6 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 ${
+                availability.includes(plan) ? 'bg-green-200' : 'bg-white hover:bg-gray-100'
+              }`}
+              onClick={() => {
+                moveAvailability(plan);
+              }}
+            >
+              <div className="w-12 text-left">
+                <p className="text-center font-bold" style={{ color: 'rgb(166, 36, 117)', transform: 'rotate(-45deg)' }} >{plan.information}</p>
+              </div>
+              <div className="flex-1 text-center"
+              //style={plan.information != null ? 'padding-right: 50px;' : '' }
+              >
+                <p>
                   <span>{moment(plan.startDate).format('HH:mm')} à {moment(plan.endDate).format('HH:mm')}</span>
                   <br />
                   <span>{moment(plan.endDate).format('dddd D MMM')}</span>
                 </p>
               </div>
+              <div className="w-12 text-center">
+                  { isDisplayPeopleName &&
+                    <div className="relative group inline-block ml-2">
+                      <i className="fa-solid fa-users" style={{ color: 'rgb(53, 177, 154)', visibility: plan.people.length > 1 ? 'visible' : 'hidden' }}></i>
+                      <div className="Tooltip w-60 absolute z-10 left-1/2 -translate-x-1/2 mt-2 px-3 py-2 text-sm text-white bg-gray-900 rounded shadow-lg opacity-0 invisible   transition-opacity duration-200 group-hover:opacity-100 group-hover:visible" style={{ visibility: plan.people.length > 1 ? 'visible' : 'hidden' }}>
+                        { plan.people }
+                      </div>
+                    </div>
+                  }
+              </div>
+            </div>
             ))}
           </div>
         </div>

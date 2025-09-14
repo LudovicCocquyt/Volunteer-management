@@ -9,6 +9,15 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
+// | Id int                         |
+// | StartDate datetime             |
+// | EndDate datetime               |
+// | NbPers int (nullable)          |
+// | EventId int (ManyToOne)        |
+// | Subscriptions ids (ManyToMany) |
+// | ActivityName varchar(255)      | (nullable)
+// | Information varchar(15)        | (nullable)
+
 #[ORM\Entity(repositoryClass: PlansRepository::class)]
 class Plans
 {
@@ -39,6 +48,9 @@ class Plans
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $activityName = null;
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $information = null;
 
     public function __construct()
     {
@@ -133,6 +145,18 @@ class Plans
     public function setActivityName(?string $activityName): static
     {
         $this->activityName = $activityName;
+
+        return $this;
+    }
+
+    public function getInformation(): ?string
+    {
+        return $this->information;
+    }
+
+    public function setInformation(?string $information): static
+    {
+        $this->information = $information;
 
         return $this;
     }

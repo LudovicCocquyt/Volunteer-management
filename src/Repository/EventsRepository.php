@@ -19,7 +19,7 @@ class EventsRepository extends ServiceEntityRepository
     public function findPublishedEvents(): array
     {
         return $this->createQueryBuilder('e')
-            ->select('e.id, e.name, e.startAt, e.location, e.description')
+            ->select('e.id, e.name, e.startAt, e.location, e.description, e.displayPeopleName, e.displayCommentForSubscription, e.displayStartAt, e.displayLocation')
             ->andWhere('e.published = :published')
             ->andWhere('e.archived = :archived')
             ->setParameter('published', true)

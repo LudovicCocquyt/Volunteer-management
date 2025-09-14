@@ -101,7 +101,8 @@ const TimelineCalendar = () => {
         classNames: p.classNames,
         resourceId: p.activityName,
         start: p.startDate,
-        end: p.endDate
+        end: p.endDate,
+        information: p.information
       }))
     ));
     setEvents(d.flat());
@@ -159,7 +160,8 @@ const TimelineCalendar = () => {
       startTime: startTime,
       endTime: endTime,
       resourceId: info.resource.id,
-      eventId: eventPreparedId
+      eventId: eventPreparedId,
+      information: info.information || null,
     });
     setShowForm(true);
     setTimeout(() => {
@@ -182,7 +184,8 @@ const TimelineCalendar = () => {
       startTime: startTime,
       endTime: endTime,
       resourceId: event._def.resourceIds[0],
-      eventId: eventPreparedId
+      eventId: eventPreparedId,
+      information: event.extendedProps.information || null
     });
     setShowForm(true);
     if (widthScreen > 1080) { // Does not give focus on mobile and tablet in edition plan
@@ -407,13 +410,13 @@ const TimelineCalendar = () => {
       {showForm && (
         <div className="pt-5">
           <form
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 p-4 rounded border shadow"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4 rounded border shadow"
             style={{ backgroundColor: '#e9eb91' }}
             onSubmit={(e) => {
               e.preventDefault()
             }}
             >
-            <label className="flex flex-col">
+            <label>
               Nb de personnes
               <input
                 ref={nbPersInput}
@@ -427,7 +430,7 @@ const TimelineCalendar = () => {
               />
             </label>
 
-            <label className="flex flex-col">
+            <label>
               Heure de début
               <input
                 type="time"
@@ -442,7 +445,7 @@ const TimelineCalendar = () => {
               />
             </label>
 
-            <label className="flex flex-col">
+            <label>
               Heure de fin
               <input
                 type="time"
@@ -457,7 +460,26 @@ const TimelineCalendar = () => {
               />
             </label>
 
-            <label className="flex flex-col">
+            <label>
+              Information
+                <div className="relative group inline-block ml-2">
+                  <i className="fa-solid fa-circle-info text-blue-600"></i>
+                  {/* Tooltip */}
+                  <div className="absolute z-10 left-1/2 -translate-x-1/2 mt-2 px-3 py-2 text-sm text-white bg-gray-900 rounded shadow-lg opacity-0 invisible   transition-opacity duration-200 group-hover:opacity-100 group-hover:visible">
+                    Veuillez noter que cette information s'applique à tous les créneaux du même horaire.
+                  </div>
+                </div>
+              <input
+                type="text"
+                name="information"
+                placeholder="10 caractères max"
+                value={formData.information}
+                onChange={handleFormChange}
+                className="w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-1 p-2.5"
+              />
+            </label>
+
+            <label>
               Nom de l'activité
               <input
                 type="text"

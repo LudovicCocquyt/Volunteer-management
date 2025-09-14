@@ -35,6 +35,8 @@ class EventsFormType extends AbstractType
             ->add('sendingEmail')
             ->add('published')
             ->add('archived')
+            ->add('displayPeopleName')
+            ->add('displayCommentForSubscription')
         ;
     }
 

@@ -47,6 +47,7 @@ final class ApiPlansController extends AbstractController
                 "title"        => $need,
                 "classNames"   => $backgroundColor,
                 "people"       => strlen($people) > 0 ? "\n" . $people . "\n": "",
+                "information"  => $plan->getInformation()
             ];
         }, $plans);
 
@@ -67,7 +68,7 @@ final class ApiPlansController extends AbstractController
     {
         setlocale(LC_TIME, 'fr_FR.UTF-8');
         $format = 'Y-m-d\TH:i:s';
-        $plans = $plansRepository->findBy(['event' => $id]);
+        $plans  = $plansRepository->findBy(['event' => $id]);
         if (empty($plans)) {
             return new JsonResponse([], JsonResponse::HTTP_OK);
         }
@@ -106,11 +107,18 @@ final class ApiPlansController extends AbstractController
 
             // Add the plan to the our_needs array if getNbPers > 0
             if ($plan->getNbPers() > 0) {
+                $people = ""; // Get the list of people who have subscribed to the plan for export pdf
+                $sub = $plan->getSubscriptions();
+                foreach($sub as $s) {
+                    $people .= $s->getFirstname() . " " . $s->getLastname() . ",\n";
+                }
                 array_push($our_needs, [
-                    'startDate' => $plan->getStartDate()->format($format),
-                    'endDate'   => $plan->getEndDate()->format($format),
-                    'nbPers'    => $plan->getNbPers(),
-                    'available' => true
+                    'startDate'   => $plan->getStartDate()->format($format),
+                    'endDate'     => $plan->getEndDate()->format($format),
+                    'nbPers'      => $plan->getNbPers(),
+                    'available'   => true,
+                    'information' => $plan->getInformation(),
+                    "people"      => substr($people, 0, -2) // Remove trailing comma and newline
                 ]);
             }
 
@@ -153,6 +161,7 @@ final class ApiPlansController extends AbstractController
             $plan->setNbPers(intval($params['nbPers']));
             $plan->setStartDate($start);
             $plan->setEndDate($end);
+            $plan->setInformation(strval($params['information']));
 
             $entityManager->persist($plan);
             $entityManager->flush();
@@ -187,6 +196,7 @@ final class ApiPlansController extends AbstractController
             $plan->setStartDate($start);
             $plan->setEndDate($end);
             $plan->setNbPers(intval($params['nbPers']));
+            $plan->setInformation(strval($params['information']));
 
             // If the activityName change, all plans with the same name must be modified.
             if ($plan->getActivityName() != $params['resourceId']) {

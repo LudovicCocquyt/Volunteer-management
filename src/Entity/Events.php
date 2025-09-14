@@ -58,6 +58,12 @@ class Events
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private ?bool $schedulingAuto = null;
 
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $displayPeopleName = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $displayCommentForSubscription = null;
+
     /**
      * @var Collection<int, Plans>
      */
@@ -308,6 +314,30 @@ class Events
     public function setSchedulingAuto(bool $schedulingAuto): static
     {
         $this->schedulingAuto = $schedulingAuto;
+
+        return $this;
+    }
+
+    public function isDisplayPeopleName(): ?bool
+    {
+        return $this->displayPeopleName;
+    }
+
+    public function setDisplayPeopleName(bool $displayPeopleName): static
+    {
+        $this->displayPeopleName = $displayPeopleName;
+
+        return $this;
+    }
+
+    public function isDisplayCommentForSubscription(): ?bool
+    {
+        return $this->displayCommentForSubscription;
+    }
+
+    public function setDisplayCommentForSubscription(bool $displayCommentForSubscription): static
+    {
+        $this->displayCommentForSubscription = $displayCommentForSubscription;
 
         return $this;
     }
