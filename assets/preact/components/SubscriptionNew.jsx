@@ -32,16 +32,25 @@ const SubscriptionNew = () => {
   useEffect(() => {
     // If there is only one event, we select it by default
     if (events.length == 1) {
-      changeEvent(events[0].id);
-      descriptionEvent(events[0].description);
+      loadEventParams(events[0]);
     }
   }, []);
+
   useEffect(() => {
     const commentField = document.querySelector('#subscriptions_form_comment');
     if (commentField) {
       commentField.style.display = displayCommentForSubscription ? "block" : "none";
     }
   }, [displayCommentForSubscription]);
+
+
+  const loadEventParams = (event) => {
+    changeEvent(event.id);
+    descriptionEvent(event.description);
+    setIsDisplayPeopleName(event.displayPeopleName);
+    setDisplayCommentForSubscription(event.displayCommentForSubscription);
+    setDisplayLocation(event.displayLocation);
+  }
 
   const changeEvent = (eventId) => {
     setCurrentEvent(eventId);
@@ -96,11 +105,7 @@ const SubscriptionNew = () => {
               id={event.id}
               className={`p-6 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 ${event.id === currentEvent ? 'bg-green-200' : 'bg-white hover:bg-gray-100'}`}
               onClick={() => {
-                changeEvent(event.id),
-                descriptionEvent(event.description);
-                setIsDisplayPeopleName(event.displayPeopleName);
-                setDisplayCommentForSubscription(event.displayCommentForSubscription),
-                setDisplayLocation(event.displayLocation);
+                loadEventParams(event);
               }}
             >
               <h5 className="mb-2 text-xl text-center font-bold tracking-tight text-gray-900 dark:text-white">{event.name}</h5>
