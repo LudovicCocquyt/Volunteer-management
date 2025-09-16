@@ -37,11 +37,11 @@
                     <h3 class="mb-1 underline">Statut de l'événement</h3>
                     <div class="grid grid-cols-1 gap-1">
                         <label for="{{ EventsForm.published.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
-                            <span class="text-sm text-gray-900 dark:text-neutral-400">Publier</span>
+                            <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-square-arrow-up-right"></i> Publier</span>
                             {{ form_widget(EventsForm.published, { attr: { class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" } }) }}
                         </label>
                         <label for="{{ EventsForm.archived.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
-                        <span class="text-sm text-gray-900 dark:text-neutral-400">Archiver</span>
+                        <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-box-archive"></i> Archiver</span>
                         {{ form_widget(EventsForm.archived, {
                         attr: {
                             class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
@@ -63,7 +63,7 @@
                 </h3>
                 <div class="grid grid-cols-1 gap-1">
                     <label for="{{ EventsForm.displayStartAt.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
-                        <span class="text-sm text-gray-900 dark:text-neutral-400">Afficher la date</span>
+                        <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-clock"></i> Afficher la date</span>
                         {{ form_widget(EventsForm.displayStartAt, {
                         attr: {
                             class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
@@ -71,7 +71,7 @@
                         }) }}
                     </label>
                     <label for="{{ EventsForm.displayLocation.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
-                        <span class="text-sm text-gray-900 dark:text-neutral-400">Afficher le lieu</span>
+                        <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-location-dot"></i> Afficher le lieu</span>
                         {{ form_widget(EventsForm.displayLocation, {
                         attr: {
                             class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
@@ -79,7 +79,7 @@
                         }) }}
                     </label>
                     <label for="{{ EventsForm.displayCommentForSubscription.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
-                        <span class="text-sm text-gray-900 dark:text-neutral-400">Autoriser les commentaires</span>
+                        <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-message"></i> Autoriser les commentaires</span>
                         {{ form_widget(EventsForm.displayCommentForSubscription, {
                         attr: {
                             class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
@@ -87,7 +87,7 @@
                         }) }}
                     </label>
                     <label for="{{ EventsForm.displayPeopleName.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
-                        <span class="text-sm text-gray-900 dark:text-neutral-400">Afficher les bénévoles Inscrits</span>
+                        <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-users"></i> Afficher les bénévoles Inscrits</span>
                         {{ form_widget(EventsForm.displayPeopleName, {
                         attr: {
                             class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
@@ -109,7 +109,7 @@
                 </h3>
                 <div class="grid grid-cols-1 gap-1">
                     <label for="{{ EventsForm.schedulingAuto.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
-                        <span class="text-sm text-gray-900 dark:text-neutral-400">Automatique</span>
+                        <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-users-gear"></i> Automatique</span>
                         {{ form_widget(EventsForm.schedulingAuto, {
                         attr: {
                             class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"

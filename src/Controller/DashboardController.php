@@ -16,15 +16,21 @@ class DashboardController extends AbstractController
         $events = $eventsRepository->findBy(['archived' => false], ['startAt' => 'DESC']);
         $events = array_map(function(Events $event) {
             return [
-                'id'                   => $event->getId(),
-                'name'                 => $event->getName(),
-                'date'                 => $event->getStartAt()->format('H:i d-m-Y'),
-                'location'             => $event->getLocation(),
-                'published'            => $event->isPublished(),
-                'nbPlans'              => $event->getNbPersonsByEvent(),
-                'reservedAvailability' => $event->reservedAvailability(),
-                'nbSubscriptions'      => $event->getSubscriptions()->count(),
-                'sendingEmail'         => strlen($event->getSendingEmail()) >  0 ? true : false,
+                'id'                               => $event->getId(),
+                'name'                             => $event->getName(),
+                'date'                             => $event->getStartAt()->format('H:i d-m-Y'),
+                'location'                         => $event->getLocation(),
+                'published'                        => $event->isPublished(),
+                'nbPlans'                          => $event->getNbPersonsByEvent(),
+                'reservedAvailability'             => $event->reservedAvailability(),
+                'nbSubscriptions'                  => $event->getSubscriptions()->count(),
+                'sendingEmail'                     => strlen($event->getSendingEmail()) >  0 ? true : false,
+                'setDisplayStartAt'                => $event->isDisplayStartAt(),
+                'isDisplayLocation'                => $event->isDisplayLocation(),
+                'setDisplayCommentForSubscription' => $event->isDisplayCommentForSubscription(),
+                'isSchedulingAuto'                 => $event->isSchedulingAuto(),
+                'isPublished'                      => $event->isPublished(),
+                'isDisplayPeopleName'              => $event->isDisplayPeopleName(),
             ];
         }, $events);
 
