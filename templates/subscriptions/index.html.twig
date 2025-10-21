@@ -32,7 +32,7 @@
                 {% endif %}
             {% endfor %}
             <div class="relative overflow-x-auto shadow-md">
-                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <table class="table-datatable w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
                             <th scope="col" class="px-6 py-3">Disponibilités</th>
@@ -40,7 +40,7 @@
                             <th scope="col" class="px-6 py-3">Email</th>
                             <th scope="col" class="px-6 py-3">Téléphone</th>
                             <th scope="col" class="px-6 py-3">Enfant</th>
-                            <th scope="col" class="px-6 py-3 text-center">
+                            <th scope="col" class="px-6 py-3 !text-center">
                                 <a href="{{ path('export_excel', {'id': key}) }}" class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white rounded-lg px-2 py-1 text-xs font-medium">Exporter .XLS <i class="fa fa-file-text ml-2" aria-hidden="true"></i>
                                 </a>
                             </th>
@@ -104,4 +104,29 @@
         {% endfor %}
     </div>
 </div>
+<script>
+    $(document).ready(function() {
+        $('.table-datatable').dataTable({
+            columnDefs: [
+                { targets: [3, 5], orderable: false },
+            ],
+            paging: false,
+            searching: true,
+            info: false, // masque la ligne "Showing X to Y of Z entries"
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json'
+            },
+            initComplete: function () {
+                let searchInput = $('input.form-control.form-control-sm');
+                // Add Tailwind CSS classes to the search input
+                searchInput.addClass('bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full mt-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500');
+                // Set placeholder text
+                searchInput.attr('placeholder', 'Rechercher...');
+                // remove the "Search:" text node but keep the input visible
+                let label = searchInput.closest('label');
+                label.contents().filter(function() { return this.nodeType === 3; }).remove();
+            }
+        });
+    })
+</script>
 {% endblock %}
