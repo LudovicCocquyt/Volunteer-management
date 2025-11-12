@@ -107,6 +107,13 @@ final class SubscriptionsController extends AbstractController
             $entityManager->flush();
             $message = true;
 
+            // Sending an email to the volunteer to confirm their registration
+            $volunteerParams = $this->emailService->prepareEmailToVolunteerAfterSubscription($subscription, $event);
+            if ($volunteerParams) {
+                $this->emailService->send($volunteerParams);
+            }
+
+            // Sending an email to the admin to inform them of a new subscription
             if (!empty($event->getSendingEmail())) {
                 // Prepare the email to be sent to the admin after subscription
                 $params = $this->emailService->prepareEmailToAdminAfterSubscription($subscription, $event);
