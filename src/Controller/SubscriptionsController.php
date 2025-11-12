@@ -118,20 +118,16 @@ final class SubscriptionsController extends AbstractController
                 // Prepare the email to be sent to the admin after subscription
                 $params = $this->emailService->prepareEmailToAdminAfterSubscription($subscription, $event);
                 $succes = !empty($params) ? $this->emailService->send($params) : null;
-                // Sending an email to the volunteer to confirm their registration
-                $volunteerParams = $this->emailService->prepareEmailToVolunteerAfterSubscription($subscription, $event);
-                if (!empty($volunteerParams)) {
-                    $this->emailService->send($volunteerParams);
-                }
-
-                if ($event->isSchedulingAuto()) {
-                    $result = $manageVolunteer->assignAuto($subscription);
-                    if (!$result) {
-                        // If the automatic assignment fails, send an error email to the admin
-                        $adminParams = $this->emailService->prepareEmailToAdminAutoAssignFailed($subscription, $event);
-                        if (!empty($adminParams)) {
-                            $this->emailService->send($adminParams);
-                        }
+            }
+            // If the event is set to automatic scheduling, try to assign the volunteer automatically
+            if ($event->isSchedulingAuto()) {
+                $result = $manageVolunteer->assignAuto($subscription);
+                // If the assignment fails, notify the admin by email
+                if (!$result && !empty($event->getSendingEmail())) {
+                    // If the automatic assignment fails, send an error email to the admin
+                    $adminParams = $this->emailService->prepareEmailToAdminAutoAssignFailed($subscription, $event);
+                    if ($adminParams) {
+                        $this->emailService->send($adminParams);
                     }
                 }
             }
