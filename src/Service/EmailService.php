@@ -57,13 +57,13 @@ class EmailService
     }
 
     /**
-     * Prepare the email to be sent to the new volunteer after subscription.
+     * Prepare the email to be sent to the admin after subscription.
      *
      * @param Subscriptions $subscription
      * @param Events $event
-     * @return array
+     * @return array|false
      */
-    public function prepareEmailToNewVolunteer($subscription, $event): array
+    public function prepareEmailToAdminAfterSubscription($subscription, $event): array|false
     {
         $params = [];
         // Check if the event has a sending email
@@ -94,10 +94,13 @@ class EmailService
                 'message'  => $text,
                 'template' => 'subscriptions',
             ];
+        } else {
+            return false;
         }
 
         return $params;
     }
+
     /**
      * Prepare the email to be sent to the admin if auto-assignment fails.
      *
@@ -136,6 +139,62 @@ class EmailService
                 'template' => 'auto_assign_failed',
             ];
         }
+
+        return $params;
+    }
+
+    /**
+     * Prepare the email to be sent to the volunteer after subscription.
+     *
+     * @param Subscriptions $subscription
+     * @param Events $event
+     * @return array|false
+     */
+    public function prepareEmailToVolunteerAfterSubscription($subscription, $event): array|false
+    {
+        // Prepare the email message
+        $availabilityMessage = "";
+        foreach ($subscription->getAvailabilities() as $availability) {
+            $startDate = new \DateTime($availability['startDate']);
+            $endDate   = new \DateTime($availability['endDate']);
+
+            $availabilityMessage .= $startDate->format('d/m/Y \d\e H:i') . " à " . $endDate->format('H:i') . "\n";
+        }
+        if (!is_null($event->getMessageEmail()) && !empty($event->getMessageEmail())) {
+            // Remplace les balises <p> par des sauts de ligne
+            $textWithLineBreaks = str_replace('</p>', "\r\n", $event->getMessageEmail());
+            $textWithLineBreaks = str_replace('<br>', "\n", $textWithLineBreaks);
+            // Supprime les autres balises HTML s'il y en a
+            $cleanText = strip_tags($textWithLineBreaks);
+            // Décode les entités HTML
+            $decodedText = html_entity_decode($cleanText);
+            $message =
+                html_entity_decode($decodedText) .
+                "\n\n Voici le détail des disponibilités:\n" .
+                $availabilityMessage;
+        } else {
+            // Default message
+            $message =
+                "Bonjour,\n\n" .
+                "Merci pour votre inscription à l'événement \"" . $event->getName() . " du " . $event->getStartAt()->format('d/m/Y') . " à " . $event->getStartAt()->format('H:i') . "\".\n\n" .
+                "Nous avons bien reçu vos disponibilités et nous vous contacterons bientôt avec plus de détails.\n\n" .
+                "Nous comptons sur votre participation.\n" .
+                "En cas de modifications, merci de nous prévenir au plus vite, afin que nous puissions mettre à jour le planning.\n\n" .
+                "Cordialement,\n" .
+                "Les bénévoles de l'APEL.\n\n\n".
+                "Voici le détail des disponibilités:\n" .
+                $availabilityMessage;
+        }
+
+        // Params for email
+        $params = [
+            'from'     => $this->appSendingEmail,
+            'to'       => $subscription->getEmail(),
+            'replyTo'  => $this->appSendingEmail . (!is_null($event->getSendingEmail()) ? ',' . $event->getSendingEmail() : ''),
+            'subject'  => "Confirmation d'inscription [" . $event->getName() . "]",
+            'message'  => $message,
+            'template' => 'volunteer_confirmation',
+        ];
 
         return $params;
     }

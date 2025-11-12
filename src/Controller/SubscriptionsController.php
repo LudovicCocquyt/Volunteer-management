@@ -108,9 +108,14 @@ final class SubscriptionsController extends AbstractController
             $message = true;
 
             if (!empty($event->getSendingEmail())) {
-                // Prepare and send the email to the new volunteer
-                $params = $this->emailService->prepareEmailToNewVolunteer($subscription, $event);
+                // Prepare the email to be sent to the admin after subscription
+                $params = $this->emailService->prepareEmailToAdminAfterSubscription($subscription, $event);
                 $succes = !empty($params) ? $this->emailService->send($params) : null;
+                // Sending an email to the volunteer to confirm their registration
+                $volunteerParams = $this->emailService->prepareEmailToVolunteerAfterSubscription($subscription, $event);
+                if (!empty($volunteerParams)) {
+                    $this->emailService->send($volunteerParams);
+                }
 
                 if ($event->isSchedulingAuto()) {
                     $result = $manageVolunteer->assignAuto($subscription);

@@ -25,18 +25,29 @@
                         </div>
                     </section>
 
-                <section>
-                    <h3 class="mb-1 underline">Envoi d'email</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3">
-                        {{ form_row(EventsForm.sendingEmail, { label: 'Adresse email(s)', attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5", placeholder: "Ajoutez les destinataires..." } }) }}
-                    </div>
-                </section>
+                    <section>
+                        <!-- Envoi d'email -->
+                        <h3 id="email_configuration" class="mb-1 underline w-full flex items-center justify-between p-2 text-gray-900 bg-pink-100 rounded-lg">
+                            Configuration des emails
+                            <i class="fa-solid fa-up-down"></i>
+                        </h3>
+                        <div id="email_form" style="opacity: 0; max-height: 0px;">
+                            <div class="px-2 pb-2">
+                                {{ form_row(EventsForm.sendingEmail, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5", placeholder: "Ajoutez les emails séparés par des virgules" } }) }}
+                                {{ form_errors(EventsForm.sendingEmail) }}
+                            </div>
+                            <div class="mt-4 px-2 pb-2">
+                                {{ form_row(EventsForm.messageEmail, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" } }) }}
+                                {{ form_errors(EventsForm.messageEmail) }}
+                            </div>
+                        </div>
+                    </section>
+                {% endif %}
             </div>
 
             {% if is_edit %}
             <!-- Colonne 2 -->
                 <div class="space-y-2">
-                    <!-- Envoi d'email -->
                     <section>
                         <h3 class="mb-1 underline w-full flex items-center justify-between p-2 text-gray-900 bg-pink-100 rounded-lg">Statut de l'événement</h3>
                         <div class="grid grid-cols-1 gap-1">

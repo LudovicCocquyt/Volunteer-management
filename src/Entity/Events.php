@@ -85,6 +85,9 @@ class Events
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $sendingEmail = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $messageEmail = null;
+
     public function __construct()
     {
         $this->plans         = new ArrayCollection();
@@ -338,6 +341,18 @@ class Events
     public function setDisplayCommentForSubscription(bool $displayCommentForSubscription): static
     {
         $this->displayCommentForSubscription = $displayCommentForSubscription;
+
+        return $this;
+    }
+
+    public function getMessageEmail(): ?string
+    {
+        return $this->messageEmail;
+    }
+
+    public function setMessageEmail(?string $messageEmail): static
+    {
+        $this->messageEmail = $messageEmail;
 
         return $this;
     }
