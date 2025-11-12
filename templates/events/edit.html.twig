@@ -10,8 +10,8 @@
 
     <div class="w-full p-2 mb-10 bg-white border border-gray-200 rounded-lg shadow mt-3">
         <div class="relative overflow-x-auto shadow-md rounded-lg pb-3">
-            <h3 class="w-full flex items-center justify-between p-2 text-gray-900 bg-pink-200"  style="background-color: #f9cee8;">Modication de {{ event.name }}
-                <i id="close" class="fa-solid fa-up-down"></i></h3>
+            <h3 id="close" class="w-full flex items-center justify-between p-2 text-gray-900 bg-pink-200"  style="background-color: #f9cee8;">Modication de {{ event.name }}
+                <i class="fa-solid fa-up-down"></i></h3>
             <div id="form" class="mx-2">
                 {{ include('events/_form.html.twig', {'button_label': 'Update'}) }}
             </div>
@@ -30,8 +30,47 @@
     </div>
 
     <script>
-        document.getElementById('close').addEventListener('click', function() {
-            document.getElementById('form').classList.toggle('hidden');
-        });
+        // Email configuration elements
+        const emailConfig      = document.getElementById('email_configuration');
+        const emailForm        = document.getElementById('email_form');
+        const descriptionLabel = document.getElementById('description-label');
+        // Event form elements
+        const closeBtn             = document.getElementById('close');
+        const form                 = document.getElementById('form');
+        const descriptionContainer = document.getElementById('description-container');
+        // Styles de transition
+        const transition = 'opacity 0.4s ease, max-height 0.4s ease';
+        // Appliquer les transitions
+        form.style.transition                 = transition;
+        form.style.overflow                   = 'hidden';
+        descriptionContainer.style.transition = transition;
+        descriptionContainer.style.overflow   = 'hidden';
+        emailForm.style.transition            = transition;
+        emailForm.style.overflow              = 'hidden';
+
+        // États indépendants
+        let isVisibleForm        = true;
+        let isVisibleEmail       = false;
+        let isVisibleDescription = true;
+
+        function toggleForm(formElement, isVisibleRef) {
+        if (isVisibleRef.value) {
+            formElement.style.opacity   = '0';
+            formElement.style.maxHeight = '0';
+        } else {
+            formElement.style.opacity   = '1';
+            formElement.style.maxHeight = '100%';
+        }
+        isVisibleRef.value = !isVisibleRef.value;
+        }
+
+        // Utiliser des objets pour passer la référence
+        const formState        = { value: isVisibleForm };
+        const emailState       = { value: isVisibleEmail };
+        const descriptionState = { value: isVisibleDescription };
+
+        closeBtn.addEventListener('click', () => toggleForm(form, formState));
+        emailConfig.addEventListener('click', () => toggleForm(emailForm, emailState));
+        descriptionLabel.addEventListener('click', () => toggleForm(descriptionContainer, descriptionState));
     </script>
 {% endblock %}

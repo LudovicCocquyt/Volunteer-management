@@ -33,12 +33,13 @@ final class EventsController extends AbstractController
             $entityManager->persist($event);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_dashboard', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_events_edit', ['id' => $event->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('events/new.html.twig', [
             'event'      => $event,
             'EventsForm' => $form,
+            'is_edit'    => false,
         ]);
     }
 
@@ -72,7 +73,8 @@ final class EventsController extends AbstractController
             'nbPlans'              => $event->getNbPersonsByEvent(),
             'reservedAvailability' => $event->reservedAvailability(),
             'nbSubscriptions'      => $event->getSubscriptions()->count(),
-            'canDelete'            => (count($event->getPlans()) < 1 && $event->getSubscriptions()->isEmpty())
+            'canDelete'            => (count($event->getPlans()) < 1 && $event->getSubscriptions()->isEmpty()),
+            'is_edit'              => true,
         ]);
     }
 

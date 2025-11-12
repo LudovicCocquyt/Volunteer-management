@@ -43,26 +43,26 @@ class Events
     #[ORM\Column(type: Types::STRING, nullable: true, length: 255)]
     private ?string $location = null;
 
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
-    private ?bool $displayLocation = null;
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $displayLocation = false;
 
-    #[ORM\Column]
-    private ?bool $published = null;
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $published = false;
 
-    #[ORM\Column]
-    private ?bool $archived = null;
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $archived = false;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private ?bool $schedulingAuto = null;
+    private ?bool $schedulingAuto = false;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private ?bool $displayPeopleName = null;
+    private ?bool $displayPeopleName = false;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private ?bool $displayCommentForSubscription = null;
+    private ?bool $displayCommentForSubscription = false;
 
     /**
      * @var Collection<int, Plans>
