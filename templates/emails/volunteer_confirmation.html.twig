@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <title>Nouveau bénévole</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f3f4f6;
+        padding: 20px;
+      }
+      .container {
+        background-color: white;
+        border-radius: 8px;
+        padding: 30px;
+        max-width: 600px;
+        margin: auto;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <p>{{ message|nl2br }}</p>
+      <div style="text-align: center;">
+          <img src="{{ absolute_url(asset('./images/apel-logo-400x317.png')) }}" alt="Logo" style="margin-top: 20px; max-width: 150px;">
+      </div>
+    </div>
+  </body>
+</html>
