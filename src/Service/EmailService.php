@@ -10,10 +10,13 @@ class EmailService
 
     private $appSendingEmail;
 
+    private \DateTime $date;
+
     public function __construct(MailerInterface $mailer)
     {
         $this->mailer = $mailer;
         $this->appSendingEmail = $_ENV['APP_SENDING_EMAIL'] ?? null;
+        $this->date = new \DateTime('now', new \DateTimeZone('Europe/Paris'));
     }
 
     /**
@@ -29,9 +32,10 @@ class EmailService
         }
 
         try {
+            $to = str_replace(" ", "", $params['to']);
             $email = (new TemplatedEmail())
             ->from($params['from'])
-            ->to(str_replace(" ", "", $params['to']))
+            ->to($to)
             ->subject($params['subject'])
             ->htmlTemplate('emails/' . $params['template'] . '.html.twig')
             ->context([
@@ -47,11 +51,11 @@ class EmailService
             }
 
             $this->mailer->send($email);
-            error_log('[MAIL] Email envoyé avec succès ', 3, __DIR__ . '/../../error_log');
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL SEND] Email envoyé avec succès à ' . $to . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return true;
         } catch (\Exception $e) {
             // Log the exception or handle it as needed
-            error_log('[MAIL] Erreur lors de l\'envoi de l\'email : ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL SEND] Erreur lors de l\'envoi de l\'email à ' . $to . ': ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return $e->getMessage();
         }
     }
@@ -65,40 +69,47 @@ class EmailService
      */
     public function prepareEmailToAdminAfterSubscription($subscription, $event): array|false
     {
-        $params = [];
-        // Check if the event has a sending email
-        if (
-            !is_null($this->appSendingEmail) &&
-            !is_null($event->getSendingEmail()) &&
-            !empty($event->getSendingEmail())
-        ) {
-            // Prepare the email message
-            $availabilityMessage = "";
-            foreach ($subscription->getAvailabilities() as $availability) {
-                $startDate = new \DateTime($availability['startDate']);
-                $endDate   = new \DateTime($availability['endDate']);
+        try {
+            $params = [];
+            // Check if the event has a sending email
+            if (
+                !is_null($this->appSendingEmail) &&
+                !is_null($event->getSendingEmail()) &&
+                !empty($event->getSendingEmail())
+            ) {
+                // Prepare the email message
+                $availabilityMessage = "";
+                foreach ($subscription->getAvailabilities() as $availability) {
+                    $startDate = new \DateTime($availability['startDate']);
+                    $endDate   = new \DateTime($availability['endDate']);
 
-                $availabilityMessage .= $startDate->format('d/m/Y \d\e H:i') . " à " . $endDate->format('H:i') . "\n";
+                    $availabilityMessage .= $startDate->format('d/m/Y \d\e H:i') . " à " . $endDate->format('H:i') . "\n";
+                }
+
+                $text = $subscription->getFirstname() . " " . $subscription->getLastname() . " s'est inscrit pour l'événement (" . $subscription->getEvent()->getName() . ")" . ".\n \n" .
+                    "Voici le détail des disponibilités:\n" .
+                    $availabilityMessage;
+
+                // Params for email
+                $params = [
+                    'from'     => $this->appSendingEmail,
+                    'to'       => $event->getSendingEmail(),
+                    'replyTo'  => $subscription->getEmail() ?? null,
+                    'subject'  => "Nouveau bénévole pour " . $subscription->getEvent()->getName(),
+                    'message'  => $text,
+                    'template' => 'subscriptions',
+                ];
+            } else {
+                return false;
             }
 
-            $text = $subscription->getFirstname() . " " . $subscription->getLastname() . " s'est inscrit pour l'événement (" . $subscription->getEvent()->getName() . ")" . ".\n \n" .
-                "Voici les détails des disponibilités:\n" .
-                $availabilityMessage;
-
-            // Params for email
-            $params = [
-                'from'     => $this->appSendingEmail,
-                'to'       => $event->getSendingEmail(),
-                'replyTo'  => $subscription->getEmail() ?? null,
-                'subject'  => "Nouveau bénévole pour " . $subscription->getEvent()->getName(),
-                'message'  => $text,
-                'template' => 'subscriptions',
-            ];
-        } else {
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email admin préparé avec succès à ' . $event->getSendingEmail() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            return $params;
+        } catch (\Exception $e) {
+            // Log the exception or handle it as needed
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email à l\'admin: ' . $event->getSendingEmail() . ' - ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return false;
         }
-
-        return $params;
     }
 
     /**
@@ -106,41 +117,47 @@ class EmailService
      *
      * @param Subscriptions $subscription
      * @param Events $event
-     * @return array
+     * @return array|false
      */
-    public function prepareEmailToAdminAutoAssignFailed($subscription, $event): array
+    public function prepareEmailToAdminAutoAssignFailed($subscription, $event): array|false
     {
-        $params = [];
-        // Check if the event has a sending email
-        if (
-            !is_null($this->appSendingEmail) &&
-            !is_null($event->getSendingEmail()) &&
-            !empty($event->getSendingEmail())
-        ) {
-            // Prepare the email message
-            $availabilityMessage = "";
-            foreach ($subscription->getAvailabilities() as $availability) {
-                $startDate = new \DateTime($availability['startDate']);
-                $endDate   = new \DateTime($availability['endDate']);
+        try {
+            $params = [];
+            // Check if the event has a sending email
+            if (
+                !is_null($this->appSendingEmail) &&
+                !is_null($event->getSendingEmail()) &&
+                !empty($event->getSendingEmail())
+            ) {
+                // Prepare the email message
+                $availabilityMessage = "";
+                foreach ($subscription->getAvailabilities() as $availability) {
+                    $startDate = new \DateTime($availability['startDate']);
+                    $endDate   = new \DateTime($availability['endDate']);
 
-                $availabilityMessage .= $startDate->format('d/m/Y \d\e H:i') . " à " . $endDate->format('H:i') . "\n";
+                    $availabilityMessage .= $startDate->format('d/m/Y \d\e H:i') . " à " . $endDate->format('H:i') . "\n";
+                }
+
+                $text = "L'auto-assignation du bénévole " . $subscription->getFirstname() . " " . $subscription->getLastname() . " a échoué pour l'événement " .    $event->getName() . ".\n \n" .
+                "Voici le détail des disponibilités:\n" .
+                $availabilityMessage;
+
+                // Params for email
+                $params = [
+                    'from'     => $this->appSendingEmail,
+                    'to'       => $event->getSendingEmail(),
+                    'subject'  => "Échec de l'auto-assignation pour " . $event->getName(),
+                    'message'  => $text,
+                    'template' => 'auto_assign_failed',
+                ];
             }
-
-            $text = "L'auto-assignation du bénévole " . $subscription->getFirstname() . " " . $subscription->getLastname() . " a échoué pour l'événement " .    $event->getName() . ".\n \n" .
-            "Voici les détails des disponibilités:\n" .
-            $availabilityMessage;
-
-            // Params for email
-            $params = [
-                'from'     => $this->appSendingEmail,
-                'to'       => $event->getSendingEmail(),
-                'subject'  => "Échec de l'auto-assignation pour " . $event->getName(),
-                'message'  => $text,
-                'template' => 'auto_assign_failed',
-            ];
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email d\'échec d\'auto-assignation à l\'admin préparé avec succès à ' . $event->getSendingEmail() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            return $params;
+        } catch (\Exception $e) {
+            // Log the exception or handle it as needed
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email d\'échec d\'auto-assignation à l\'admin: ' . $event->getSendingEmail() . ' - ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            return false;
         }
-
-        return $params;
     }
 
     /**
@@ -152,50 +169,57 @@ class EmailService
      */
     public function prepareEmailToVolunteerAfterSubscription($subscription, $event): array|false
     {
-        // Prepare the email message
-        $availabilityMessage = "";
-        foreach ($subscription->getAvailabilities() as $availability) {
-            $startDate = new \DateTime($availability['startDate']);
-            $endDate   = new \DateTime($availability['endDate']);
+        try {
+            // Prepare the email message
+            $availabilityMessage = "";
+            foreach ($subscription->getAvailabilities() as $availability) {
+                $startDate = new \DateTime($availability['startDate']);
+                $endDate   = new \DateTime($availability['endDate']);
 
-            $availabilityMessage .= $startDate->format('d/m/Y \d\e H:i') . " à " . $endDate->format('H:i') . "\n";
+                $availabilityMessage .= $startDate->format('d/m/Y \d\e H:i') . " à " . $endDate->format('H:i') . "\n";
+            }
+            if (!is_null($event->getMessageEmail()) && !empty($event->getMessageEmail())) {
+                // Remplace les balises <p> par des sauts de ligne
+                $textWithLineBreaks = str_replace('</p>', "\r\n", $event->getMessageEmail());
+                $textWithLineBreaks = str_replace('<br>', "\n", $textWithLineBreaks);
+                // Supprime les autres balises HTML s'il y en a
+                $cleanText = strip_tags($textWithLineBreaks);
+                // Décode les entités HTML
+                $decodedText = html_entity_decode($cleanText);
+                $message =
+                    html_entity_decode($decodedText) .
+                    "\n\n Voici le détail de vos disponibilités:\n" .
+                    $availabilityMessage;
+            } else {
+                // Default message
+                $message =
+                    "Bonjour,\n\n" .
+                    "Merci pour votre inscription à l'événement \"" . $event->getName() . " du " . $event->getStartAt()->format('d/m/Y') . " à " . $event->getStartAt()->format('H:i') . "\".\n\n" .
+                    "Nous avons bien reçu vos disponibilités et nous vous contacterons bientôt avec plus de détails.\n\n" .
+                    "Nous comptons sur votre participation.\n" .
+                    "En cas de modifications, merci de nous prévenir au plus vite, afin que nous puissions mettre à jour le planning.\n\n" .
+                    "Cordialement,\n" .
+                    "Les bénévoles de l'APEL.\n\n\n".
+                    "Voici le détail de vos disponibilités:\n" .
+                    $availabilityMessage;
+            }
+
+            // Params for email
+            $params = [
+                'from'     => $this->appSendingEmail,
+                'to'       => $subscription->getEmail(),
+                'replyTo'  => $this->appSendingEmail . (!is_null($event->getSendingEmail()) ? ',' . $event->getSendingEmail() : ''),
+                'subject'  => "Confirmation d'inscription [" . $event->getName() . "]",
+                'message'  => $message,
+                'template' => 'volunteer_confirmation',
+            ];
+
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email au bénévole préparé avec succès ' . $subscription->getEmail() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            return $params;
+        } catch (\Exception $e) {
+            // Log the exception or handle it as needed
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email au bénévole: ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            return false;
         }
-        if (!is_null($event->getMessageEmail()) && !empty($event->getMessageEmail())) {
-            // Remplace les balises <p> par des sauts de ligne
-            $textWithLineBreaks = str_replace('</p>', "\r\n", $event->getMessageEmail());
-            $textWithLineBreaks = str_replace('<br>', "\n", $textWithLineBreaks);
-            // Supprime les autres balises HTML s'il y en a
-            $cleanText = strip_tags($textWithLineBreaks);
-            // Décode les entités HTML
-            $decodedText = html_entity_decode($cleanText);
-            $message =
-                html_entity_decode($decodedText) .
-                "\n\n Voici le détail des disponibilités:\n" .
-                $availabilityMessage;
-        } else {
-            // Default message
-            $message =
-                "Bonjour,\n\n" .
-                "Merci pour votre inscription à l'événement \"" . $event->getName() . " du " . $event->getStartAt()->format('d/m/Y') . " à " . $event->getStartAt()->format('H:i') . "\".\n\n" .
-                "Nous avons bien reçu vos disponibilités et nous vous contacterons bientôt avec plus de détails.\n\n" .
-                "Nous comptons sur votre participation.\n" .
-                "En cas de modifications, merci de nous prévenir au plus vite, afin que nous puissions mettre à jour le planning.\n\n" .
-                "Cordialement,\n" .
-                "Les bénévoles de l'APEL.\n\n\n".
-                "Voici le détail des disponibilités:\n" .
-                $availabilityMessage;
-        }
-
-        // Params for email
-        $params = [
-            'from'     => $this->appSendingEmail,
-            'to'       => $subscription->getEmail(),
-            'replyTo'  => $this->appSendingEmail . (!is_null($event->getSendingEmail()) ? ',' . $event->getSendingEmail() : ''),
-            'subject'  => "Confirmation d'inscription [" . $event->getName() . "]",
-            'message'  => $message,
-            'template' => 'volunteer_confirmation',
-        ];
-
-        return $params;
     }
 }
