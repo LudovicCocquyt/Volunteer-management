@@ -1,6 +1,7 @@
 <?php
 namespace App\Service;
 
+use Symfony\Component\Mime\Address;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 
@@ -32,9 +33,11 @@ class EmailService
         }
 
         try {
-            $to = str_replace(" ", "", $params['to']);
+            $from = new Address($params['from'], 'Apel Saint-François');
+            $to   = str_replace(" ", "", $params['to']);
+
             $email = (new TemplatedEmail())
-            ->from($params['from'])
+            ->from($from)
             ->to($to)
             ->subject($params['subject'])
             ->htmlTemplate('emails/' . $params['template'] . '.html.twig')
