@@ -34,31 +34,40 @@ class EmailService
 
         try {
             $from = new Address($params['from'], 'Apel Saint-François');
-            $to   = str_replace(" ", "", $params['to']);
+            $recipients = $this->normalizeEmails($params['to']);
 
             $email = (new TemplatedEmail())
-            ->from($from)
-            ->to($to)
-            ->subject($params['subject'])
-            ->htmlTemplate('emails/' . $params['template'] . '.html.twig')
-            ->context([
-                "message" => $params['message'] ?? []
-            ]);
+                ->from($from)
+                ->subject($params['subject'])
+                ->htmlTemplate('emails/' . $params['template'] . '.html.twig')
+                ->context([
+                    "message" => $params['message'] ?? []
+                ]);
+
+            // Ajout des destinataires un par un
+            foreach ($recipients as $addr) {
+                if (!empty($addr)) {
+                    $email->addTo(new Address($addr));
+                }
+            }
 
             if (!empty($params['cc'])) {
                 $email->cc($params['cc']);
             }
 
             if (!empty($params['replyTo'])) {
-                $email->replyTo($params['replyTo']);
+                $replyTo = $this->normalizeEmails($params['replyTo']);
+                foreach ($replyTo as $addr) {
+                    $email->addReplyTo($addr);
+                }
             }
 
             $this->mailer->send($email);
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL SEND] Email envoyé avec succès à ' . $to . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL SEND] Email envoyé avec succès à ' . $recipients . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return true;
         } catch (\Exception $e) {
             // Log the exception or handle it as needed
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL SEND] Erreur lors de l\'envoi de l\'email à ' . $to . ': ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL SEND] Erreur lors de l\'envoi de l\'email à ' . $params['to'] . ': ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return $e->getMessage();
         }
     }
@@ -224,5 +233,15 @@ class EmailService
             error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email au bénévole: ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return false;
         }
+    }
+
+    private function normalizeEmails(string $rawEmails): array
+    {
+        $emails = explode(',', $rawEmails);
+        $emails = array_map('trim', $emails);
+        $emails = array_filter($emails); // supprime les vides
+        $emails = array_unique($emails); // supprime les doublons
+
+        return $emails;
     }
 }
