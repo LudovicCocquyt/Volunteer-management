@@ -13,11 +13,14 @@ class EmailService
 
     private \DateTime $date;
 
-    public function __construct(MailerInterface $mailer)
+    private string $uploadsDir;
+
+    public function __construct(MailerInterface $mailer, string $uploadsDir)
     {
-        $this->mailer = $mailer;
+        $this->mailer          = $mailer;
         $this->appSendingEmail = $_ENV['APP_SENDING_EMAIL'] ?? null;
-        $this->date = new \DateTime('now', new \DateTimeZone('Europe/Paris'));
+        $this->date            = new \DateTime('now', new \DateTimeZone('Europe/Paris'));
+        $this->uploadsDir      = $uploadsDir;
     }
 
     /**
@@ -62,6 +65,15 @@ class EmailService
                 }
             }
 
+            if (!empty($params['attachments'])) {
+                foreach ($params['attachments'] as $file) {
+                    $filePath = $this->uploadsDir . '/' . $file; // Only 1 attachment
+                    if (file_exists($filePath)) {
+
+                        $email->attachFromPath($filePath, $file);
+                    }
+                }
+            }
             $this->mailer->send($email);
             error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL SEND] Email envoyé avec succès à ' . $recipients . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return true;
@@ -218,12 +230,13 @@ class EmailService
 
             // Params for email
             $params = [
-                'from'     => $this->appSendingEmail,
-                'to'       => $subscription->getEmail(),
-                'replyTo'  => $this->appSendingEmail . (!is_null($event->getSendingEmail()) ? ',' . $event->getSendingEmail() : ''),
-                'subject'  => "Confirmation d'inscription [" . $event->getName() . "]",
-                'message'  => $message,
-                'template' => 'volunteer_confirmation',
+                'from'        => $this->appSendingEmail,
+                'to'          => $subscription->getEmail(),
+                'replyTo'     => $this->appSendingEmail . (!is_null($event->getSendingEmail()) ? ',' . $event->getSendingEmail() : ''),
+                'subject'     => "Confirmation d'inscription [" . $event->getName() . "]",
+                'message'     => $message,
+                'template'    => 'volunteer_confirmation',
+                'attachments' => $event->getAttachments() ?? []
             ];
 
             error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email au bénévole préparé avec succès ' . $subscription->getEmail() . PHP_EOL, 3, __DIR__ . '/../../error_log');

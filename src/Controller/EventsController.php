@@ -62,6 +62,9 @@ final class EventsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $attachments = [$form->get('attachments')->getData()] ?? [];
+            $event->setAttachments($attachments);
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_events_edit', ['id' => $event->getId()], Response::HTTP_SEE_OTHER);

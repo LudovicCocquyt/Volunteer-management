@@ -33,8 +33,12 @@
                         </h3>
                         <div id="email_form" style="opacity: 0; max-height: 0px;">
                             <div class="px-2 pb-2">
-                                {{ form_row(EventsForm.sendingEmail, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5", placeholder: "Ajoutez les emails séparés par des virgules" } }) }}
+                                {{ form_row(EventsForm.sendingEmail, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/2 p-2.5", placeholder: "Ajoutez les emails séparés par des virgules" } }) }}
                                 {{ form_errors(EventsForm.sendingEmail) }}
+                            </div>
+                            <div class="px-2 pb-2">
+                                {{ form_row(EventsForm.attachments, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/2 p-2.5"} }) }}
+                                {{ form_errors(EventsForm.attachments) }}
                             </div>
                             <div class="mt-4 px-2 pb-2">
                                 {{ form_row(EventsForm.messageEmail, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" } }) }}

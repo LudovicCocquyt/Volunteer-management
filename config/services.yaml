@@ -4,6 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    uploads_dir: '%kernel.project_dir%/public/uploads'
+
 
 services:
     # default configuration for services in *this* file
@@ -24,3 +26,11 @@ services:
     # please note that last definitions always *replace* previous ones
     App\Controller\Api\ApiUserController:
         tags: ['controller.service_arguments']
+
+    App\Form\EventsFormType:
+        arguments:
+            $uploadsDir: '%uploads_dir%'
+
+    App\Service\EmailService:
+        arguments:
+            $uploadsDir: '%uploads_dir%'

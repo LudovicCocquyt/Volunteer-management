@@ -22,6 +22,8 @@ use Doctrine\ORM\Mapping as ORM;
 // | StartCalendar datetime        |
 // | EndCalendar datetime          |
 // | SendingEmail string           |
+// | attachments []                |
+// | messageEmail text             |
 
 #[ORM\Entity(repositoryClass: EventsRepository::class)]
 class Events
@@ -84,6 +86,9 @@ class Events
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $sendingEmail = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private array $attachments = [];
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $messageEmail = null;
@@ -342,6 +347,17 @@ class Events
     {
         $this->displayCommentForSubscription = $displayCommentForSubscription;
 
+        return $this;
+    }
+
+    public function getAttachments(): array
+    {
+        return $this->attachments ?? [];
+    }
+
+    public function setAttachments(array $attachments): self
+    {
+        $this->attachments = $attachments;
         return $this;
     }
 

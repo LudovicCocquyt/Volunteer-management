@@ -3,21 +3,32 @@
 namespace App\Form;
 
 use App\Entity\Events;
-use Symfony\Component\Form\Extension\Core\Type\TimeType;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use EmilePerron\TinymceBundle\Form\Type\TinymceType;
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\TimeType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\AbstractType;
 
 class EventsFormType extends AbstractType
 {
+    private string $uploadsDir;
+
+    public function __construct(string $uploadsDir)
+    {
+        $this->uploadsDir = $uploadsDir;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         /** @var Events $event */
         $event  = $options['data'];
         $isEdit = $event && $event->getId() !== null;
+
+        $files = array_diff(scandir($this->uploadsDir), ['.', '..']);
 
         $builder
             ->add('name', TextType::class, [
@@ -81,6 +92,16 @@ class EventsFormType extends AbstractType
                     'label'      => 'Envoi d’un email aux responsables après chaque inscription bénévole',
                     'label_attr' => ['class' => 'text-sm text-gray-900 dark:text-neutral-400'],
                     'required'   => false,
+                ])
+                ->add('attachments', ChoiceType::class, [
+                    'label'       => 'Joindre un fichier',
+                    'label_attr'  => ['class' => 'text-sm text-gray-900 dark:text-neutral-400'],
+                    'choices'     => array_combine($files, $files),                                // label => value
+                    'placeholder' => 'Sélectionnez un fichier',
+                    'multiple'    => false,
+                    'mapped'      => false,
+                    'required'    => false,
+                    'data'        => $event->getAttachments()[0] ?? null
                 ])
                 ->add('messageEmail', TinymceType::class, [
                     'label_attr' => ['class' => 'text-sm text-gray-900 dark:text-neutral-400'],
