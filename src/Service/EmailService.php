@@ -66,18 +66,21 @@ class EmailService
             }
 
 
-            $attachments = $params['attachments'];
-            if ($attachments->count() > 0) {
-                foreach ($attachments as $file) {
+            if (array_key_exists('attachments', $params)) {
+                $attachments = $params['attachments'] ?? [];
 
-                    // $file est un objet Attachment
-                    $filename     = $file->getFilename();
-                    $originalName = $file->getOriginalName();
+                if ($attachments->count() > 0) {
+                    foreach ($attachments as $file) {
 
-                    $filePath = $this->uploadsDir . '/' . $filename;
+                        // $file est un objet Attachment
+                        $filename     = $file->getFilename();
+                        $originalName = $file->getOriginalName();
 
-                    if (file_exists($filePath)) {
-                        $email->attachFromPath($filePath, $originalName);
+                        $filePath = $this->uploadsDir . '/' . $filename;
+
+                        if (file_exists($filePath)) {
+                            $email->attachFromPath($filePath, $originalName);
+                        }
                     }
                 }
             }
