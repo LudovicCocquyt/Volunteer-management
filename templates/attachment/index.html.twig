@@ -1,0 +1,107 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pièces jointes{% endblock %}
+
+{% block body %}
+<div class="w-full p-4 bg-white border border-gray-200 rounded-lg shadow mt-3">
+
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg pb-3">
+
+        <h3 class="w-full flex items-center justify-between p-2 text-white" style="background-color: #35b19a;">
+            Gestion des pièces jointes
+        </h3>
+
+        <br>
+
+        <div class="mx-2">
+
+            {{ form_errors(form) }}
+            {# --- Formulaire d'ajout --- #}
+            {{ form_start(form) }}
+                    <div class="flex items-center gap-3 justify-center">
+                        <label class="cursor-pointer bg-gray-400 text-white px-4 py-2 rounded">
+                            <i class="fa-solid fa-copy" style="color: #35b19a;"></i>
+                            Choisir un fichier
+                            {{ form_widget(form.file, { attr: { class: 'hidden' } }) }}
+                        </label>
+
+                        <span id="file-name" class="text-gray-600 dark:text-gray-300">
+                            Aucun fichier sélectionné
+                        </span>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center mt-5">
+                        <button class="bg-green-100 text-green-700 rounded-full py-1 px-16">
+                            Ajouter
+                        </button>
+                    </div>
+                {{ form_end(form) }}
+
+            <hr class="my-6 border-gray-300">
+
+            {# --- Liste des fichiers existants --- #}
+            <h2 class="text-lg font-semibold text-gray-800">Fichiers existants</h2>
+
+            <table class="w-full text-sm text-left text-gray-700">
+                <thead class="text-xs uppercase bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-3">Nom fichier</th>
+                        <th class="px-4 py-3">Voir</th>
+                        <th class="px-4 py-3">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for attachment in attachments %}
+                    <tr class="border-b dark:border-gray-600">
+                        <td class="px-4 py-3">{{ attachment.originalName }}</td>
+
+                        <td class="px-4 py-3">
+                            <a href="{{ asset('uploads/' ~ attachment.filename) }}"
+                               target="_blank"
+                               class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white
+                                      rounded-full px-3 py-1 text-xs font-medium">
+                                Voir
+                            </a>
+                        </td>
+
+                        <td class="px-4 py-3">
+                            <form method="post" 
+                                  action="{{ path('attachment_delete', {id: attachment.id}) }}"
+                                  onsubmit="return confirm('Supprimer ce fichier ?')">
+
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ attachment.id) }}">
+
+                                <button class="bg-red-100 text-red-700 dark:bg-red-700 dark:text-white
+                                               rounded-full px-3 py-1 text-xs font-medium">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                            Aucun fichier pour le moment.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.querySelector('input[type="file"]');
+    const label = document.getElementById('file-name');
+
+    input.addEventListener('change', () => {
+        label.textContent = input.files.length > 0
+            ? input.files[0].name
+            : "Aucun fichier sélectionné";
+    });
+});
+</script>
+{% endblock %}

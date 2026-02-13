@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Events;
 use App\Form\EventsFormType;
+use App\Repository\AttachmentRepository;
 use App\Repository\EventsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -56,15 +57,12 @@ final class EventsController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_events_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Events $event, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Events $event, EntityManagerInterface $entityManager, AttachmentRepository $attachmentRepository): Response
     {
         $form = $this->createForm(EventsFormType::class, $event);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $attachments = [$form->get('attachments')->getData()] ?? [];
-            $event->setAttachments($attachments);
-
             $entityManager->flush();
 
             return $this->redirectToRoute('app_events_edit', ['id' => $event->getId()], Response::HTTP_SEE_OTHER);
@@ -78,6 +76,7 @@ final class EventsController extends AbstractController
             'nbSubscriptions'      => $event->getSubscriptions()->count(),
             'canDelete'            => (count($event->getPlans()) < 1 && $event->getSubscriptions()->isEmpty()),
             'is_edit'              => true,
+            'attachments'          => $attachmentRepository->findAll(),
         ]);
     }
 

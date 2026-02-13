@@ -37,12 +37,35 @@
                                 {{ form_errors(EventsForm.sendingEmail) }}
                             </div>
                             <div class="px-2 pb-2">
-                                {{ form_row(EventsForm.attachments, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/2 p-2.5"} }) }}
+                                {{ form_label(EventsForm.attachments, null) }}
+                                <div class="grid grid-cols-5 gap-4">
+                                    {% for child in EventsForm.attachments %}
+                                        <label class="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-200">
+                                            {{ form_widget(child, { attr: { class: "h-4 w-4 text-blue-600" } }) }}
+                                            <span class="text-sm text-gray-700">{{ child.vars.label }}</span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
                                 {{ form_errors(EventsForm.attachments) }}
                             </div>
                             <div class="mt-4 px-2 pb-2">
                                 {{ form_row(EventsForm.messageEmail, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" } }) }}
                                 {{ form_errors(EventsForm.messageEmail) }}
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <div class="grid grid-cols-1 mt-3">
+                            <label id="description-label" for="{{ EventsForm.description.vars.id }}" class="mb-1 underline w-full flex items-center justify-between p-2 text-gray-900 bg-pink-100 rounded-lg">
+                                <span>Description de l'événement</span>
+                                <i class="fa-solid fa-up-down"></i>
+                            </label>
+                            <div id="description-container" style="opacity: 0; max-height: 0px;">
+                                {{ form_widget(EventsForm.description, {
+                                    attr: {
+                                        class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ml-1 mr-1"
+                                    }
+                                }) }}
                             </div>
                         </div>
                     </section>
@@ -57,13 +80,13 @@
                         <div class="grid grid-cols-1 gap-1">
                             <label for="{{ EventsForm.published.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
                                 <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-square-arrow-up-right"></i> Publier</span>
-                                {{ form_widget(EventsForm.published, { attr: { class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" } }) }}
+                                {{ form_widget(EventsForm.published, { attr: { class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none" } }) }}
                             </label>
                             <label for="{{ EventsForm.archived.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
                                 <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-box-archive"></i> Archiver</span>
                                 {{ form_widget(EventsForm.archived, {
                                 attr: {
-                                    class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                    class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                                 }
                                 }) }}
                             </label>
@@ -85,7 +108,7 @@
                             <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-clock"></i> Afficher la date</span>
                             {{ form_widget(EventsForm.displayStartAt, {
                             attr: {
-                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                             }
                             }) }}
                         </label>
@@ -93,7 +116,7 @@
                             <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-location-dot"></i> Afficher le lieu</span>
                             {{ form_widget(EventsForm.displayLocation, {
                             attr: {
-                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                             }
                             }) }}
                         </label>
@@ -101,7 +124,7 @@
                             <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-message"></i> Autoriser les commentaires</span>
                             {{ form_widget(EventsForm.displayCommentForSubscription, {
                             attr: {
-                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                             }
                             }) }}
                         </label>
@@ -109,7 +132,7 @@
                             <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-users"></i> Afficher les bénévoles Inscrits</span>
                             {{ form_widget(EventsForm.displayPeopleName, {
                             attr: {
-                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                             }
                             }) }}
                         </label>
@@ -131,33 +154,24 @@
                             <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-users-gear"></i> Automatique</span>
                             {{ form_widget(EventsForm.schedulingAuto, {
                             attr: {
-                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                             }
                             }) }}
                         </label>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <button type="submit" class="bg-green-100 text-green-700 rounded-full py-1 px-16 my-3 ">Enregistrer</button>
                     </div>
                     </section>
                 </div>
             {% endif %}
         </div>
 
-        {% if is_edit %}
-            <div class="grid grid-cols-1 mt-3">
-                <label id="description-label" for="{{ EventsForm.description.vars.id }}" class="mb-1 underline w-full flex items-center justify-between p-2 text-gray-900 bg-pink-100 rounded-lg">
-                    <span>Description de l'événement</span>
-                    <i class="fa-solid fa-up-down"></i>
-                </label>
-                <div id="description-container">
-                    {{ form_widget(EventsForm.description, {
-                        attr: {
-                            class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ml-1 mr-1"
-                        }
-                    }) }}
-                </div>
+        {% if not is_edit %}
+            <div class="text-center mt-3">
+                <button type="submit" class="bg-green-100 text-green-700 rounded-full py-1 px-16 my-3">Enregistrer</button>
             </div>
         {% endif %}
-        <div class="text-center mt-3">
-            <button type="submit" class="bg-green-100 text-green-700 rounded-full py-1 px-16 my-3">Enregistrer</button>
-        </div>
     {{ form_end(EventsForm) }}
 {% endblock %}

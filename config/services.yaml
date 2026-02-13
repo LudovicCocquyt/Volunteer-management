@@ -27,10 +27,10 @@ services:
     App\Controller\Api\ApiUserController:
         tags: ['controller.service_arguments']
 
-    App\Form\EventsFormType:
+    App\Service\EmailService:
         arguments:
             $uploadsDir: '%uploads_dir%'
 
-    App\Service\EmailService:
+    App\Controller\AttachmentController:
         arguments:
             $uploadsDir: '%uploads_dir%'

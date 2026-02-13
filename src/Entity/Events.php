@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\EventsRepository;
+use App\Entity\Attachment;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -17,13 +18,13 @@ use Doctrine\ORM\Mapping as ORM;
 // | Published bool                |
 // | Archived bool                 |
 // | Description text              |
-// | OneToManyPlans array          |
-// | OneToMany Subscriptions array |
 // | StartCalendar datetime        |
 // | EndCalendar datetime          |
 // | SendingEmail string           |
-// | attachments []                |
 // | messageEmail text             |
+// | Plans OneToMany array         |
+// | Subscriptions OneToMany array |
+// | attachments ManyToMany        |
 
 #[ORM\Entity(repositoryClass: EventsRepository::class)]
 class Events
@@ -87,8 +88,8 @@ class Events
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $sendingEmail = null;
 
-    #[ORM\Column(type: 'json', nullable: true)]
-    private array $attachments = [];
+    #[ORM\ManyToMany(targetEntity: Attachment::class)]
+    private Collection $attachments;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $messageEmail = null;
@@ -97,6 +98,7 @@ class Events
     {
         $this->plans         = new ArrayCollection();
         $this->subscriptions = new ArrayCollection();
+        $this->attachments   = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -350,15 +352,9 @@ class Events
         return $this;
     }
 
-    public function getAttachments(): array
+    public function getAttachments(): Collection
     {
-        return $this->attachments ?? [];
-    }
-
-    public function setAttachments(array $attachments): self
-    {
-        $this->attachments = $attachments;
-        return $this;
+        return $this->attachments;
     }
 
     public function getMessageEmail(): ?string

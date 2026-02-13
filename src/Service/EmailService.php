@@ -65,15 +65,23 @@ class EmailService
                 }
             }
 
-            if (!empty($params['attachments'])) {
-                foreach ($params['attachments'] as $file) {
-                    $filePath = $this->uploadsDir . '/' . $file; // Only 1 attachment
-                    if (file_exists($filePath)) {
 
-                        $email->attachFromPath($filePath, $file);
+            $attachments = $params['attachments'];
+            if ($attachments->count() > 0) {
+                foreach ($attachments as $file) {
+
+                    // $file est un objet Attachment
+                    $filename     = $file->getFilename();
+                    $originalName = $file->getOriginalName();
+
+                    $filePath = $this->uploadsDir . '/' . $filename;
+
+                    if (file_exists($filePath)) {
+                        $email->attachFromPath($filePath, $originalName);
                     }
                 }
             }
+
             $this->mailer->send($email);
             error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL SEND] Email envoyé avec succès à ' . $recipients . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return true;
