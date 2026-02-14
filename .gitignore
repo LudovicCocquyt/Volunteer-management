@@ -24,3 +24,5 @@ error_log
 public/error_log
 public/public_html/
 ###< log ###
+
+public/uploads/
