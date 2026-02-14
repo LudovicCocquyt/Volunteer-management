@@ -33,21 +33,25 @@
                         </h3>
                         <div id="email_form" style="opacity: 0; max-height: 0px;">
                             <div class="px-2 pb-2">
-                                {{ form_row(EventsForm.sendingEmail, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/2 p-2.5", placeholder: "Ajoutez les emails séparés par des virgules" } }) }}
-                                {{ form_errors(EventsForm.sendingEmail) }}
+                                {{ form_row(EventsForm.managerNotification, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/2 p-2.5", placeholder: "Ajoutez les emails séparés par des virgules" } }) }}
+                                {{ form_errors(EventsForm.managerNotification) }}
                             </div>
-                            <div class="px-2 pb-2">
-                                {{ form_label(EventsForm.attachments, null) }}
-                                <div class="grid grid-cols-5 gap-4">
-                                    {% for child in EventsForm.attachments %}
-                                        <label class="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-200">
-                                            {{ form_widget(child, { attr: { class: "h-4 w-4 text-blue-600" } }) }}
-                                            <span class="text-sm text-gray-700">{{ child.vars.label }}</span>
-                                        </label>
-                                    {% endfor %}
+
+                            {% if EventsForm.attachments is not empty %}
+                                <div class="px-2 pb-2">
+                                    {{ form_label(EventsForm.attachments, null) }}
+                                    <div class="grid grid-cols-5 gap-4">
+                                        {% for child in EventsForm.attachments %}
+                                            <label class="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-200">
+                                                {{ form_widget(child, { attr: { class: "h-4 w-4 text-blue-600" } }) }}
+                                                <span class="text-sm text-gray-700">{{ child.vars.label }}</span>
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                    {{ form_errors(EventsForm.attachments) }}
                                 </div>
-                                {{ form_errors(EventsForm.attachments) }}
-                            </div>
+                            {% endif %}
+                            {% do EventsForm.attachments.setRendered %}
                             <div class="mt-4 px-2 pb-2">
                                 {{ form_row(EventsForm.messageEmail, { attr: { class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" } }) }}
                                 {{ form_errors(EventsForm.messageEmail) }}
@@ -98,7 +102,7 @@
                         <div class="relative group inline-block">
                             <i class="fa-solid fa-circle-info text-blue-600"></i>
                         <!-- Tooltip -->
-                            <div class="absolute z-10 left-1/2 -translate-x-1/2 mt-2 px-3 py-2 text-sm text-white bg-gray-900 rounded shadow-lg opacity-0 invisible transition-opacity duration-200 group-hover:opacity-100 group-hover:visible">
+                            <div class="absolute z-10 right-full mr-2 top-1/2 -translate-y-1/2 px-3 py-2 text-sm text-white bg-gray-900 rounded shadow-lg opacity-0 invisible transition-opacity duration-200 group-hover:opacity-100 group-hover:visible">
                                 Affichage pour l'inscription des bénévoles.
                             </div>
                         </div>
@@ -140,29 +144,29 @@
                     </section>
 
                     <section>
-                        <h3 class="mb-1 underline w-full flex items-center justify-between p-2 text-gray-900 bg-pink-100 rounded-lg">Assignation des bénévoles
-                        <div class="relative group inline-block">
-                            <i class="fa-solid fa-circle-info text-blue-600"></i>
-                            <!-- Tooltip -->
-                            <div class="absolute z-10 left-1/2 -translate-x-1/2 mt-2 px-3 py-2 text-sm text-white bg-gray-900 rounded shadow-lg opacity-0 invisible transition-opacity duration-200 group-hover:opacity-100 group-hover:visible">
-                                Possibilité de laisser le système assigner automatiquement les bénévoles aux créneaux disponibles.
-                            </div>
+                        <h3 class="mb-1 underline w-full flex items-center justify-between p-2 text-gray-900 bg-pink-100 rounded-lg">Traitement automatisé</h3>
+                        <div class="grid grid-cols-1 gap-1">
+                            <label for="{{ EventsForm.schedulingAuto.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
+                                <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-users-gear"></i> Assignation des bénévoles
+                                    <div class="relative group inline-block">
+                                        <i class="fa-solid fa-circle-info text-blue-600"></i>
+                                        <!-- Tooltip -->
+                                        <div class="absolute z-10 right-full mr-2 top-1/2 -translate-y-1/2 px-3 py-2 text-sm text-white bg-gray-900 rounded shadow-lg opacity-0 invisible transition-opacity duration-200 group-hover:opacity-100 group-hover:visible">
+                                        Possibilité de laisser le système assigner automatiquement les bénévoles aux créneaux disponibles.
+                                        </div>
+                                    </div>
+                                </span>
+                                {{ form_widget(EventsForm.schedulingAuto, {
+                                attr: {
+                                    class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                                }
+                                }) }}
+                            </label>
                         </div>
-                    </h3>
-                    <div class="grid grid-cols-1 gap-1">
-                        <label for="{{ EventsForm.schedulingAuto.vars.id }}" class="flex p-3 w-full bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
-                            <span class="text-sm text-gray-900 dark:text-neutral-400"><i class="fa-solid fa-users-gear"></i> Automatique</span>
-                            {{ form_widget(EventsForm.schedulingAuto, {
-                            attr: {
-                                class: "shrink-0 ms-auto mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                            }
-                            }) }}
-                        </label>
-                    </div>
 
-                    <div class="text-center mt-3">
-                        <button type="submit" class="bg-green-100 text-green-700 rounded-full py-1 px-16 my-3 ">Enregistrer</button>
-                    </div>
+                        <div class="text-center mt-3">
+                            <button type="submit" class="bg-green-100 text-green-700 rounded-full py-1 px-16 my-3 ">Enregistrer</button>
+                        </div>
                     </section>
                 </div>
             {% endif %}
