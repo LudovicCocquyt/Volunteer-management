@@ -20,7 +20,7 @@ use Doctrine\ORM\Mapping as ORM;
 // | Description text              |
 // | StartCalendar datetime        |
 // | EndCalendar datetime          |
-// | SendingEmail string           |
+// | ManagerNotification string    |
 // | messageEmail text             |
 // | Plans OneToMany array         |
 // | Subscriptions OneToMany array |
@@ -86,7 +86,7 @@ class Events
     private ?\DateTimeInterface $endCalendar = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $sendingEmail = null;
+    private ?string $managerNotification = null;
 
     #[ORM\ManyToMany(targetEntity: Attachment::class)]
     private Collection $attachments;
@@ -280,14 +280,14 @@ class Events
         return $this;
     }
 
-    public function getSendingEmail(): ?string
+    public function getManagerNotification(): ?string
     {
-        return $this->sendingEmail;
+        return $this->managerNotification;
     }
 
-    public function setSendingEmail(?string $sendingEmail): static
+    public function setManagerNotification(?string $managerNotification): static
     {
-        $this->sendingEmail = $sendingEmail;
+        $this->managerNotification = $managerNotification;
 
         return $this;
     }

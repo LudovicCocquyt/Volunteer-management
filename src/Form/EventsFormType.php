@@ -48,12 +48,6 @@ class EventsFormType extends AbstractType
             }
 
             $builder
-                // 'label' => 'Description de l\'événement:',
-                //     'attr' => [
-                    //         'toolbar'               => 'undo redo | formatselect | bold italic underline | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code fullscreen',
-                //         'plugins'               => 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
-                //         'menubar'               => 'file edit view insert format tools table help',
-                //         'height'                => '400',
                 ->add('description', TinymceType::class, [
                     'attr' => [
                         'toolbar'               => 'undo redo | bold italic underline | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | code preview',
@@ -79,7 +73,7 @@ class EventsFormType extends AbstractType
                     'required'   => false,
                 ])
                 ->add('displayLocation')
-                ->add('sendingEmail', TextType::class, [
+                ->add('managerNotification', TextType::class, [
                     'label'      => 'Envoi d’un email aux responsables après chaque inscription bénévole',
                     'label_attr' => ['class' => 'text-sm text-gray-900'],
                     'required'   => false,

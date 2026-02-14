@@ -9,7 +9,7 @@ class EmailService
 {
     private MailerInterface $mailer;
 
-    private $appSendingEmail;
+    private $sending_email_from;
 
     private \DateTime $date;
 
@@ -17,10 +17,10 @@ class EmailService
 
     public function __construct(MailerInterface $mailer, string $uploadsDir)
     {
-        $this->mailer          = $mailer;
-        $this->appSendingEmail = $_ENV['APP_SENDING_EMAIL'] ?? null;
-        $this->date            = new \DateTime('now', new \DateTimeZone('Europe/Paris'));
-        $this->uploadsDir      = $uploadsDir;
+        $this->mailer                 = $mailer;
+        $this->sending_email_from     = $_ENV['APP_SENDING_EMAIL_FROM'] ?? null;
+        $this->date                   = new \DateTime('now', new \DateTimeZone('Europe/Paris'));
+        $this->uploadsDir             = $uploadsDir;
     }
 
     /**
@@ -108,9 +108,9 @@ class EmailService
             $params = [];
             // Check if the event has a sending email
             if (
-                !is_null($this->appSendingEmail) &&
-                !is_null($event->getSendingEmail()) &&
-                !empty($event->getSendingEmail())
+                !is_null($this->sending_email_from) &&
+                !is_null($event->getManagerNotification()) &&
+                !empty($event->getManagerNotification())
             ) {
                 // Prepare the email message
                 $availabilityMessage = "";
@@ -127,8 +127,8 @@ class EmailService
 
                 // Params for email
                 $params = [
-                    'from'     => $this->appSendingEmail,
-                    'to'       => $event->getSendingEmail(),
+                    'from'     => $this->sending_email_from,
+                    'to'       => $event->getManagerNotification(),
                     'replyTo'  => $subscription->getEmail() ?? null,
                     'subject'  => "Nouveau bénévole pour " . $subscription->getEvent()->getName(),
                     'message'  => $text,
@@ -138,11 +138,11 @@ class EmailService
                 return false;
             }
 
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email admin préparé avec succès à ' . $event->getSendingEmail() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email admin préparé avec succès à ' . $event->getManagerNotification() . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return $params;
         } catch (\Exception $e) {
             // Log the exception or handle it as needed
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email à l\'admin: ' . $event->getSendingEmail() . ' - ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email à l\'admin: ' . $event->getManagerNotification() . ' - ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return false;
         }
     }
@@ -160,9 +160,9 @@ class EmailService
             $params = [];
             // Check if the event has a sending email
             if (
-                !is_null($this->appSendingEmail) &&
-                !is_null($event->getSendingEmail()) &&
-                !empty($event->getSendingEmail())
+                !is_null($this->sending_email_from) &&
+                !is_null($event->getManagerNotification()) &&
+                !empty($event->getManagerNotification())
             ) {
                 // Prepare the email message
                 $availabilityMessage = "";
@@ -179,18 +179,18 @@ class EmailService
 
                 // Params for email
                 $params = [
-                    'from'     => $this->appSendingEmail,
-                    'to'       => $event->getSendingEmail(),
+                    'from'     => $this->sending_email_from,
+                    'to'       => $event->getManagerNotification(),
                     'subject'  => "Échec de l'auto-assignation pour " . $event->getName(),
                     'message'  => $text,
                     'template' => 'auto_assign_failed',
                 ];
             }
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email d\'échec d\'auto-assignation à l\'admin préparé avec succès à ' . $event->getSendingEmail() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email d\'échec d\'auto-assignation à l\'admin préparé avec succès à ' . $event->getManagerNotification() . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return $params;
         } catch (\Exception $e) {
             // Log the exception or handle it as needed
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email d\'échec d\'auto-assignation à l\'admin: ' . $event->getSendingEmail() . ' - ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email d\'échec d\'auto-assignation à l\'admin: ' . $event->getManagerNotification() . ' - ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
             return false;
         }
     }
@@ -241,9 +241,9 @@ class EmailService
 
             // Params for email
             $params = [
-                'from'        => $this->appSendingEmail,
+                'from'        => $this->sending_email_from,
                 'to'          => $subscription->getEmail(),
-                'replyTo'     => $this->appSendingEmail . (!is_null($event->getSendingEmail()) ? ',' . $event->getSendingEmail() : ''),
+                'replyTo'     => $this->sending_email_from . (!is_null($event->getManagerNotification()) ? ',' . $event->getManagerNotification() : ''),
                 'subject'     => "Confirmation d'inscription [" . $event->getName() . "]",
                 'message'     => $message,
                 'template'    => 'volunteer_confirmation',

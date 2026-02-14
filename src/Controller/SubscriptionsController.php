@@ -114,7 +114,7 @@ final class SubscriptionsController extends AbstractController
             }
 
             // Sending an email to the admin to inform them of a new subscription
-            if (!empty($event->getSendingEmail())) {
+            if (!empty($event->getManagerNotification())) {
                 // Prepare the email to be sent to the admin after subscription
                 $params = $this->emailService->prepareEmailToAdminAfterSubscription($subscription, $event);
                 $succes = !empty($params) ? $this->emailService->send($params) : null;
@@ -123,7 +123,7 @@ final class SubscriptionsController extends AbstractController
             if ($event->isSchedulingAuto()) {
                 $result = $manageVolunteer->assignAuto($subscription);
                 // If the assignment fails, notify the admin by email
-                if (!$result && !empty($event->getSendingEmail())) {
+                if (!$result && !empty($event->getManagerNotification())) {
                     // If the automatic assignment fails, send an error email to the admin
                     $adminParams = $this->emailService->prepareEmailToAdminAutoAssignFailed($subscription, $event);
                     if ($adminParams) {

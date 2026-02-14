@@ -24,7 +24,7 @@ class DashboardController extends AbstractController
                 'nbPlans'                          => $event->getNbPersonsByEvent(),
                 'reservedAvailability'             => $event->reservedAvailability(),
                 'nbSubscriptions'                  => $event->getSubscriptions()->count(),
-                'sendingEmail'                     => strlen($event->getSendingEmail()) >  0 ? true : false,
+                'managerNotification'              => strlen($event->getManagerNotification()) >  0 ? true : false,
                 'setDisplayStartAt'                => $event->isDisplayStartAt(),
                 'isDisplayLocation'                => $event->isDisplayLocation(),
                 'setDisplayCommentForSubscription' => $event->isDisplayCommentForSubscription(),
