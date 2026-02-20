@@ -14,9 +14,9 @@ export const getPlans = async (id) => {
     }
 };
 
-export const getOurNeedsByEvent = async (id) => {
+export const getOurNeedsByEvent = async (id, includeEmpty) => {
     try {
-        const response = await fetch(`/api/public/plans/our_needs_by_event/${id}`, {
+        const response = await fetch(`/api/public/plans/our_needs_by_event/${id}?includeEmpty=${includeEmpty}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

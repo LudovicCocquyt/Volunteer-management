@@ -36,7 +36,7 @@ const SubscriptionEdit = () => {
   }, availabilities);
 
   const getApiPlans = async (eventId) => {
-    const plans = await getOurNeedsByEvent(eventId);
+    const plans = await getOurNeedsByEvent(eventId, false); // includeEmpty false
     return plans
   };
 

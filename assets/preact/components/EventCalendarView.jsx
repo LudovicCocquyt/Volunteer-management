@@ -4,11 +4,13 @@ import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
 import frLocale from '@fullcalendar/core/locales/fr';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import moment from 'moment';
+import PlansList from './PlansList.jsx';
 import { getPlans } from '../routes/PlansRoutes';
 import { Calendar } from '@fullcalendar/core';
 import { exportList, exportCalendar } from '../utils/ExportToPdf';
 import { exportListXls } from '../utils/ExportToXls';
+import { getOurNeedsByEvent } from '../routes/PlansRoutes';
+import moment from 'moment';
 
 const EventCalendarView = () => {
   const calendarRef                             = useRef(null);
@@ -19,6 +21,9 @@ const EventCalendarView = () => {
   const [hidePeople, setHidePeople]             = useState(true);
   const [licenseKey, setLicenseKey]             = useState(null);
   const [isLicenseLoaded, setIsLicenseLoaded]   = useState(false);
+  const [hidePlans, setHidePlans]               = useState(false);
+  const [planFilterList, setPlanFilterList]     = useState([]);
+
 
   const element           = document.getElementById('EventCalendarView-wrapper');
   const eventPreparedId   = JSON.parse(element.getAttribute('data-eventId'));
@@ -139,6 +144,27 @@ const EventCalendarView = () => {
     }
   }
 
+  const togglePlans = () => {
+    setHidePlans(prev => {
+      const newValue = !prev;
+
+      if (newValue) {
+        getOurNeeds(eventPreparedId);
+      }
+
+      return newValue;
+    });
+  };
+
+  const getOurNeeds = async (eventPreparedId) => {
+    const planFilter = await getOurNeedsByEvent(eventPreparedId, true); // includeEmpty true
+    setPlanFilterList(planFilter);
+  }
+
+  const handleSelectPlan = (plan) => {
+    calendarInstance.gotoDate(plan.startDate);
+  };
+
   return (
     <div className="mx-2">
       <div className="inline-flex rounded-md shadow-xs flex py-3" role="group">
@@ -153,6 +179,15 @@ const EventCalendarView = () => {
           </button>
         )}
 
+        {/* Afficher/Masquer créneaux */}
+        <button
+          onClick={togglePlans}
+          className={`w-full md:w-auto px-4 py-2 text-sm font-medium flex justify-center items-center text-white bg-blue-400 hover:bg-blue-800`}
+          type="button"
+        >
+          {!hidePlans ? 'Afficher les créneaux' : 'Masquer les créneaux'}
+          <i className={`fa ${!hidePlans ? 'fa-eye' : 'fa-eye-slash'} ml-2`} aria-hidden="true"></i>
+        </button>
         <button id="dropdownExport" data-dropdown-toggle="exportTo" className="px-4 text-sm font-medium rounded-e-lg inline-flex items-center text-white bg-pink-400 hover:bg-pink-800 dark:bg-pink-600 dark:hover:bg-pink-700" type="button">
           Exporter
           <i className="fa fa-file-text ml-2" aria-hidden="true"></i>
@@ -176,6 +211,9 @@ const EventCalendarView = () => {
         </div>
       </div>
       <div className="m-2">
+        {hidePlans &&
+          <PlansList plans={planFilterList} onSelectPlan={handleSelectPlan} />
+        }
         {/* Calendar */}
         <div ref={calendarRef}></div>
       </div>

@@ -6,12 +6,12 @@ import frLocale from '@fullcalendar/core/locales/fr';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import moment from 'moment';
 import { Calendar } from '@fullcalendar/core';
-import { getPlans, addPlan, updatePlan, removePlan, assignVolunteer, getSubscriptions } from '../routes/PlansRoutes';
+import { getPlans, addPlan, updatePlan, removePlan, assignVolunteer, getSubscriptions, getOurNeedsByEvent } from '../routes/PlansRoutes';
 import { getSubscriptionsByEvent } from '../routes/SubscriptionsRoutes';
 import { exportList, exportCalendar } from '../utils/ExportToPdf';
 import { exportListXls } from '../utils/ExportToXls';
 import { UseWindowSize } from '../utils/UseWindowSize';
-
+import PlansList from './PlansList.jsx';
 
 const TimelineCalendar = () => {
   const calendarRef      = useRef(null);
@@ -30,9 +30,11 @@ const TimelineCalendar = () => {
   const [plans, setPlans]                             = useState({});
   const [subscriptions, setSubscriptions]             = useState([]);
   const [subscriptionsInPlan, setSubscriptionsInPlan] = useState([]);
-  const [info, setInfo]                               = useState({});     // Event information
-  const [isPopoverVisible, setPopoverVisible]         = useState(null);   // popover comment vonlunteer
+  const [info, setInfo]                               = useState({}); // Event information
+  const [isPopoverVisible, setPopoverVisible]         = useState(null); // popover comment vonlunteer
   const [hidePeople, setHidePeople]                   = useState(true);
+  const [hidePlans, setHidePlans]                     = useState(false);
+  const [planFilterList, setPlanFilterList]           = useState([]);
 
   const element              = document.getElementById('Scheduler-wrapper');
   const eventPreparedId      = JSON.parse(element.getAttribute('data-eventId'));
@@ -108,6 +110,15 @@ const TimelineCalendar = () => {
     setEvents(d.flat());
   };
 
+  const getOurNeeds = async (eventPreparedId) => {
+    const planFilter = await getOurNeedsByEvent(eventPreparedId, true); // includeEmpty true
+    setPlanFilterList(planFilter);
+  };
+
+  const handleSelectPlan = (plan) => {
+    calendarInstance.gotoDate(plan.startDate);
+  };
+
   const getApiSubscriptions = async (start, end) => {
     const params = { "eventId": eventPreparedId, "start": start, "end": end };
     const subscriptions = await getSubscriptionsByEvent(params);
@@ -176,6 +187,7 @@ const TimelineCalendar = () => {
     const event     = info.event;
     const startTime = new Date(event.start).toISOString().substring(11, 16);
     const endTime   = event.end ? new Date(event.end).toISOString().substring(11, 16) : '';
+
     setFormData({
       id: event.id,
       nbPers: event.title.split('/')[1],
@@ -315,6 +327,22 @@ const TimelineCalendar = () => {
     }
   };
 
+  const showPlans = async () => {
+    await getOurNeeds(eventPreparedId);
+  };
+
+  const togglePlans = () => {
+    setHidePlans(prev => {
+      const newValue = !prev;
+
+      if (newValue) {
+        getOurNeeds(eventPreparedId);
+      }
+
+      return newValue;
+    });
+  };
+
   const exportData = (type) => {
     if (Object.keys(plans).length === 0)
       return alert('Aucune planification à exporter! \nVeuillez ajouter des activités.');
@@ -375,6 +403,16 @@ const TimelineCalendar = () => {
             <i className={`fa ${hidePeople ? 'fa-eye' : 'fa-eye-slash'} ml-2`} aria-hidden="true"></i>
           </button>
 
+          {/* Afficher/Masquer créneaux */}
+          <button
+            onClick={togglePlans}
+            className={`w-full md:w-auto px-4 py-2 text-sm font-medium flex justify-center items-center text-white bg-blue-400 hover:bg-blue-800 ${ widthScreen < 878 ? 'rounded-lg' : '' }`}
+            type="button"
+          >
+            {!hidePlans ? 'Afficher les créneaux' : 'Masquer les créneaux'}
+            <i className={`fa ${!hidePlans ? 'fa-eye' : 'fa-eye-slash'} ml-2`} aria-hidden="true"></i>
+          </button>
+
           {/* Exporter */}
           <button
             id="dropdownExport"
@@ -404,6 +442,10 @@ const TimelineCalendar = () => {
             </ul>
         </div>
       </div>
+
+      {hidePlans &&
+        <PlansList plans={planFilterList} onSelectPlan={handleSelectPlan} />
+      }
       {/* Calendar */}
       <div ref={calendarRef}></div>
 
@@ -498,6 +540,8 @@ const TimelineCalendar = () => {
               onClick={async () => {
               await handleSubmit(formData);
               setIsDataLoaded(true); // Rafraîchir le calendrier
+              if (hidePlans)
+                await showPlans(); // on force l’affichage proprement
               }}
             >
               {isEditing ? 'Modifier' : 'Enregistrer'}

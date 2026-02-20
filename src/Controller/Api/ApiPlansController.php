@@ -64,7 +64,7 @@ final class ApiPlansController extends AbstractController
     }
 
     #[Route('/public/plans/our_needs_by_event/{id}', name: 'api_our_needs_plans_by_event', methods: ['GET'])]
-    public function ourNeedsByEvent(int $id, PlansRepository $plansRepository, SubscriptionsRepository $subRepo): JsonResponse
+    public function ourNeedsByEvent(Request $request, int $id, PlansRepository $plansRepository, SubscriptionsRepository $subRepo): JsonResponse
     {
         setlocale(LC_TIME, 'fr_FR.UTF-8');
         $format = 'Y-m-d\TH:i:s';
@@ -105,8 +105,11 @@ final class ApiPlansController extends AbstractController
                 }
             }
 
+            $includeEmpty = $request->query->getBoolean('includeEmpty');
             // Add the plan to the our_needs array if getNbPers > 0
-            if ($plan->getNbPers() > 0) {
+
+            // if ($includeEmpty) {
+            if ($includeEmpty || $plan->getNbPers() > 0) {
                 $people = ""; // Get the list of people who have subscribed to the plan for export pdf
                 $sub = $plan->getSubscriptions();
                 foreach($sub as $s) {
@@ -161,7 +164,9 @@ final class ApiPlansController extends AbstractController
             $plan->setNbPers(intval($params['nbPers']));
             $plan->setStartDate($start);
             $plan->setEndDate($end);
-            $plan->setInformation(strval($params['information']));
+            $plan->setInformation(
+                array_key_exists('information', $params) ? strval($params['information']) : ""
+            );
 
             $entityManager->persist($plan);
             $entityManager->flush();
