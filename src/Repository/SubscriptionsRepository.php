@@ -29,7 +29,7 @@ class SubscriptionsRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findAllByEvents(): array
+    public function findAllByEvents($only_future): array
     {
         $subscriptions = $this->createQueryBuilder('s')
             ->join('s.event', 'e')
@@ -40,8 +40,24 @@ class SubscriptionsRepository extends ServiceEntityRepository
             ->getResult();
 
         $result = [];
+
+        // Retire les dates passé
+        if ($only_future) {
+            $now = new \DateTimeImmutable();
+            $subscriptions = array_filter($subscriptions, function ($subscription) use ($now) {
+                foreach ($subscription->getAvailabilities() as $availability) {
+                    if (new \DateTimeImmutable($availability['startDate']) > $now) {
+                        return true; // garder cette subscription
+                    }
+                }
+                return false; // aucune date future → on retire
+            });
+        }
+
+        // Construction du tableau de données
         foreach ($subscriptions as $subscription) {
-            $event = $subscription->getEvent();
+
+            $event   = $subscription->getEvent();
             $eventId = $event->getId();
 
             if (!isset($result[$eventId])) {

@@ -7,10 +7,24 @@
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <h3 class="w-full flex items-center justify-between p-2 text-white" style="background-color: #6b7280;">Bénévoles</h3>
 
-        <div class='flex py-3 ml-2'>
+        <div class='flex py-3 ml-2 justify-between'>
             <a href="{{ path('app_subscriptions_new') }}" style="margin-right: 10px;" class="text-gray-700 border border-gray-700 hover:bg-gray-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:border-gray-500 dark:text-gray-500 dark:hover:text-white dark:focus:ring-gray-800 dark:hover:bg-gray-500">
                 <i class="fa-solid fa-plus"></i>
             </a>
+
+            <button
+                class="rounded-lg inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800"
+                type="button"
+            >
+                <a href="{{ path('app_subscriptions_index', { only_future: not only_future ? 1 : null }) }}"
+                    class="btn btn-primary">
+                    {{ not only_future ?
+                        'Masquer les inscriptions passées <i class="fa fa-eye-slash" aria-hidden="true"></i>' :
+                        'Afficher toutes les inscriptions <i class="fa fa-eye" aria-hidden="true"></i>'
+                    }}
+                </a>
+            </button>
+
         </div>
 
         {% for key, subscriptions in subscriptionByEvent %}

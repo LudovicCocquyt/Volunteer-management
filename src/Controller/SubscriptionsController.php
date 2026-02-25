@@ -55,10 +55,13 @@ final class SubscriptionsController extends AbstractController
     }
 
     #[Route('/subscriptions', name: 'app_subscriptions_index', methods: ['GET'])]
-    public function index(SubscriptionsRepository $subscriptionsRepository): Response
+    public function index(Request $request, SubscriptionsRepository $subscriptionsRepository): Response
     {
+        $only_future = $request->query->getBoolean("only_future") ?? false;
+
         return $this->render('subscriptions/index.html.twig', [
-            'subscriptionByEvent' => $subscriptionsRepository->findAllByEvents(),
+            'subscriptionByEvent' => $subscriptionsRepository->findAllByEvents($only_future),
+            'only_future'         => $only_future,
         ]);
     }
 
