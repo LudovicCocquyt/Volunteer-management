@@ -9,7 +9,6 @@ import { Calendar } from '@fullcalendar/core';
 import { getPlans, addPlan, updatePlan, removePlan, assignVolunteer, getSubscriptions, getOurNeedsByEvent } from '../routes/PlansRoutes';
 import { getSubscriptionsByEvent } from '../routes/SubscriptionsRoutes';
 import { exportList, exportCalendar } from '../utils/ExportToPdf';
-import { exportListXls } from '../utils/ExportToXls';
 import { UseWindowSize } from '../utils/UseWindowSize';
 import PlansList from './PlansList.jsx';
 
@@ -355,7 +354,8 @@ const TimelineCalendar = () => {
       exportList(data); // Export the data to PDF
     }
     if (type === 'xls') {
-      exportListXls(plans);
+      // Généré côté serveur (PhpSpreadsheet) : plus besoin d'exceljs dans le bundle
+      window.location.href = `/export/planning/${eventPreparedId}`;
     }
   }
 
@@ -437,7 +437,7 @@ const TimelineCalendar = () => {
                 <span onClick={() => exportData("list")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100">Liste.pdf</span>
               </li>
               <li>
-                <span onClick={() => exportData("xls")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100">Liste.xls</span>
+                <span onClick={() => exportData("xls")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100">Liste.xlsx</span>
               </li>
             </ul>
         </div>

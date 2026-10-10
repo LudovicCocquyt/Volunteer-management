@@ -6,7 +6,6 @@ use App\Entity\Subscriptions;
 use App\Form\SubscriptionsFormType;
 use App\Repository\EventsRepository;
 use App\Repository\SubscriptionsRepository;
-use App\Service\ExcelExporter;
 use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,41 +16,8 @@ use App\Service\ManageVolunteerSercive;
 
 final class SubscriptionsController extends AbstractController
 {
-    private $excelExporter;
-
-    private $emailService;
-
-    public function __construct(ExcelExporter $excelExporter, EmailService $emailService)
+    public function __construct(private readonly EmailService $emailService)
     {
-        $this->excelExporter              = $excelExporter;
-        $this->emailService               = $emailService;
-    }
-
-    #[Route('/export/{id}', name: 'export_excel', methods: ['GET'])]
-    public function export(Request $request, SubscriptionsRepository $subscriptionsRepository): Response
-    {
-        $subscriptions = $subscriptionsRepository->findByEvent($request->get('id'));
-        foreach ($subscriptions as $subscription) {
-            $export[] = [
-                $subscription->getId(),
-                $subscription->getFirstname(),
-                $subscription->getLastname(),
-                $subscription->getEmail(),
-                $subscription->getPhone(),
-                $subscription->getChildName(),
-                $subscription->getClass(),
-            ];
-        }
-        $content = $this->excelExporter->export($export);
-
-        return new Response(
-            $content,
-            200,
-            [
-                'Content-Type'        => 'application/vnd.ms-excel',
-                'Content-Disposition' => 'attachment; filename="export.xls"',
-            ]
-        );
     }
 
     #[Route('/subscriptions', name: 'app_subscriptions_index', methods: ['GET'])]

@@ -1,4 +1,13 @@
 {
+    "doctrine/deprecations": {
+        "version": "1.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.0",
+            "ref": "fdd756167454623e21f1d769c5b814b243782a67"
+        }
+    },
     "doctrine/doctrine-bundle": {
         "version": "2.13",
         "recipe": {
@@ -28,15 +37,6 @@
     },
     "emileperron/tinymce-bundle": {
         "version": "v3.1.0"
-    },
-    "jms/serializer-bundle": {
-        "version": "5.5",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "main",
-            "version": "4.0",
-            "ref": "cc04e10cf7171525b50c18b36004edf64cb478be"
-        }
     },
     "karser/karser-recaptcha3-bundle": {
         "version": "0.2",
@@ -87,6 +87,18 @@
             ".env.dev"
         ]
     },
+    "symfony/form": {
+        "version": "7.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "7.2",
+            "ref": "7d86a6723f4a623f59e2bf966b6aad2fc461d36b"
+        },
+        "files": [
+            "config/packages/csrf.yaml"
+        ]
+    },
     "symfony/framework-bundle": {
         "version": "7.1",
         "recipe": {
@@ -126,6 +138,18 @@
             "version": "1.0",
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
+    },
+    "symfony/property-info": {
+        "version": "7.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "7.3",
+            "ref": "dae70df71978ae9226ae915ffd5fad817f5ca1f7"
+        },
+        "files": [
+            "config/packages/property_info.yaml"
+        ]
     },
     "symfony/routing": {
         "version": "7.1",
@@ -206,8 +230,5 @@
             "package.json",
             "webpack.config.js"
         ]
-    },
-    "symfonycasts/verify-email-bundle": {
-        "version": "v1.17.3"
     }
 }

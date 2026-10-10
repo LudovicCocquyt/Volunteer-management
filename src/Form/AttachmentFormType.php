@@ -8,7 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 
 class AttachmentFormType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('file', FileType::class, [
             'label'    => 'Ajouter un fichier',

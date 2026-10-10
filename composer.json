@@ -4,7 +4,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "doctrine/dbal": "^3",
@@ -12,24 +12,23 @@
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.2",
         "emileperron/tinymce-bundle": "^3.1",
-        "jms/serializer-bundle": "^5.5",
         "karser/karser-recaptcha3-bundle": "^0.2.0",
-        "phpoffice/phpspreadsheet": "^4.0",
+        "phpoffice/phpspreadsheet": "^5.8",
         "symfony/apache-pack": "^1.0",
-        "symfony/console": "7.1.*",
-        "symfony/dotenv": "7.1.*",
+        "symfony/console": "7.4.*",
+        "symfony/dotenv": "7.4.*",
         "symfony/flex": "^2",
-        "symfony/form": "7.1.*",
-        "symfony/framework-bundle": "7.1.*",
-        "symfony/mailer": "7.1.*",
-        "symfony/runtime": "7.1.*",
-        "symfony/security-bundle": "7.1.*",
-        "symfony/serializer": "7.1.*",
-        "symfony/twig-bundle": "7.1.*",
-        "symfony/validator": "7.1.*",
+        "symfony/form": "7.4.*",
+        "symfony/framework-bundle": "7.4.*",
+        "symfony/mailer": "7.4.*",
+        "symfony/runtime": "7.4.*",
+        "symfony/security-bundle": "7.4.*",
+        "symfony/serializer": "7.4.*",
+        "symfony/string": "7.4.*",
+        "symfony/twig-bundle": "7.4.*",
+        "symfony/validator": "7.4.*",
         "symfony/webpack-encore-bundle": "^2.1",
-        "symfony/yaml": "7.1.*",
-        "symfonycasts/verify-email-bundle": "^1.17"
+        "symfony/yaml": "7.4.*"
     },
     "config": {
         "allow-plugins": {
@@ -77,12 +76,12 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "7.1.*"
+            "require": "7.4.*"
         }
     },
     "require-dev": {
         "symfony/maker-bundle": "^1.61",
-        "symfony/stopwatch": "7.1.*",
-        "symfony/web-profiler-bundle": "7.1.*"
+        "symfony/stopwatch": "7.4.*",
+        "symfony/web-profiler-bundle": "7.4.*"
     }
 }

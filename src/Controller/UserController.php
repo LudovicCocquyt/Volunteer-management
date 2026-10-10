@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Form\UserFormType;
-use App\Repository\UserRepository;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,9 +20,8 @@ class UserController extends AbstractController
     }
 
     #[Route('/user/edit/{id}', name: 'app_edit_users', methods: ['GET', 'POST'])]
-    public function edit(Request $request, UserRepository $userRepo, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, User $user, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
     {
-        $user = $userRepo->find($request->get('id'));
         $form = $this->createForm(UserFormType::class, $user);
         $form->handleRequest($request);
 

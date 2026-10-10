@@ -8,7 +8,6 @@ import PlansList from './PlansList.jsx';
 import { getPlans } from '../routes/PlansRoutes';
 import { Calendar } from '@fullcalendar/core';
 import { exportList, exportCalendar } from '../utils/ExportToPdf';
-import { exportListXls } from '../utils/ExportToXls';
 import { getOurNeedsByEvent } from '../routes/PlansRoutes';
 import moment from 'moment';
 
@@ -140,7 +139,8 @@ const EventCalendarView = () => {
       exportList(data); // Export the data to PDF
     }
     if (type === 'xls') {
-      exportListXls(plans);
+      // Généré côté serveur (PhpSpreadsheet) : plus besoin d'exceljs dans le bundle
+      window.location.href = `/export/planning/${eventPreparedId}`;
     }
   }
 
@@ -167,14 +167,14 @@ const EventCalendarView = () => {
 
   return (
     <div className="mx-2">
-      <div className="inline-flex rounded-md shadow-xs flex py-3" role="group">
+      <div className="flex flex-col md:flex-row md:inline-flex rounded-md shadow-xs py-3 relative" role="group">
         {hidePeople && (
-          <button onClick={() => displayPeople(true)} className="rounded-s-lg inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800" type="button">Afficher les bénévoles
+          <button onClick={() => displayPeople(true)} className="h-12 rounded-s-lg inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800 mb-2 md:mb-0" type="button">Afficher les bénévoles
             <i className="fa fa-eye ml-2" aria-hidden="true"></i>
           </button>
         )}
         {!hidePeople && (
-          <button onClick={() => displayPeople(false)} className="rounded-s-lg inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800" type="button">Masquer les bénévoles
+          <button onClick={() => displayPeople(false)} className="h-12 rounded-s-lg inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-400 hover:bg-blue-800 mb-2 md:mb-0" type="button">Masquer les bénévoles
             <i className="fa fa-eye-slash ml-2" aria-hidden="true"></i>
           </button>
         )}
@@ -182,13 +182,13 @@ const EventCalendarView = () => {
         {/* Afficher/Masquer créneaux */}
         <button
           onClick={togglePlans}
-          className={`w-full md:w-auto px-4 py-2 text-sm font-medium flex justify-center items-center text-white bg-blue-400 hover:bg-blue-800`}
+          className={`h-12 w-full md:w-auto px-4 py-2 justify-center text-sm font-medium flex justify-center items-center text-white bg-blue-400 hover:bg-blue-800 mb-2 md:mb-0`}
           type="button"
         >
           {!hidePlans ? 'Afficher les créneaux' : 'Masquer les créneaux'}
           <i className={`fa ${!hidePlans ? 'fa-eye' : 'fa-eye-slash'} ml-2`} aria-hidden="true"></i>
         </button>
-        <button id="dropdownExport" data-dropdown-toggle="exportTo" className="px-4 text-sm font-medium rounded-e-lg inline-flex items-center text-white bg-pink-400 hover:bg-pink-800 dark:bg-pink-600 dark:hover:bg-pink-700" type="button">
+        <button id="dropdownExport" data-dropdown-toggle="exportTo" className="h-12 px-4 text-sm justify-center font-medium rounded-sm rounded-e-lg inline-flex items-center text-white bg-pink-400 hover:bg-pink-800 dark:bg-pink-600 dark:hover:bg-pink-700" type="button">
           Exporter
           <i className="fa fa-file-text ml-2" aria-hidden="true"></i>
           <svg className="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
@@ -205,7 +205,7 @@ const EventCalendarView = () => {
                 <span onClick={() => exportData("list")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Liste.pdf</span>
               </li>
               <li>
-                <span onClick={() => exportData("xls")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Liste.xls</span>
+                <span onClick={() => exportData("xls")} className="cursor-pointer flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Liste.xlsx</span>
               </li>
             </ul>
         </div>
