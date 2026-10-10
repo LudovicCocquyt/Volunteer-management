@@ -1,57 +1,57 @@
 <?php
 namespace App\Service;
 
-use Symfony\Component\Mime\Address;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 
 class EmailService
 {
-    private MailerInterface $mailer;
+    private ?string $sending_email_from;
 
-    private $sending_email_from;
-
-    private \DateTime $date;
-
-    private string $uploadsDir;
-
-    public function __construct(MailerInterface $mailer, string $uploadsDir)
-    {
-        $this->mailer                 = $mailer;
-        $this->sending_email_from     = $_ENV['APP_SENDING_EMAIL_FROM'] ?? null;
-        $this->date                   = new \DateTime('now', new \DateTimeZone('Europe/Paris'));
-        $this->uploadsDir             = $uploadsDir;
+    public function __construct(
+        private readonly MailerInterface $mailer,
+        private readonly string $uploadsDir,
+        // Canal dédié : var/log/mail.log (voir config/packages/monolog.yaml)
+        #[Autowire(service: 'monolog.logger.mail')]
+        private readonly LoggerInterface $mailLogger,
+    ) {
+        $this->sending_email_from = $_ENV['APP_SENDING_EMAIL_FROM'] ?? null;
     }
 
     /**
-     * Send an email using the Symfony Mailer component.
+     * Envoie un email via Symfony Mailer et journalise le résultat dans var/log/mail.log.
      *
-     * @param array $params
-     * @return bool|string Returns true on success, or an error message on failure.
+     * @return bool true si le mail a été remis au serveur d'envoi, false sinon
      */
-    public function send(array $params): bool | string
+    public function send(array $params): bool
     {
-        if (!$this->mailer instanceof MailerInterface) {
+        $recipients = $this->normalizeEmails((string) ($params['to'] ?? ''));
+        $context    = [
+            'to'       => array_map([$this, 'maskEmail'], $recipients),
+            'subject'  => $params['subject'] ?? '',
+            'template' => $params['template'] ?? '',
+        ];
+
+        if ([] === $recipients) {
+            $this->mailLogger->warning('Mail non envoyé : aucun destinataire', $context);
+
             return false;
         }
 
         try {
-            $from = new Address($params['from'], 'Apel Saint-François');
-            $recipients = $this->normalizeEmails($params['to']);
-
             $email = (new TemplatedEmail())
-                ->from($from)
+                ->from(new Address($params['from'], 'Apel Saint-François'))
                 ->subject($params['subject'])
                 ->htmlTemplate('emails/' . $params['template'] . '.html.twig')
                 ->context([
-                    "message" => $params['message'] ?? []
+                    'message' => $params['message'] ?? [],
                 ]);
 
-            // Ajout des destinataires un par un
             foreach ($recipients as $addr) {
-                if (!empty($addr)) {
-                    $email->addTo(new Address($addr));
-                }
+                $email->addTo(new Address($addr));
             }
 
             if (!empty($params['cc'])) {
@@ -59,39 +59,34 @@ class EmailService
             }
 
             if (!empty($params['replyTo'])) {
-                $replyTo = $this->normalizeEmails($params['replyTo']);
-                foreach ($replyTo as $addr) {
+                foreach ($this->normalizeEmails((string) $params['replyTo']) as $addr) {
                     $email->addReplyTo($addr);
                 }
             }
 
-
-            if (array_key_exists('attachments', $params)) {
-                $attachments = $params['attachments'] ?? [];
-
-                if ($attachments->count() > 0) {
-                    foreach ($attachments as $file) {
-
-                        // $file est un objet Attachment
-                        $filename     = $file->getFilename();
-                        $originalName = $file->getOriginalName();
-
-                        $filePath = $this->uploadsDir . '/' . $filename;
-
-                        if (file_exists($filePath)) {
-                            $email->attachFromPath($filePath, $originalName);
-                        }
-                    }
+            $attached = 0;
+            foreach ($params['attachments'] ?? [] as $file) {
+                // $file est une entité Attachment
+                $filePath = $this->uploadsDir . '/' . basename($file->getFilename());
+                if (is_file($filePath)) {
+                    $email->attachFromPath($filePath, $file->getOriginalName());
+                    ++$attached;
+                } else {
+                    $this->mailLogger->warning('Pièce jointe introuvable sur le disque', $context + ['file' => $file->getFilename()]);
                 }
             }
 
             $this->mailer->send($email);
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL SEND] Email envoyé avec succès à ' . $recipients . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            $this->mailLogger->info('Mail envoyé', $context + ['attachments' => $attached]);
+
             return true;
-        } catch (\Exception $e) {
-            // Log the exception or handle it as needed
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL SEND] Erreur lors de l\'envoi de l\'email à ' . $params['to'] . ': ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
-            return $e->getMessage();
+        } catch (\Throwable $e) {
+            $this->mailLogger->error('Échec de l\'envoi du mail', $context + [
+                'error'     => $e->getMessage(),
+                'exception' => $e::class,
+            ]);
+
+            return false;
         }
     }
 
@@ -138,11 +133,11 @@ class EmailService
                 return false;
             }
 
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email admin préparé avec succès à ' . $event->getManagerNotification() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            $this->mailLogger->debug('Mail admin préparé (nouvelle inscription)', ['event' => $event->getId()]);
             return $params;
         } catch (\Exception $e) {
             // Log the exception or handle it as needed
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email à l\'admin: ' . $event->getManagerNotification() . ' - ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            $this->mailLogger->error('Échec de la préparation du mail admin (nouvelle inscription)', ['event' => $event->getId(), 'error' => $e->getMessage()]);
             return false;
         }
     }
@@ -186,11 +181,11 @@ class EmailService
                     'template' => 'auto_assign_failed',
                 ];
             }
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email d\'échec d\'auto-assignation à l\'admin préparé avec succès à ' . $event->getManagerNotification() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            $this->mailLogger->debug('Mail admin préparé (échec d\'auto-affectation)', ['event' => $event->getId()]);
             return $params;
         } catch (\Exception $e) {
             // Log the exception or handle it as needed
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email d\'échec d\'auto-assignation à l\'admin: ' . $event->getManagerNotification() . ' - ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            $this->mailLogger->error('Échec de la préparation du mail admin (auto-affectation)', ['event' => $event->getId(), 'error' => $e->getMessage()]);
             return false;
         }
     }
@@ -250,13 +245,26 @@ class EmailService
                 'attachments' => $event->getAttachments() ?? []
             ];
 
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Email au bénévole préparé avec succès ' . $subscription->getEmail() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            $this->mailLogger->debug('Mail bénévole préparé', ['subscription' => $subscription->getId()]);
             return $params;
         } catch (\Exception $e) {
             // Log the exception or handle it as needed
-            error_log($this->date->format('Y-m-d H:i:s') . ' [MAIL PREPARE] Erreur lors de la préparation de l\'email au bénévole: ' . $e->getMessage() . PHP_EOL, 3, __DIR__ . '/../../error_log');
+            $this->mailLogger->error('Échec de la préparation du mail bénévole', ['subscription' => $subscription->getId(), 'error' => $e->getMessage()]);
             return false;
         }
+    }
+
+    /**
+     * jean.dupont@gmail.com -> je***@gmail.com : les logs n'ont pas besoin des adresses complètes.
+     */
+    private function maskEmail(string $email): string
+    {
+        $at = strrpos($email, '@');
+        if (false === $at) {
+            return '***';
+        }
+
+        return mb_substr($email, 0, min(2, $at)) . '***' . substr($email, $at);
     }
 
     private function normalizeEmails(string $rawEmails): array

@@ -1,0 +1,67 @@
+monolog:
+    channels:
+        - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
+        - mail        # Envois d'emails : var/log/mail.log
+
+when@dev:
+    monolog:
+        handlers:
+            main:
+                type: stream
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+                channels: ["!event", "!mail"]
+            mail:
+                type: rotating_file
+                path: "%kernel.logs_dir%/mail.log"
+                level: info
+                max_files: 30
+                channels: ["mail"]
+            console:
+                type: console
+                process_psr_3_messages: false
+                channels: ["!event", "!doctrine", "!console"]
+
+when@test:
+    monolog:
+        handlers:
+            main:
+                type: fingers_crossed
+                action_level: error
+                handler: nested
+                excluded_http_codes: [404, 405]
+                channels: ["!event"]
+            nested:
+                type: stream
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+
+when@prod:
+    monolog:
+        handlers:
+            # Erreurs de l'application : un fichier par jour, 30 jours conservés.
+            # fingers_crossed n'écrit rien tant qu'il n'y a pas d'erreur, puis écrit
+            # tout le contexte de la requête concernée.
+            main:
+                type: fingers_crossed
+                action_level: error
+                handler: nested
+                excluded_http_codes: [404, 405]
+                buffer_size: 50
+                channels: ["!mail", "!deprecation"]
+            nested:
+                type: rotating_file
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+                max_files: 30
+            # Envois d'emails (succès et échecs), adresses masquées, 90 jours conservés
+            mail:
+                type: rotating_file
+                path: "%kernel.logs_dir%/mail.log"
+                level: info
+                max_files: 90
+                channels: ["mail"]
+            console:
+                type: console
+                process_psr_3_messages: false
+                channels: ["!event", "!doctrine"]
