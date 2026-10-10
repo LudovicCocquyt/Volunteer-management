@@ -46,7 +46,7 @@ class Plans
     #[ORM\ManyToMany(targetEntity: Subscriptions::class, mappedBy: 'plans')]
     private Collection $subscriptions;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
     private ?string $activityName = null;
 
     #[ORM\Column(length: 10, nullable: true)]
