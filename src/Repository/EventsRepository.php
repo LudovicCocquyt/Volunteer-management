@@ -18,7 +18,7 @@ class EventsRepository extends ServiceEntityRepository
 
     public function findPublishedEvents(): array
     {
-        return $this->createQueryBuilder('e')
+        $events = $this->createQueryBuilder('e')
             ->select('e.id, e.name, e.startAt, e.location, e.description, e.displayPeopleName, e.displayCommentForSubscription, e.displayStartAt, e.displayLocation')
             ->andWhere('e.published = :published')
             ->andWhere('e.archived = :archived')
@@ -27,5 +27,17 @@ class EventsRepository extends ServiceEntityRepository
             ->orderBy('e.startAt', 'ASC')
             ->getQuery()
             ->getResult();
+
+        // Le lieu et la date masqués ne doivent pas apparaître dans le code source de la page publique
+        return array_map(function (array $event) {
+            if (!$event['displayLocation']) {
+                $event['location'] = null;
+            }
+            if (!$event['displayStartAt']) {
+                $event['startAt'] = null;
+            }
+
+            return $event;
+        }, $events);
     }
 }

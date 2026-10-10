@@ -43,10 +43,12 @@ final class SubscriptionsController extends AbstractController
         if (array_key_exists("subscriptions_form", $request->request->all())) {
             $data = $request->request->all();
             // Create the event
-            if ($data['subscriptions_form']['event'] > 0) {
-                $event = $eventsRepo->find($data['subscriptions_form']['event']);
-                unset($data['subscriptions_form']['event']);
+            // Seuls les événements publiés et non archivés acceptent des inscriptions
+            $eventId = (int) ($data['subscriptions_form']['event'] ?? 0);
+            if ($eventId > 0) {
+                $event = $eventsRepo->findOneBy(['id' => $eventId, 'published' => true, 'archived' => false]);
             }
+            unset($data['subscriptions_form']['event']);
 
             //  Create the availabilities
             if (!empty($data['subscriptions_form']['availabilities'])) {

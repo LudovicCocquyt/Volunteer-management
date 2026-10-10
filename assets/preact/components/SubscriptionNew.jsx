@@ -1,6 +1,6 @@
 import { h, Fragment } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
-import { getOurNeedsByEvent } from '../routes/PlansRoutes';
+import { getPublicNeedsByEvent } from '../routes/PlansRoutes';
 import moment from 'moment';
 import 'moment/locale/fr';
 
@@ -62,7 +62,7 @@ const SubscriptionNew = () => {
   }
 
   const getApiPlans = async (eventId) => {
-    const plans = await getOurNeedsByEvent(eventId, false); // includeEmpty false
+    const plans = await getPublicNeedsByEvent(eventId);
     setPlans(plans);
   };
 

@@ -63,36 +63,61 @@ final class ApiPlansController extends AbstractController
         return new JsonResponse($activities, JsonResponse::HTTP_OK);
     }
 
-    #[Route('/public/plans/our_needs_by_event/{id}', name: 'api_our_needs_plans_by_event', methods: ['GET'])]
-    public function ourNeedsByEvent(Request $request, int $id, PlansRepository $plansRepository, SubscriptionsRepository $subRepo): JsonResponse
+    /**
+     * Version publique (formulaire d'inscription) : uniquement les événements publiés
+     * et non archivés, créneaux vides exclus, noms des bénévoles seulement si
+     * l'événement l'autorise, et au format "Prénom N.".
+     */
+    #[Route('/public/plans/our_needs_by_event/{id}', name: 'api_our_needs_plans_by_event', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function ourNeedsByEvent(int $id, EventsRepository $eventsRepo, PlansRepository $plansRepository, SubscriptionsRepository $subRepo): JsonResponse
     {
-        setlocale(LC_TIME, 'fr_FR.UTF-8');
-        $format = 'Y-m-d\TH:i:s';
-        $plans  = $plansRepository->findBy(['event' => $id]);
-        if (empty($plans)) {
-            return new JsonResponse([], JsonResponse::HTTP_OK);
+        $event = $eventsRepo->find($id);
+        if (!$event || !$event->isPublished() || $event->isArchived()) {
+            return new JsonResponse([], JsonResponse::HTTP_NOT_FOUND);
         }
 
-        $subscriptions       = $subRepo->findBy(['event' => $id]);
-        $volunteer_available = []; // Array to store the number of volunteers available for each slot
-        if (count($subscriptions) > 0) {
-            foreach ($subscriptions as $subscription) {
-                $slots_booked  = $subscription->getAvailabilities();
-                foreach ($slots_booked as $s) {
-                    if (array_key_exists($s['startDate'] ."/". $s['endDate'], $volunteer_available)) {
-                        $volunteer_available[$s['startDate'] ."/". $s['endDate']] += 1;
-                    } else {
-                        $volunteer_available[$s['startDate'] ."/". $s['endDate']] = 1;
-                    }
-                }
+        $peopleFormat = $event->isDisplayPeopleName() ? 'short' : 'none';
+
+        return new JsonResponse($this->buildNeeds($id, false, $peopleFormat, $plansRepository, $subRepo), JsonResponse::HTTP_OK);
+    }
+
+    /**
+     * Version back-office (planning, export PDF, édition d'inscription) : tous les
+     * événements, noms complets (ROLE_USER via access_control).
+     */
+    #[Route('/plans/our_needs_by_event/{id}', name: 'api_our_needs_plans_by_event_private', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function ourNeedsByEventPrivate(Request $request, int $id, PlansRepository $plansRepository, SubscriptionsRepository $subRepo): JsonResponse
+    {
+        $includeEmpty = $request->query->getBoolean('includeEmpty');
+
+        return new JsonResponse($this->buildNeeds($id, $includeEmpty, 'full', $plansRepository, $subRepo), JsonResponse::HTTP_OK);
+    }
+
+    /**
+     * @param string $peopleFormat 'full' (Prénom Nom), 'short' (Prénom N.) ou 'none'
+     */
+    private function buildNeeds(int $eventId, bool $includeEmpty, string $peopleFormat, PlansRepository $plansRepository, SubscriptionsRepository $subRepo): array
+    {
+        $format = 'Y-m-d\TH:i:s';
+        $plans  = $plansRepository->findBy(['event' => $eventId]);
+        if (empty($plans)) {
+            return [];
+        }
+
+        // Nombre de bénévoles disponibles par créneau
+        $volunteer_available = [];
+        foreach ($subRepo->findBy(['event' => $eventId]) as $subscription) {
+            foreach ($subscription->getAvailabilities() ?? [] as $s) {
+                $key = $s['startDate'] . '/' . $s['endDate'];
+                $volunteer_available[$key] = ($volunteer_available[$key] ?? 0) + 1;
             }
-        };
+        }
 
         $our_needs = [];
         foreach ($plans as $plan) {
             $startDateExists = false;
             $endDateExists   = false;
-            foreach ($our_needs as &$need) { // Use reference &$need to modify the existing array element
+            foreach ($our_needs as &$need) { // Référence pour modifier l'élément existant
                 if ($plan->getStartDate()->format($format) == $need['startDate']) {
                     $startDateExists = true;
                 }
@@ -101,45 +126,43 @@ final class ApiPlansController extends AbstractController
                 }
                 if ($startDateExists && $endDateExists) {
                     $need['nbPers'] += $plan->getNbPers();
-                    continue 2; // Skip to the next iteration of the outer loop
+                    continue 2;
                 }
             }
+            unset($need);
 
-            $includeEmpty = $request->query->getBoolean('includeEmpty');
-            // Add the plan to the our_needs array if getNbPers > 0
-
-            // if ($includeEmpty) {
             if ($includeEmpty || $plan->getNbPers() > 0) {
-                $people = ""; // Get the list of people who have subscribed to the plan for export pdf
-                $sub = $plan->getSubscriptions();
-                foreach($sub as $s) {
-                    $people .= $s->getFirstname() . " " . $s->getLastname() . ",\n";
+                $names = [];
+                if ('none' !== $peopleFormat) {
+                    foreach ($plan->getSubscriptions() as $s) {
+                        $names[] = 'short' === $peopleFormat
+                            ? ucfirst((string) $s->getFirstname()) . ' ' . mb_strtoupper(mb_substr((string) $s->getLastname(), 0, 1)) . '.'
+                            : $s->getFirstname() . ' ' . $s->getLastname();
+                    }
                 }
-                array_push($our_needs, [
+
+                $our_needs[] = [
                     'startDate'   => $plan->getStartDate()->format($format),
                     'endDate'     => $plan->getEndDate()->format($format),
                     'nbPers'      => $plan->getNbPers(),
                     'available'   => true,
                     'information' => $plan->getInformation(),
-                    "people"      => substr($people, 0, -2) // Remove trailing comma and newline
-                ]);
-            }
-
-        }
-        if (count($our_needs) > 0) {
-            foreach ($our_needs as $key => $o) {
-                $availabilityKey = $o['startDate'] . "/" . $o['endDate'];
-                if (array_key_exists($availabilityKey, $volunteer_available) && $volunteer_available[$availabilityKey] >= $o['nbPers']) {
-                    unset($our_needs[$key]);
-                }
+                    'people'      => implode(",\n", $names),
+                ];
             }
         }
 
-        usort($our_needs, function($a, $b) {
-            return strtotime($a['startDate']) - strtotime($b['startDate']);
-        });
+        // Retire les créneaux déjà complets
+        foreach ($our_needs as $key => $o) {
+            $availabilityKey = $o['startDate'] . '/' . $o['endDate'];
+            if (($volunteer_available[$availabilityKey] ?? 0) >= $o['nbPers']) {
+                unset($our_needs[$key]);
+            }
+        }
 
-        return new JsonResponse($our_needs, JsonResponse::HTTP_OK);
+        usort($our_needs, fn ($a, $b) => strtotime($a['startDate']) - strtotime($b['startDate']));
+
+        return $our_needs;
     }
 
     #[Route('/plan/new', name: 'api_plan_new', methods: ['POST'])]

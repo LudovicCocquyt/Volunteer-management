@@ -10,7 +10,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ApiEventsController extends AbstractController
 {
-    #[Route('/api/public/events', name: 'api_events', methods: ['GET'])]
+    // Liste complète (brouillons et archives compris) : back-office uniquement (ROLE_USER via access_control)
+    #[Route('/api/events', name: 'api_events', methods: ['GET'])]
     public function index(EventsRepository $eventsRepo): JsonResponse
     {
         $events = $eventsRepo->findBy([], ['published' => 'ASC', 'id' => 'ASC']);

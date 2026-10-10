@@ -14,9 +14,30 @@ export const getPlans = async (id) => {
     }
 };
 
+// Formulaire public : événements publiés uniquement, noms abrégés si autorisés
+export const getPublicNeedsByEvent = async (id) => {
+    try {
+        const response = await fetch(`/api/public/plans/our_needs_by_event/${id}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        if (!response.ok) {
+            return [];
+        }
+        return await response.json();
+
+    } catch (error) {
+        console.error("[Plans public needs]" + error);
+    }
+    return [];
+};
+
+// Back-office : tous les événements, noms complets
 export const getOurNeedsByEvent = async (id, includeEmpty) => {
     try {
-        const response = await fetch(`/api/public/plans/our_needs_by_event/${id}?includeEmpty=${includeEmpty}`, {
+        const response = await fetch(`/api/plans/our_needs_by_event/${id}?includeEmpty=${includeEmpty}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
