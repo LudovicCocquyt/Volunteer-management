@@ -1,14 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Utilisateur{% endblock %}
+{% block title %}{{ isSelf ? 'Mon compte' : 'Utilisateur' }}{% endblock %}
 
 {% block body %}
-<a href="{{ path('app_users') }}" class="bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-white rounded-lg px-2 py-1 text-xs font-medium">Retour</a>
+<a href="{{ is_granted('ROLE_ADMIN') ? path('app_users') : path('app_dashboard') }}" class="bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-white rounded-lg px-2 py-1 text-xs font-medium">Retour</a>
 
 <div class="w-full p-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 mt-3">
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg pb-3">
         <h3 class="w-full flex items-center justify-between p-2 text-gray-900 bg-yellow-200">
-            Modifcation {{ user.firstname }}  {{ user.lastname }}
+            {{ isSelf ? 'Mon compte' : 'Modification' }} : {{ user.firstname }} {{ user.lastname }}
         </h3>
         <br>
         <div class="mx-2">
@@ -22,25 +22,35 @@
                         }
                 }) }}
                 {{ form_row(UserForm.firstname, {
-                    label: 'Nom',
-                    attr: {
-                        class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ml-1 mr-1"
-                    }
-                }) }}
-                {{ form_row(UserForm.lastname, {
                     label: 'Prénom',
                     attr: {
                         class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ml-1 mr-1"
                     }
                 }) }}
-                {# TODO Implement user roles management #}
-                {# {{ form_row(UserForm.roles, {
+                {{ form_row(UserForm.lastname, {
+                    label: 'Nom',
                     attr: {
-                        class: "user-roles flex items-center mb-4",
+                        class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ml-1 mr-1"
                     }
-                }) }} #}
+                }) }}
+                {% if UserForm.role is defined %}
+                    <div class="my-4 ml-1">
+                        {{ form_label(UserForm.role) }}
+                        <div class="flex gap-6 mt-2">
+                            {% for choice in UserForm.role %}
+                                <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                    {{ form_widget(choice, { attr: { class: 'w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500' } }) }}
+                                    {{ choice.vars.label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Organisateur : événements, planning et bénévoles. Administrateur : gère aussi les comptes organisateurs.</p>
+                    </div>
+                {% else %}
+                    <p class="my-4 ml-1 text-sm text-gray-600 dark:text-gray-300">Rôle : <strong>{{ roleLabel }}</strong></p>
+                {% endif %}
                 {{ form_row(UserForm.password, {
-                    label: 'Mot de passe',
+                    label: 'Nouveau mot de passe (laisser vide pour ne pas changer)',
                     attr: {
                         class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ml-1 mr-1"
                     }

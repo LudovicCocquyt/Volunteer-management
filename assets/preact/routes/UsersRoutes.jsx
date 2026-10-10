@@ -24,13 +24,12 @@ export const addUser = async (form) => {
             },
             body: JSON.stringify(form)
         });
-        if (response.ok) {
-            return true;
-        }
+        const data = await response.json().catch(() => ({}));
+        return { ok: response.ok, errors: data.errors ?? [] };
     } catch (error) {
         console.error("[addUser] " + error);
     }
-    return false;
+    return { ok: false, errors: ["Erreur réseau, réessayez."] };
 };
 
 export const deleteUser = async (id) => {
@@ -38,16 +37,15 @@ export const deleteUser = async (id) => {
         const response = await fetch('/api/delete_user/' + id, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             }
         });
-        if (response.ok) {
-            return true;
-        }
+        const data = await response.json().catch(() => ({}));
+        return { ok: response.ok, errors: data.errors ?? [] };
     } catch (error) {
         console.error("[deleteUser] " + error);
     }
-    return false;
+    return { ok: false, errors: ["Erreur réseau, réessayez."] };
 };
 
 export const getCurrentUser = async () => {

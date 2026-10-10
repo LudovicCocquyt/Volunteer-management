@@ -3,27 +3,33 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Security\UserRoles;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class ApiSecurityController extends AbstractController
 {
-    #[Route(path: '/api/current_user', name: 'api_current_user')]
-    public function current_user(AuthenticationUtils $authenticationUtils): JsonResponse
+    #[Route(path: '/api/current_user', name: 'api_current_user', methods: ['GET'])]
+    public function currentUser(): JsonResponse
     {
-        /** @var User[] $current_user */
-        $current_user = $this->getUser();
-        if (!$current_user) {
-            return new JsonResponse(null, 401);
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return new JsonResponse(null, JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $current_user = [
-            'id'        => $current_user->getId(),
-            "roles"     => $current_user->getRoles()
-        ];
+        $assignableRoles = [];
+        if ($this->isGranted(UserRoles::SUPER_ADMIN)) {
+            foreach (UserRoles::ASSIGNABLE_IN_UI as $role) {
+                $assignableRoles[$role] = UserRoles::LABELS[$role];
+            }
+        }
 
-        return new JsonResponse($current_user);
+        return $this->json([
+            'id'              => $user->getId(),
+            'role'            => UserRoles::highest($user),
+            'canManageUsers'  => $this->isGranted(UserRoles::ADMIN),
+            'assignableRoles' => $assignableRoles,
+        ]);
     }
 }

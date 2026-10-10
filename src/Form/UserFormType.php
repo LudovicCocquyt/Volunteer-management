@@ -3,10 +3,12 @@
 namespace App\Form;
 
 use App\Entity\User;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\FormBuilderInterface;
+use App\Security\UserRoles;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class UserFormType extends AbstractType
@@ -17,37 +19,43 @@ class UserFormType extends AbstractType
             ->add('email')
             ->add('firstname')
             ->add('lastname')
-            // TODO: Add roles field
-            // ->add('roles', ChoiceType::class, [
-            //     'label'   => 'Choisir les rôles',
-            //     'choices' => [
-            //         'User' => 'ROLE_USER',
-            //         'Voir les bénévoles'       => 'ROLE_VM_VIEW',
-            //         'Gestion des bénévoles'    => 'ROLE_VM_ADMIN',
-            //         'Gestion des utilisateurs' => 'ROLE_USER_ADMIN',
-            //     ],
-            //     'multiple'    => true,
-            //     'expanded'    => true,
-            //     'choice_attr' => function($choice, $key, $value) { return ['class' => 'w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600']; },
-            // ])
             ->add('password', PasswordType::class, [
-                'mapped'   => false,
-                'attr'     => ['autocomplete' => 'new-password'],
-                'required' => false,
+                'mapped'      => false,
+                'required'    => false,
+                'attr'        => ['autocomplete' => 'new-password'],
                 'constraints' => [
-                    new Assert\Length([
-                        'min' => 6,
-                        'minMessage' => 'Votre mot de passe doit contenir au moins {{ limit }} caractères.',
-                    ]),
-                ]
+                    new Assert\Length(
+                        min: 8,
+                        max: 4096,
+                        minMessage: 'Votre mot de passe doit contenir au moins {{ limit }} caractères.',
+                    ),
+                ],
             ])
         ;
+
+        // Champ rôle : uniquement pour un super admin qui modifie un autre compte (voir UserVoter::EDIT_ROLE)
+        if ($options['can_edit_role']) {
+            $choices = [];
+            foreach (UserRoles::ASSIGNABLE_IN_UI as $role) {
+                $choices[UserRoles::LABELS[$role]] = $role;
+            }
+
+            $builder->add('role', ChoiceType::class, [
+                'mapped'   => false,
+                'label'    => 'Rôle',
+                'choices'  => $choices,
+                'expanded' => true,
+                'data'     => $options['data'] instanceof User ? UserRoles::highest($options['data']) : UserRoles::USER,
+            ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => User::class,
+            'data_class'    => User::class,
+            'can_edit_role' => false,
         ]);
+        $resolver->setAllowedTypes('can_edit_role', 'bool');
     }
 }
