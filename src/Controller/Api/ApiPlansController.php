@@ -194,9 +194,10 @@ final class ApiPlansController extends AbstractController
             if ($event->isArchived()) {
                 return $this->archivedResponse();
             }
-            $date = substr($params['start'], 0, 10);
-            $start = DateTime::createFromFormat("Y-m-d\TH:i:sP", $date . "T" . $params['startTime'] . ":00+02:00");
-            $end   = DateTime::createFromFormat("Y-m-d\TH:i:sP", $date . "T" . $params['endTime'] . ":00+02:00");
+            [$start, $end] = $this->slotDates($params);
+            if (null === $start) {
+                return $this->invalidSlotResponse();
+            }
 
             $plan = new Plans();
             $plan->setEvent($event);
@@ -238,9 +239,10 @@ final class ApiPlansController extends AbstractController
 
             $status = '[Plans updated]';
             $params = json_decode($request->getContent(), true);
-            $date   = $params['start'];
-            $start  = DateTime::createFromFormat("Y-m-d\TH:i:sP", $date . "T" . $params['startTime'] . ":00+02:00");
-            $end    = DateTime::createFromFormat("Y-m-d\TH:i:sP", $date . "T" . $params['endTime'] . ":00+02:00");
+            [$start, $end] = $this->slotDates($params);
+            if (null === $start) {
+                return $this->invalidSlotResponse();
+            }
 
             $plan->setStartDate($start);
             $plan->setEndDate($end);
@@ -337,6 +339,35 @@ final class ApiPlansController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['status' => 'Deleted!'], JsonResponse::HTTP_OK);
+    }
+
+    /**
+     * Construit le début et la fin d'un créneau à partir du jour et des heures saisis.
+     * Heure locale de Paris (heure d'été comme d'hiver), sans décalage codé en dur.
+     *
+     * @return array{0: ?DateTime, 1: ?DateTime} [null, null] si la saisie est invalide
+     */
+    private function slotDates(array $params): array
+    {
+        $timezone = new \DateTimeZone('Europe/Paris');
+        $date     = substr((string) ($params['start'] ?? ''), 0, 10);
+        $start    = DateTime::createFromFormat('!Y-m-d H:i', $date . ' ' . ($params['startTime'] ?? ''), $timezone);
+        $end      = DateTime::createFromFormat('!Y-m-d H:i', $date . ' ' . ($params['endTime'] ?? ''), $timezone);
+
+        $errors = DateTime::getLastErrors();
+        if (!$start || !$end || ($errors && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)) || $end <= $start) {
+            return [null, null];
+        }
+
+        return [$start, $end];
+    }
+
+    private function invalidSlotResponse(): JsonResponse
+    {
+        return new JsonResponse(
+            ['status' => 'Error', 'message' => "Horaires invalides : l'heure de fin doit être après l'heure de début."],
+            JsonResponse::HTTP_BAD_REQUEST
+        );
     }
 
     private function archivedResponse(): JsonResponse
