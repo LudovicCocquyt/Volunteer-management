@@ -2,19 +2,19 @@
 
 namespace App\Controller\Api;
 
+use App\Dto\NewUserInput;
 use App\Entity\User;
+use App\Http\ApiError;
 use App\Repository\UserRepository;
 use App\Security\UserRoles;
 use App\Security\Voter\UserVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api')]
@@ -31,38 +31,29 @@ final class ApiUserController extends AbstractController
 
     #[Route('/add_user', name: 'api_add_user', methods: ['POST'])]
     public function addUser(
-        Request $request,
+        #[MapRequestPayload] NewUserInput $input,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
     ): JsonResponse {
-        $params   = $request->toArray();
-        $password = (string) ($params['password'] ?? '');
-        $role     = (string) ($params['role'] ?? UserRoles::USER);
-
         // Un admin ne crée que des organisateurs ; seul un super admin peut créer un admin
-        if (!in_array($role, UserRoles::ASSIGNABLE_IN_UI, true)
-            || (UserRoles::USER !== $role && !$this->isGranted(UserRoles::SUPER_ADMIN))) {
-            return $this->json(['status' => 'Error', 'errors' => ["Vous ne pouvez pas attribuer ce rôle."]], JsonResponse::HTTP_FORBIDDEN);
+        if (UserRoles::USER !== $input->role && !$this->isGranted(UserRoles::SUPER_ADMIN)) {
+            return ApiError::response('Vous ne pouvez pas attribuer ce rôle.', JsonResponse::HTTP_FORBIDDEN);
         }
 
-        $user = new User();
-        $user->setEmail(trim((string) ($params['email'] ?? '')));
-        $user->setFirstname(trim((string) ($params['firstname'] ?? '')));
-        $user->setLastname(trim((string) ($params['lastname'] ?? '')));
-        $user->setRoles(UserRoles::toStoredRoles($role));
+        $user = (new User())
+            ->setEmail(trim($input->email))
+            ->setFirstname(trim($input->firstname))
+            ->setLastname(trim($input->lastname))
+            ->setRoles(UserRoles::toStoredRoles($input->role));
 
+        // Unicité de l'email (contrainte UniqueEntity de l'entité)
         $violations = $validator->validate($user);
-        $violations->addAll($validator->validate($password, [
-            new Assert\NotBlank(message: 'Le mot de passe est obligatoire.'),
-            new Assert\Length(min: 8, max: 4096, minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères.'),
-        ]));
-
         if (count($violations) > 0) {
-            return $this->json(['status' => 'Error', 'errors' => $this->messages($violations)], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+            return ApiError::fromViolations($violations);
         }
 
-        $user->setPassword($passwordHasher->hashPassword($user, $password));
+        $user->setPassword($passwordHasher->hashPassword($user, $input->password));
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -73,7 +64,7 @@ final class ApiUserController extends AbstractController
     public function deleteUser(User $user, EntityManagerInterface $entityManager): JsonResponse
     {
         if (!$this->isGranted(UserVoter::DELETE, $user)) {
-            return $this->json(['status' => 'Error', 'errors' => ["Vous ne pouvez pas supprimer ce compte."]], JsonResponse::HTTP_FORBIDDEN);
+            return ApiError::response('Vous ne pouvez pas supprimer ce compte.', JsonResponse::HTTP_FORBIDDEN);
         }
 
         $entityManager->remove($user);
@@ -96,16 +87,5 @@ final class ApiUserController extends AbstractController
             'canEdit'   => $this->isGranted(UserVoter::EDIT, $user),
             'canDelete' => $this->isGranted(UserVoter::DELETE, $user),
         ];
-    }
-
-    /** @return string[] */
-    private function messages(ConstraintViolationListInterface $violations): array
-    {
-        $messages = [];
-        foreach ($violations as $violation) {
-            $messages[] = $violation->getMessage();
-        }
-
-        return $messages;
     }
 }

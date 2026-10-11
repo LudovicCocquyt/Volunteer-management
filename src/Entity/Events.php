@@ -7,6 +7,8 @@ use App\Entity\Attachment;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 // | Id int                        |
@@ -35,15 +37,19 @@ class Events
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom de l'événement est obligatoire.")]
+    #[Assert\Length(max: 255, maxMessage: 'Le nom ne doit pas dépasser {{ limit }} caractères.')]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: 'La date de début est obligatoire.')]
     private ?\DateTimeInterface $startAt = null;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
     private ?bool $displayStartAt = true;
 
     #[ORM\Column(type: Types::STRING, nullable: true, length: 255)]
+    #[Assert\Length(max: 255, maxMessage: 'Le lieu ne doit pas dépasser {{ limit }} caractères.')]
     private ?string $location = null;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
@@ -56,6 +62,7 @@ class Events
     private ?bool $archived = false;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 50000, maxMessage: 'La description est trop longue.')]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
@@ -86,12 +93,14 @@ class Events
     private ?\DateTimeInterface $endCalendar = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: 'La liste des adresses ne doit pas dépasser {{ limit }} caractères.')]
     private ?string $managerNotification = null;
 
     #[ORM\ManyToMany(targetEntity: Attachment::class)]
     private Collection $attachments;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 5000, maxMessage: 'Le message du mail est trop long.')]
     private ?string $messageEmail = null;
 
     public function __construct()
@@ -367,5 +376,29 @@ class Events
         $this->messageEmail = $messageEmail;
 
         return $this;
+    }
+
+    /**
+     * Adresses de notification : liste séparée par des virgules, chaque adresse doit être valide
+     * (sinon les mails aux organisateurs échouent sans que personne ne le voie).
+     * Plage horaire du calendrier : la fin doit suivre le début.
+     */
+    #[Assert\Callback]
+    public function validateConsistency(ExecutionContextInterface $context): void
+    {
+        foreach (array_filter(array_map('trim', explode(',', (string) $this->managerNotification))) as $address) {
+            if (false === filter_var($address, FILTER_VALIDATE_EMAIL)) {
+                $context->buildViolation(sprintf('« %s » n\'est pas une adresse email valide (séparez les adresses par des virgules).', $address))
+                    ->atPath('managerNotification')
+                    ->addViolation();
+            }
+        }
+
+        if ($this->startCalendar && $this->endCalendar
+            && $this->endCalendar->format('H:i') <= $this->startCalendar->format('H:i')) {
+            $context->buildViolation("L'heure de fin du calendrier doit être après l'heure de début.")
+                ->atPath('endCalendar')
+                ->addViolation();
+        }
     }
 }

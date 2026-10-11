@@ -2,6 +2,9 @@
 
 namespace App\Controller\Api;
 
+use App\Dto\SlotSearchInput;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
@@ -19,29 +22,22 @@ final class ApiSubscriptionsController extends AbstractController
     }
 
     #[Route('/subscriptions', name: 'api_subscriptions', methods: ['POST'])]
-    public function ByEvent(Request $request, SubscriptionsRepository $subsRepo): JsonResponse
+    public function ByEvent(#[MapRequestPayload] SlotSearchInput $input, SubscriptionsRepository $subsRepo): JsonResponse
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return new JsonResponse(['status' => 'Error'], JsonResponse::HTTP_FORBIDDEN);
-        }
+        $start = $input->startDate()->format('Y-m-d H:i:s');
 
-        $params        = json_decode($request->getContent(), true);
-        $subscriptions = $subsRepo->findBy(['event' => $params['eventId']]);
-
+        // Bénévoles qui ont déclaré cet horaire et n'y sont pas encore affectés
         $volunteers_available = [];
-        foreach ($subscriptions as $volunteer) {
-            $availabilities = $volunteer->getAvailabilities();
-            foreach ($availabilities as $availability) {
-                $a = new \DateTime($availability["startDate"]);
-                $b = new \DateTime($params["start"]);
-                if ($a->getTimestamp() === $b->getTimestamp() && $availability["available"]) {
-                    array_push($volunteers_available, $volunteer);
+        foreach ($subsRepo->findBy(['event' => (int) $input->eventId]) as $volunteer) {
+            foreach ($volunteer->getAvailabilitySlots() as $slot) {
+                if (!$slot->isAssigned() && $slot->getStartDate()->format('Y-m-d H:i:s') === $start) {
+                    $volunteers_available[] = $volunteer;
+                    break;
                 }
             }
         }
 
-        // Avoids loops during serialisation
-        // ['ignored_attributes' => ['event', 'plan']
+        // Évite les boucles pendant la sérialisation
         $json = $this->serializer->serialize($volunteers_available, 'json', ['ignored_attributes' => ['event', 'plans']]);
 
         return new JsonResponse([json_decode($json)], JsonResponse::HTTP_OK);

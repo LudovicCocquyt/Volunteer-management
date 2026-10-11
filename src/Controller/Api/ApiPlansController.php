@@ -2,8 +2,13 @@
 
 namespace App\Controller\Api;
 
+use App\Dto\PlanInput;
+use App\Dto\VolunteerAssignmentInput;
+use App\Http\ApiError;
 use App\Repository\{PlansRepository, EventsRepository, SubscriptionsRepository};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -180,133 +185,122 @@ final class ApiPlansController extends AbstractController
     }
 
     #[Route('/plan/new', name: 'api_plan_new', methods: ['POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, EventsRepository $eventsRepo): JsonResponse
-    {
-        try {
-            $params   = json_decode($request->getContent(), true);
-            if (empty($params['nbPers'])) {
-                $params['nbPers'] = 0;
-            }
-            $event = $eventsRepo->find($params['eventId']);
-            if (empty($params['resourceId']) || empty($event)) {
-                return new JsonResponse(['status' => 'Error', 'message' => 'Params not found'], JsonResponse::HTTP_BAD_REQUEST);
-            }
-            if ($event->isArchived()) {
-                return $this->archivedResponse();
-            }
-            [$start, $end] = $this->slotDates($params);
-            if (null === $start) {
-                return $this->invalidSlotResponse();
-            }
-
-            $plan = new Plans();
-            $plan->setEvent($event);
-            $plan->setActivityName(strval($params['resourceId'])); //Activity name is the resourceId
-            $plan->setNbPers(intval($params['nbPers']));
-            $plan->setStartDate($start);
-            $plan->setEndDate($end);
-            $plan->setInformation(
-                array_key_exists('information', $params) ? strval($params['information']) : ""
-            );
-
-            $entityManager->persist($plan);
-            $entityManager->flush();
-
-            $jsonPlan = $this->serializer->serialize($plan, 'json',
-                ['ignored_attributes' => ['event'],
-                'groups' => ['plan:read', 'subscription:read'],
-                'enable_max_depth' => true]
-            );
-
-            return new JsonResponse(
-                [
-                    'status' => 'Plan created!',
-                    'plan'   => json_decode($jsonPlan)
-                ], JsonResponse::HTTP_OK
-            );
-        } catch (\Exception $e) {
-            return new JsonResponse(['status' => 'Error', "message" => $e->getmessage()], 400);
+    public function new(
+        #[MapRequestPayload(validationGroups: ['Default', 'create'])] PlanInput $input,
+        EntityManagerInterface $entityManager,
+        EventsRepository $eventsRepo,
+        ValidatorInterface $validator,
+    ): JsonResponse {
+        $event = $eventsRepo->find((int) $input->eventId);
+        if (!$event) {
+            return ApiError::response('Événement introuvable.', JsonResponse::HTTP_NOT_FOUND);
         }
+        if ($event->isArchived()) {
+            return $this->archivedResponse();
+        }
+
+        [$start, $end] = $this->slotDates($input);
+        if (null === $start) {
+            return $this->invalidSlotResponse();
+        }
+
+        $plan = (new Plans())
+            ->setEvent($event)
+            ->setActivityName($input->resourceId) // le nom de l'activité est l'identifiant de la ligne du calendrier
+            ->setNbPers($input->nbPers())
+            ->setStartDate($start)
+            ->setEndDate($end)
+            ->setInformation($input->information ?? '');
+
+        $violations = $validator->validate($plan);
+        if (count($violations) > 0) {
+            return ApiError::fromViolations($violations);
+        }
+
+        $entityManager->persist($plan);
+        $entityManager->flush();
+
+        $jsonPlan = $this->serializer->serialize($plan, 'json', [
+            'ignored_attributes' => ['event'],
+            'groups'             => ['plan:read', 'subscription:read'],
+            'enable_max_depth'   => true,
+        ]);
+
+        return new JsonResponse(['status' => 'Plan created!', 'plan' => json_decode($jsonPlan)], JsonResponse::HTTP_OK);
     }
 
-    #[Route('/plan/edit/{id}', name: 'api_plan_edit', methods: ['PUT'])]
-    public function edit(Plans $plan, Request $request, EntityManagerInterface $entityManager, PlansRepository $plansRepo): JsonResponse
-    {
-        try {
-            if ($plan->getEvent()?->isArchived()) {
-                return $this->archivedResponse();
-            }
-
-            $status = '[Plans updated]';
-            $params = json_decode($request->getContent(), true);
-            [$start, $end] = $this->slotDates($params);
-            if (null === $start) {
-                return $this->invalidSlotResponse();
-            }
-
-            $plan->setStartDate($start);
-            $plan->setEndDate($end);
-            $plan->setNbPers(intval($params['nbPers']));
-            $plan->setInformation(strval($params['information']));
-
-            // Renommage d'une activité : tous ses créneaux sont renommés, mais
-            // uniquement dans cet événement (les autres événements et les archives ne bougent pas)
-            if ($plan->getActivityName() != $params['resourceId']) {
-                $plans = $plansRepo->findByActivityName($plan->getActivityName(), $plan->getEvent());
-                $this->changeActivityNameOfManyPlans($plans, $params['resourceId'], $entityManager);
-                $status = '[Plans updated] All plans of this activity in this event have been renamed.';
-            }
-
-            $entityManager->persist($plan);
-            $entityManager->flush();
-
-            $jsonPlan = $this->serializer->serialize(
-                $plan,
-                'json',
-                [
-                'ignored_attributes' => ['event', 'subscriptions'],
-                'groups'             => ['plan:read', 'subscription:read'],
-                'enable_max_depth'   => true
-                ]
-            );
-
-            return new JsonResponse(
-                [
-                    'status' => $status,
-                    'plan'   => json_decode($jsonPlan)
-                ], JsonResponse::HTTP_OK
-            );
-        } catch (\Exception $e) {
-            return new JsonResponse(['status' => 'Error', "message" => $e->getmessage()], JsonResponse::HTTP_BAD_REQUEST);
+    #[Route('/plan/edit/{id}', name: 'api_plan_edit', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    public function edit(
+        Plans $plan,
+        #[MapRequestPayload] PlanInput $input,
+        EntityManagerInterface $entityManager,
+        PlansRepository $plansRepo,
+        ValidatorInterface $validator,
+    ): JsonResponse {
+        if ($plan->getEvent()?->isArchived()) {
+            return $this->archivedResponse();
         }
+
+        [$start, $end] = $this->slotDates($input);
+        if (null === $start) {
+            return $this->invalidSlotResponse();
+        }
+
+        $status = '[Plans updated]';
+        $plan
+            ->setStartDate($start)
+            ->setEndDate($end)
+            ->setNbPers($input->nbPers())
+            ->setInformation($input->information ?? '');
+
+        // Renommage d'une activité : tous ses créneaux sont renommés, mais
+        // uniquement dans cet événement (les autres événements et les archives ne bougent pas)
+        if ($plan->getActivityName() !== $input->resourceId) {
+            $plans = $plansRepo->findByActivityName($plan->getActivityName(), $plan->getEvent());
+            $this->changeActivityNameOfManyPlans($plans, $input->resourceId, $entityManager);
+            $status = '[Plans updated] All plans of this activity in this event have been renamed.';
+        }
+
+        $violations = $validator->validate($plan);
+        if (count($violations) > 0) {
+            return ApiError::fromViolations($violations);
+        }
+
+        $entityManager->flush();
+
+        $jsonPlan = $this->serializer->serialize($plan, 'json', [
+            'ignored_attributes' => ['event', 'subscriptions'],
+            'groups'             => ['plan:read', 'subscription:read'],
+            'enable_max_depth'   => true,
+        ]);
+
+        return new JsonResponse(['status' => $status, 'plan' => json_decode($jsonPlan)], JsonResponse::HTTP_OK);
     }
 
     #[Route('/plan/volunteer', name: 'api_plan_volunteer', methods: ['PUT'])]
-    public function volunteer(Request $request, PlansRepository $plansRepository, SubscriptionsRepository $subRepo, ManageVolunteerSercive $manageVolunteer, EntityManagerInterface $entityManager): JsonResponse
-    {
-        try {
-            $params       = json_decode($request->getContent(), true);
-            $plan         = $plansRepository->find(intval($params['planId']));
-            $subscription = $subRepo->find(intval($params["subscription"]["id"]));
-            if (!$plan || !$subscription) {
-                return new JsonResponse(['status' => 'Error', 'message' => 'Plan or subscription not found'], JsonResponse::HTTP_NOT_FOUND);
-            }
-            if ($plan->getEvent()?->isArchived()) {
-                return $this->archivedResponse();
-            }
-            if (!array_key_exists('assign', $params)) {
-                // Error data
-                return new JsonResponse(['status' => 'Error', 'message' => 'assign key not found'], JsonResponse::HTTP_BAD_REQUEST);
-            } elseif ($params['assign']) {
-                $manageVolunteer->assign($plan, $subscription);
-            } else {
-                $manageVolunteer->remove($plan, $subscription);
-            }
-
-            return new JsonResponse(['status' => 'Volunteer managed'], JsonResponse::HTTP_OK);
-        } catch (\Exception $e) {
-            return new JsonResponse(['status' => 'Error', "message" => $e->getmessage()], JsonResponse::HTTP_BAD_REQUEST);
+    public function volunteer(
+        #[MapRequestPayload] VolunteerAssignmentInput $input,
+        PlansRepository $plansRepository,
+        SubscriptionsRepository $subRepo,
+        ManageVolunteerSercive $manageVolunteer,
+    ): JsonResponse {
+        $plan         = $plansRepository->find($input->planId());
+        $subscription = $subRepo->find($input->subscriptionId());
+        if (!$plan || !$subscription) {
+            return ApiError::response('Créneau ou bénévole introuvable.', JsonResponse::HTTP_NOT_FOUND);
         }
+        if ($plan->getEvent()?->isArchived()) {
+            return $this->archivedResponse();
+        }
+        if ($subscription->getEvent() !== $plan->getEvent()) {
+            return ApiError::response("Ce bénévole n'est pas inscrit à cet événement.", JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $input->assign
+            ? $manageVolunteer->assign($plan, $subscription)
+            : $manageVolunteer->remove($plan, $subscription);
+
+        return new JsonResponse(['status' => 'Volunteer managed'], JsonResponse::HTTP_OK);
     }
 
     #[Route('/plan/get_subscriptions/{id}', name: 'api_plan_get_subscriptions', methods: ['GET'])]
@@ -341,12 +335,12 @@ final class ApiPlansController extends AbstractController
      *
      * @return array{0: ?DateTime, 1: ?DateTime} [null, null] si la saisie est invalide
      */
-    private function slotDates(array $params): array
+    private function slotDates(PlanInput $input): array
     {
         $timezone = new \DateTimeZone('Europe/Paris');
-        $date     = substr((string) ($params['start'] ?? ''), 0, 10);
-        $start    = DateTime::createFromFormat('!Y-m-d H:i', $date . ' ' . ($params['startTime'] ?? ''), $timezone);
-        $end      = DateTime::createFromFormat('!Y-m-d H:i', $date . ' ' . ($params['endTime'] ?? ''), $timezone);
+        $date     = substr((string) $input->start, 0, 10);
+        $start    = DateTime::createFromFormat('!Y-m-d H:i', $date . ' ' . $input->startTime, $timezone);
+        $end      = DateTime::createFromFormat('!Y-m-d H:i', $date . ' ' . $input->endTime, $timezone);
 
         $errors = DateTime::getLastErrors();
         if (!$start || !$end || ($errors && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)) || $end <= $start) {
@@ -358,18 +352,12 @@ final class ApiPlansController extends AbstractController
 
     private function invalidSlotResponse(): JsonResponse
     {
-        return new JsonResponse(
-            ['status' => 'Error', 'message' => "Horaires invalides : l'heure de fin doit être après l'heure de début."],
-            JsonResponse::HTTP_BAD_REQUEST
-        );
+        return ApiError::response("Horaires invalides : l'heure de fin doit être après l'heure de début.", JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     private function archivedResponse(): JsonResponse
     {
-        return new JsonResponse(
-            ['status' => 'Error', 'message' => "Événement archivé : modification impossible. Désarchivez-le d'abord."],
-            JsonResponse::HTTP_FORBIDDEN
-        );
+        return ApiError::response("Événement archivé : modification impossible. Désarchivez-le d'abord.", JsonResponse::HTTP_FORBIDDEN);
     }
 
     private function changeActivityNameOfManyPlans(array $plans, string $newActivityName, $entityManager): void

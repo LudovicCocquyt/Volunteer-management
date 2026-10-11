@@ -1,3 +1,20 @@
+// Affiche le message d'erreur renvoyé par l'API (format { status, message, errors })
+const reportApiError = async (response) => {
+    let message = "L'opération n'a pas pu être enregistrée.";
+    try {
+        const data = await response.json();
+        if (data && data.message) {
+            message = data.message;
+        }
+        if (data && Array.isArray(data.errors) && data.errors.length > 1) {
+            message += '\n\n' + data.errors.map(e => '- ' + (e.message || e)).join('\n');
+        }
+    } catch (e) {
+        // Réponse non JSON : message générique
+    }
+    alert(message);
+};
+
 export const getPlans = async (id) => {
     try {
         const response = await fetch(`/api/plans/by_event/${id}`, {
@@ -65,6 +82,7 @@ export const addPlan = async (form) => {
         if (response.ok) {
             return true;
         }
+        await reportApiError(response);
     } catch (error) {
         console.error("[addPlan] " + error);
     }
@@ -84,6 +102,7 @@ export const updatePlan = async (form) => {
         if (response.ok) {
             return true;
         }
+        await reportApiError(response);
     } catch (error) {
         console.error("[updatePlan] " + error);
     }
@@ -101,6 +120,7 @@ export const removePlan = async (planId) => {
         if (response.ok) {
             return true;
         }
+        await reportApiError(response);
     } catch (error) {
         console.error("[RemovePlan] " + error);
     }
@@ -120,6 +140,7 @@ export const assignVolunteer = async (params) => {
         if (response.ok) {
             return true;
         }
+        await reportApiError(response);
     } catch (error) {
         console.error("[assignVolunteer] " + error);
     }

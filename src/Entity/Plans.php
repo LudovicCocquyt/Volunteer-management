@@ -6,6 +6,7 @@ use App\Repository\PlansRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
@@ -28,16 +29,21 @@ class Plans
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: "L'heure de début est obligatoire.")]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: "L'heure de fin est obligatoire.")]
+    #[Assert\GreaterThan(propertyPath: 'startDate', message: "L'heure de fin doit être après l'heure de début.")]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 0, max: 999, notInRangeMessage: 'Le nombre de personnes doit être compris entre {{ min }} et {{ max }}.')]
     private ?int $nbPers = null;
 
     #[ORM\ManyToOne(inversedBy: 'plans')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "L'événement est obligatoire.")]
     private ?Events $event = null;
 
     /**
@@ -49,9 +55,12 @@ class Plans
     private Collection $availabilities;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom de l'activité est obligatoire.")]
+    #[Assert\Length(max: 255, maxMessage: "Le nom de l'activité ne doit pas dépasser {{ limit }} caractères.")]
     private ?string $activityName = null;
 
     #[ORM\Column(length: 10, nullable: true)]
+    #[Assert\Length(max: 10, maxMessage: "L'information ne doit pas dépasser {{ limit }} caractères.")]
     private ?string $information = null;
 
     public function __construct()

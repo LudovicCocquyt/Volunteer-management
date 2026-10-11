@@ -6,6 +6,7 @@ use App\Repository\SubscriptionsRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
@@ -19,27 +20,41 @@ class Subscriptions
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire.')]
+    #[Assert\Length(max: 255)]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+    #[Assert\Length(max: 255)]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'email n'est pas valide.")]
+    #[Assert\Length(max: 255)]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le téléphone est obligatoire.')]
+    #[Assert\Regex('/^[0-9+().\s-]{6,25}$/', message: "Le numéro de téléphone n'est pas valide.")]
     private ?string $phone = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom de l'enfant est obligatoire.")]
+    #[Assert\Length(max: 255)]
     private ?string $childName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La classe est obligatoire.')]
+    #[Assert\Length(max: 255)]
     private ?string $class = null;
 
     #[ORM\ManyToOne(inversedBy: 'subscriptions')]
     private ?Events $event = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 2000, maxMessage: 'Le commentaire ne doit pas dépasser {{ limit }} caractères.')]
     private ?string $comment = null;
 
     /**
@@ -49,6 +64,7 @@ class Subscriptions
      */
     #[ORM\OneToMany(targetEntity: Availability::class, mappedBy: 'subscription', cascade: ['persist'], orphanRemoval: true)]
     #[ORM\OrderBy(['startDate' => 'ASC'])]
+    #[Assert\Valid]
     private Collection $availabilitySlots;
 
     public function __construct()

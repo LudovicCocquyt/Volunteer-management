@@ -64,7 +64,14 @@ const EventCalendarView = () => {
 
   useEffect(() => {
     if (isDataLoaded && isLicenseLoaded) {
-      const calendar = new Calendar(calendarRef.current, calendarConfig);
+      // Recréation après un ajout/suppression : on reste sur la date et la vue affichées
+      const previous = calendarApiRef.current;
+      const config   = previous
+        ? { ...calendarConfig, initialDate: previous.getDate(), initialView: previous.view.type }
+        : calendarConfig;
+      previous?.destroy();
+
+      const calendar = new Calendar(calendarRef.current, config);
       calendarApiRef.current = calendar;
       calendar.render();
       setCalendarInstance(calendar);

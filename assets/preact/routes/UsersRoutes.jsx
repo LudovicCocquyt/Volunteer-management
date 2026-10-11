@@ -25,7 +25,8 @@ export const addUser = async (form) => {
             body: JSON.stringify(form)
         });
         const data = await response.json().catch(() => ({}));
-        return { ok: response.ok, errors: data.errors ?? [] };
+        const errors = (data.errors ?? []).map(e => (typeof e === 'string' ? e : e.message));
+        return { ok: response.ok, errors: errors.length ? errors : (response.ok ? [] : [data.message ?? 'Erreur inconnue.']) };
     } catch (error) {
         console.error("[addUser] " + error);
     }
@@ -41,7 +42,8 @@ export const deleteUser = async (id) => {
             }
         });
         const data = await response.json().catch(() => ({}));
-        return { ok: response.ok, errors: data.errors ?? [] };
+        const errors = (data.errors ?? []).map(e => (typeof e === 'string' ? e : e.message));
+        return { ok: response.ok, errors: errors.length ? errors : (response.ok ? [] : [data.message ?? 'Erreur inconnue.']) };
     } catch (error) {
         console.error("[deleteUser] " + error);
     }
