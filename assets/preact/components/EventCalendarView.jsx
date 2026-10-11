@@ -10,7 +10,7 @@ import { Calendar } from '@fullcalendar/core';
 import { exportList, exportCalendar } from '../utils/ExportToPdf';
 import { getOurNeedsByEvent } from '../routes/PlansRoutes';
 import moment from 'moment';
-import { VIEW_BUTTONS, calendarButtonText, loadCalendarState, saveCalendarState, nearestPastSlotDate, initialCalendarDate } from '../utils/CalendarState';
+import { calendarButtonText, loadCalendarState, initialCalendarDate, initialCalendarView, createSlotNavigation } from '../utils/CalendarState';
 
 const EventCalendarView = () => {
   const calendarRef                             = useRef(null);
@@ -96,32 +96,21 @@ const EventCalendarView = () => {
     setEvents(d.flat());
   };
 
-  const handleDatesSet = (arg) => {
-    saveCalendarState(eventPreparedId, {
-      view: arg.view.type,
-      date: arg.view.currentStart.toISOString().substring(0, 10),
-    });
-  };
+  const hideEmptyRef = useRef(savedCalendar.hideEmptyDays);
+  const navigation   = createSlotNavigation({
+    eventId: eventPreparedId,
+    calendarApiRef,
+    eventsRef,
+    hideEmptyRef,
+    fallbackDate: eventPreparedDate.date.substring(0, 10),
+  });
 
-  const goToNearestSlot = () => {
-    const date = nearestPastSlotDate(eventsRef.current) || eventPreparedDate.date.substring(0, 10);
-    calendarApiRef.current?.gotoDate(date);
-  };
+  const handleDatesSet = () => navigation.save();
 
   const calendarConfig = {
     schedulerLicenseKey: licenseKey,
-    customButtons: {
-      nearestSlot: {
-        text: 'Créneau le plus proche',
-        hint: 'Aller au créneau le plus récent (ou au premier à venir)',
-        click: goToNearestSlot,
-      },
-    },
-    headerToolbar: {
-      left: VIEW_BUTTONS,
-      center: 'title',
-      right: 'nearestSlot prev,next'
-    },
+    customButtons: navigation.buttons(),
+    headerToolbar: navigation.toolbar(),
     buttonText: calendarButtonText,
     datesSet: handleDatesSet,
     resourceAreaColumns: [
@@ -135,7 +124,7 @@ const EventCalendarView = () => {
     timeZone: 'UTC',
     locale: 'fr',
     plugins: [dayGridPlugin, resourceTimelinePlugin, interactionPlugin],
-    initialView: savedCalendar.view || 'resourceTimelineDay',
+    initialView: initialCalendarView(savedCalendar),
     // Les créneaux sont déjà chargés quand le calendrier est créé
     initialDate: initialCalendarDate(savedCalendar, events, eventPreparedDate.date),
     locale: frLocale,
