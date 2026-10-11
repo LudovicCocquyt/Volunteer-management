@@ -10,9 +10,12 @@ import { Calendar } from '@fullcalendar/core';
 import { exportList, exportCalendar } from '../utils/ExportToPdf';
 import { getOurNeedsByEvent } from '../routes/PlansRoutes';
 import moment from 'moment';
+import { VIEW_BUTTONS, calendarButtonText, loadCalendarState, saveCalendarState, nearestPastSlotDate, initialCalendarDate } from '../utils/CalendarState';
 
 const EventCalendarView = () => {
   const calendarRef                             = useRef(null);
+  const calendarApiRef                          = useRef(null); // instance FullCalendar, pour le bouton personnalisé
+  const eventsRef                               = useRef([]);   // créneaux à jour, lus par le bouton « créneau le plus proche »
   const [isDataLoaded, setIsDataLoaded]         = useState(false);
   const [events, setEvents]                     = useState([]);
   const [calendarInstance, setCalendarInstance] = useState(null);
@@ -29,6 +32,9 @@ const EventCalendarView = () => {
   const eventPreparedDate = JSON.parse(element.getAttribute('data-eventStartAt'));
   const startCalendar     = JSON.parse(element.getAttribute('data-startCalendar'));
   const endCalendar       = JSON.parse(element.getAttribute('data-endCalendar'));
+
+  const savedCalendar = loadCalendarState(eventPreparedId);
+  eventsRef.current   = events;
 
   const slotMinTime = startCalendar ? moment(startCalendar.date).format('HH:mm') : '12:00'  //default start time;
   const slotMaxTime = endCalendar ? moment(endCalendar.date).format('HH:mm') : '23:00';
@@ -59,6 +65,7 @@ const EventCalendarView = () => {
   useEffect(() => {
     if (isDataLoaded && isLicenseLoaded) {
       const calendar = new Calendar(calendarRef.current, calendarConfig);
+      calendarApiRef.current = calendar;
       calendar.render();
       setCalendarInstance(calendar);
       setIsDataLoaded(false);
@@ -89,13 +96,34 @@ const EventCalendarView = () => {
     setEvents(d.flat());
   };
 
+  const handleDatesSet = (arg) => {
+    saveCalendarState(eventPreparedId, {
+      view: arg.view.type,
+      date: arg.view.currentStart.toISOString().substring(0, 10),
+    });
+  };
+
+  const goToNearestSlot = () => {
+    const date = nearestPastSlotDate(eventsRef.current) || eventPreparedDate.date.substring(0, 10);
+    calendarApiRef.current?.gotoDate(date);
+  };
+
   const calendarConfig = {
     schedulerLicenseKey: licenseKey,
-    headerToolbar: {
-      left: '',
-      center: 'title',
-      right: 'prev,next'
+    customButtons: {
+      nearestSlot: {
+        text: 'Créneau le plus proche',
+        hint: 'Aller au créneau le plus récent (ou au premier à venir)',
+        click: goToNearestSlot,
+      },
     },
+    headerToolbar: {
+      left: VIEW_BUTTONS,
+      center: 'title',
+      right: 'nearestSlot prev,next'
+    },
+    buttonText: calendarButtonText,
+    datesSet: handleDatesSet,
     resourceAreaColumns: [
       {
         field: 'title',
@@ -107,8 +135,9 @@ const EventCalendarView = () => {
     timeZone: 'UTC',
     locale: 'fr',
     plugins: [dayGridPlugin, resourceTimelinePlugin, interactionPlugin],
-    initialView: 'resourceTimelineDay',
-    initialDate: eventPreparedDate.date,
+    initialView: savedCalendar.view || 'resourceTimelineDay',
+    // Les créneaux sont déjà chargés quand le calendrier est créé
+    initialDate: initialCalendarDate(savedCalendar, events, eventPreparedDate.date),
     locale: frLocale,
     height: 'auto',
     resources: Object.keys(plans).map(key => ({

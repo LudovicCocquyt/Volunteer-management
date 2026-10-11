@@ -11,54 +11,7 @@ import { getSubscriptionsByEvent } from '../routes/SubscriptionsRoutes';
 import { exportList, exportCalendar } from '../utils/ExportToPdf';
 import { UseWindowSize } from '../utils/UseWindowSize';
 import PlansList from './PlansList.jsx';
-
-// Vue et date du calendrier mémorisées par événement (survivent à l'actualisation de la page)
-const CALENDAR_VIEWS = ['resourceTimelineDay', 'resourceTimelineWeek', 'resourceTimelineMonth'];
-
-const loadCalendarState = (eventId) => {
-  try {
-    const state = JSON.parse(localStorage.getItem(`vm.calendar.${eventId}`) || '{}');
-    return {
-      view: CALENDAR_VIEWS.includes(state.view) ? state.view : null,
-      date: typeof state.date === 'string' ? state.date : null,
-    };
-  } catch (e) {
-    return { view: null, date: null };
-  }
-};
-
-const saveCalendarState = (eventId, state) => {
-  try {
-    localStorage.setItem(`vm.calendar.${eventId}`, JSON.stringify(state));
-  } catch (e) {
-    // Stockage indisponible (navigation privée...) : le calendrier fonctionne sans mémoire
-  }
-};
-
-/**
- * Date du créneau la plus proche d'aujourd'hui sans être dans le futur
- * (le créneau le plus récent déjà commencé ou du jour). Si tous les créneaux
- * sont à venir, renvoie le premier d'entre eux.
- */
-const nearestPastSlotDate = (slots) => {
-  const today = moment().format('YYYY-MM-DD');
-  const days  = [...new Set(slots.map(slot => String(slot.start).substring(0, 10)))].sort();
-  if (days.length === 0) return null;
-
-  const pastOrToday = days.filter(day => day <= today);
-  return pastOrToday.length > 0 ? pastOrToday[pastOrToday.length - 1] : days[0];
-};
-
-// Actualisation (F5) ou retour arrière : on garde la date mémorisée.
-// Arrivée depuis un lien : on ouvre sur le créneau le plus proche.
-const isReloadOrHistory = () => {
-  try {
-    const navigation = performance.getEntriesByType('navigation')[0];
-    return !!navigation && navigation.type !== 'navigate';
-  } catch (e) {
-    return false;
-  }
-};
+import { VIEW_BUTTONS, calendarButtonText, loadCalendarState, saveCalendarState, nearestPastSlotDate, initialCalendarDate } from '../utils/CalendarState';
 
 const TimelineCalendar = () => {
   const calendarRef      = useRef(null);
@@ -363,14 +316,13 @@ const TimelineCalendar = () => {
       },
     },
     headerToolbar: {
-      left: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth',
+      left: VIEW_BUTTONS,
       center: 'title',
       right: 'nearestSlot prev,next',
     },
+    buttonText: calendarButtonText,
     // Les créneaux sont déjà chargés quand le calendrier est créé
-    initialDate: (isReloadOrHistory() && savedCalendar.date)
-      || nearestPastSlotDate(events)
-      || eventPreparedDate.date,
+    initialDate: initialCalendarDate(savedCalendar, events, eventPreparedDate.date),
     datesSet: handleDatesSet,
     locale: frLocale,
     height: 'auto',
