@@ -24,13 +24,13 @@ class EmailService
     /**
      * Envoie un email via Symfony Mailer et journalise le résultat dans var/log/mail.log.
      *
-     * @return bool true si le mail a été remis au serveur d'envoi, false sinon
+     * @return bool true si le mail a été pris en charge (mis en file d'envoi), false sinon
      */
     public function send(array $params): bool
     {
         $recipients = $this->normalizeEmails((string) ($params['to'] ?? ''));
         $context    = [
-            'to'       => array_map([$this, 'maskEmail'], $recipients),
+            'to'       => array_map([self::class, 'maskEmail'], $recipients),
             'subject'  => $params['subject'] ?? '',
             'template' => $params['template'] ?? '',
         ];
@@ -76,8 +76,10 @@ class EmailService
                 }
             }
 
+            // Avec Messenger, le mail est mis en file d'attente : l'envoi réel (succès ou échec)
+            // est journalisé par MailLogSubscriber au moment où le worker l'envoie.
             $this->mailer->send($email);
-            $this->mailLogger->info('Mail envoyé', $context + ['attachments' => $attached]);
+            $this->mailLogger->info('Mail mis en file d\'envoi', $context + ['attachments' => $attached]);
 
             return true;
         } catch (\Throwable $e) {
@@ -257,7 +259,7 @@ class EmailService
     /**
      * jean.dupont@gmail.com -> je***@gmail.com : les logs n'ont pas besoin des adresses complètes.
      */
-    private function maskEmail(string $email): string
+    public static function maskEmail(string $email): string
     {
         $at = strrpos($email, '@');
         if (false === $at) {

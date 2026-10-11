@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use Doctrine\DBAL\Connection;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -37,6 +38,7 @@ final class SecurityCheckCommand extends Command
         #[Autowire('%kernel.secret%')] private readonly string $secret,
         #[Autowire('%kernel.project_dir%')] private readonly string $projectDir,
         #[Autowire('%uploads_dir%')] private readonly string $uploadsDir,
+        private readonly Connection $connection,
     ) {
         parent::__construct();
     }
@@ -63,6 +65,12 @@ final class SecurityCheckCommand extends Command
             'à examiner puis supprimer : ' . implode(', ', $unexpectedPhp)
         );
 
+        [$queueOk, $queueAction] = $this->mailQueueStatus();
+        $checks[] = $this->check('File d\'envoi des mails traitée (cron messenger:consume)', $queueOk, $queueAction);
+
+        [$failedOk, $failedAction] = $this->failedMailsStatus();
+        $checks[] = $this->check('Aucun mail en échec définitif', $failedOk, $failedAction);
+
         $io->table(['Contrôle', 'Résultat', 'Action'], $checks);
 
         $failures = count(array_filter($checks, fn (array $c) => '✗ ÉCHEC' === $c[1]));
@@ -75,6 +83,34 @@ final class SecurityCheckCommand extends Command
         $io->success('Configuration conforme.');
 
         return Command::SUCCESS;
+    }
+
+    /** Des mails en attente depuis plus de 15 min = le cron du worker ne tourne pas. */
+    private function mailQueueStatus(): array
+    {
+        try {
+            // Le transport Doctrine enregistre les dates en UTC
+            $late = (int) $this->connection->fetchOne(
+                "SELECT COUNT(*) FROM messenger_messages
+                 WHERE queue_name = 'default' AND delivered_at IS NULL
+                   AND available_at < UTC_TIMESTAMP() - INTERVAL 15 MINUTE"
+            );
+        } catch (\Throwable) {
+            return [false, 'table messenger_messages absente : lancer doctrine:migrations:migrate'];
+        }
+
+        return [0 === $late, sprintf('%d mail(s) en attente depuis plus de 15 min : vérifier la tâche cron messenger:consume', $late)];
+    }
+
+    private function failedMailsStatus(): array
+    {
+        try {
+            $failed = (int) $this->connection->fetchOne("SELECT COUNT(*) FROM messenger_messages WHERE queue_name = 'failed'");
+        } catch (\Throwable) {
+            return [false, 'table messenger_messages absente : lancer doctrine:migrations:migrate'];
+        }
+
+        return [0 === $failed, sprintf('%d mail(s) non envoyé(s) : php bin/console messenger:failed:show --env=prod', $failed)];
     }
 
     private function check(string $label, bool $ok, string $action): array
