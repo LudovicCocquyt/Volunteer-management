@@ -11,6 +11,9 @@ class EmailService
 {
     private ?string $sending_email_from;
 
+    /** Adresse(s) de réponse des mails envoyés aux bénévoles (APP_REPLY_TO_EMAIL). */
+    private string $volunteerReplyTo;
+
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly string $uploadsDir,
@@ -19,6 +22,7 @@ class EmailService
         private readonly LoggerInterface $mailLogger,
     ) {
         $this->sending_email_from = $_ENV['APP_SENDING_EMAIL_FROM'] ?? null;
+        $this->volunteerReplyTo   = trim((string) ($_ENV['APP_REPLY_TO_EMAIL'] ?? ''));
     }
 
     /**
@@ -60,6 +64,11 @@ class EmailService
 
             if (!empty($params['replyTo'])) {
                 foreach ($this->normalizeEmails((string) $params['replyTo']) as $addr) {
+                    // Une adresse de réponse invalide ne doit pas bloquer l'envoi
+                    if (false === filter_var($addr, FILTER_VALIDATE_EMAIL)) {
+                        $this->mailLogger->warning('Adresse de réponse invalide ignorée', $context + ['replyTo' => self::maskEmail($addr)]);
+                        continue;
+                    }
                     $email->addReplyTo($addr);
                 }
             }
@@ -240,7 +249,11 @@ class EmailService
             $params = [
                 'from'        => $this->sending_email_from,
                 'to'          => $subscription->getEmail(),
-                'replyTo'     => $this->sending_email_from . (!is_null($event->getManagerNotification()) ? ',' . $event->getManagerNotification() : ''),
+                // Les réponses des bénévoles partent vers APP_REPLY_TO_EMAIL si elle est définie,
+                // sinon vers l'expéditeur et les organisateurs de l'événement (comportement d'origine)
+                'replyTo'     => '' !== $this->volunteerReplyTo
+                    ? $this->volunteerReplyTo
+                    : $this->sending_email_from . (!is_null($event->getManagerNotification()) ? ',' . $event->getManagerNotification() : ''),
                 'subject'     => "Confirmation d'inscription [" . $event->getName() . "]",
                 'message'     => $message,
                 'template'    => 'volunteer_confirmation',
