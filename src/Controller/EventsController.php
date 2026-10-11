@@ -2,6 +2,10 @@
 
 namespace App\Controller;
 
+use App\Service\EventDuplicator;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Events;
 use App\Form\EventsFormType;
 use App\Repository\AttachmentRepository;
@@ -53,6 +57,46 @@ final class EventsController extends AbstractController
             'reservedAvailability' => $event->reservedAvailability(),
             'nbSubscriptions'      => $event->getSubscriptions()->count(),
             'canDelete'            => (count($event->getPlans()) < 1 && $event->getSubscriptions()->isEmpty())
+        ]);
+    }
+
+    // Fonctionne aussi depuis une archive : c'est une lecture, l'archive n'est pas modifiée
+    #[Route('/{id}/duplicate', name: 'app_events_duplicate', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function duplicate(Request $request, Events $event, EventDuplicator $duplicator, EntityManagerInterface $entityManager): Response
+    {
+        // Par défaut : même événement un an plus tard (kermesse, marché de Noël...)
+        $defaultStart = \DateTime::createFromInterface($event->getStartAt() ?? new \DateTime())->modify('+1 year');
+
+        $form = $this->createFormBuilder(['name' => $event->getName(), 'startAt' => $defaultStart])
+            ->add('name', TextType::class, [
+                'label'       => 'Nom du nouvel événement',
+                'constraints' => [new Assert\NotBlank(message: 'Le nom est obligatoire.'), new Assert\Length(max: 255)],
+            ])
+            ->add('startAt', DateTimeType::class, [
+                'label'       => 'Date de début',
+                'widget'      => 'single_text',
+                'constraints' => [new Assert\NotNull(message: 'La date est obligatoire.')],
+            ])
+            ->getForm();
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $copy = $duplicator->duplicate($event, $data['name'], $data['startAt']);
+
+            $entityManager->persist($copy);
+            foreach ($copy->getPlans() as $plan) {
+                $entityManager->persist($plan);
+            }
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_events_edit', ['id' => $copy->getId()], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('events/duplicate.html.twig', [
+            'event'   => $event,
+            'form'    => $form,
+            'nbPlans' => count($event->getPlans()),
         ]);
     }
 

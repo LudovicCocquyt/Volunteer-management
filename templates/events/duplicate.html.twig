@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dupliquer {{ event.name }}{% endblock %}
+
+{% block body %}
+    <div class="flex items-center justify-between">
+        <a href="{{ path('app_events_show', {'id': event.id}) }}" class="bg-green-100 text-green-700 rounded-full px-2 py-1 text-xs font-medium">Retour</a>
+    </div>
+
+    <div class="w-full p-2 mb-10 bg-white border border-gray-200 rounded-lg shadow mt-3">
+        <h3 class="w-full p-2 text-gray-900" style="background-color: #cee3f9;">Dupliquer « {{ event.name }} »</h3>
+
+        <div class="mx-2 my-4 text-sm text-gray-700">
+            <p class="mb-2">La copie reprend :</p>
+            <ul class="list-disc ml-6 mb-2">
+                <li>tous les réglages de l'événement (lieu, description, options d'affichage, notifications, message du mail) ;</li>
+                <li>les pièces jointes ;</li>
+                <li>les {{ nbPlans }} créneau{{ nbPlans > 1 ? 'x' : '' }}, décalé{{ nbPlans > 1 ? 's' : '' }} à la nouvelle date avec les mêmes horaires.</li>
+            </ul>
+            <p>Les inscriptions ne sont pas copiées. La copie est créée <strong>non publiée</strong> : relisez-la avant de la publier.</p>
+        </div>
+
+        <div class="mx-2 max-w-xl">
+            {{ form_start(form) }}
+                <div class="mb-4">
+                    {{ form_label(form.name, null, { label_attr: { class: 'block mb-1 text-sm font-medium text-gray-900' } }) }}
+                    {{ form_widget(form.name, { attr: { class: 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5' } }) }}
+                    <div class="text-sm text-red-700">{{ form_errors(form.name) }}</div>
+                </div>
+                <div class="mb-4">
+                    {{ form_label(form.startAt, null, { label_attr: { class: 'block mb-1 text-sm font-medium text-gray-900' } }) }}
+                    {{ form_widget(form.startAt, { attr: { class: 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5' } }) }}
+                    <div class="text-sm text-red-700">{{ form_errors(form.startAt) }}</div>
+                </div>
+                <button class="bg-blue-100 text-blue-700 rounded-full py-1 px-16">Dupliquer</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
