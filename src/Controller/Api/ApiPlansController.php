@@ -298,16 +298,10 @@ final class ApiPlansController extends AbstractController
                 // Error data
                 return new JsonResponse(['status' => 'Error', 'message' => 'assign key not found'], JsonResponse::HTTP_BAD_REQUEST);
             } elseif ($params['assign']) {
-                // Add subscription to the plan
-                $subscription = $manageVolunteer->assign($plan, $subscription);
-                $plan->addSubscription($subscription);
+                $manageVolunteer->assign($plan, $subscription);
             } else {
-                // Remove subscription from the plan
-                $subscription = $manageVolunteer->remove($plan, $subscription);
-                $plan->removeSubscription($subscription);
+                $manageVolunteer->remove($plan, $subscription);
             }
-                $entityManager->persist($plan);
-                $entityManager->flush();
 
             return new JsonResponse(['status' => 'Volunteer managed'], JsonResponse::HTTP_OK);
         } catch (\Exception $e) {

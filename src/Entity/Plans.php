@@ -8,13 +8,14 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 // | Id int                         |
 // | StartDate datetime             |
 // | EndDate datetime               |
 // | NbPers int (nullable)          |
 // | EventId int (ManyToOne)        |
-// | Subscriptions ids (ManyToMany) |
+// | Availabilities (OneToMany)    | bénévoles affectés
 // | ActivityName varchar(255)      | (nullable)
 // | Information varchar(15)        | (nullable)
 
@@ -40,11 +41,12 @@ class Plans
     private ?Events $event = null;
 
     /**
-     * @var Collection<int, Subscriptions>
-     * @Groups({"plan:read", "plan:write"})
+     * Disponibilités affectées à ce créneau (voir Availability).
+     *
+     * @var Collection<int, Availability>
      */
-    #[ORM\ManyToMany(targetEntity: Subscriptions::class, mappedBy: 'plans')]
-    private Collection $subscriptions;
+    #[ORM\OneToMany(targetEntity: Availability::class, mappedBy: 'plan')]
+    private Collection $availabilities;
 
     #[ORM\Column(length: 255)]
     private ?string $activityName = null;
@@ -54,31 +56,61 @@ class Plans
 
     public function __construct()
     {
-        $this->subscriptions = new ArrayCollection();
+        $this->availabilities = new ArrayCollection();
     }
 
     /**
+     * @return Collection<int, Availability>
+     */
+    #[Ignore]
+    public function getAvailabilities(): Collection
+    {
+        return $this->availabilities;
+    }
+
+    /**
+     * Bénévoles affectés à ce créneau (déduits des disponibilités).
+     *
      * @return Collection<int, Subscriptions>
      */
     public function getSubscriptions(): Collection
     {
-        return $this->subscriptions;
+        $subscriptions = new ArrayCollection();
+        foreach ($this->availabilities as $slot) {
+            if ($slot->getSubscription() && !$subscriptions->contains($slot->getSubscription())) {
+                $subscriptions->add($slot->getSubscription());
+            }
+        }
+
+        return $subscriptions;
     }
 
+    /**
+     * Affecte le bénévole : sa disponibilité sur cet horaire (créée si besoin) pointe vers ce créneau.
+     * Un bénévole ne peut être affecté qu'à un seul créneau par horaire.
+     */
     public function addSubscription(Subscriptions $subscription): static
     {
-        if (!$this->subscriptions->contains($subscription)) {
-            $this->subscriptions->add($subscription);
-            $subscription->addPlan($this);
+        $slot     = $subscription->slotFor($this->startDate, $this->endDate);
+        $previous = $slot->getPlan();
+
+        if ($previous !== $this) {
+            $previous?->getAvailabilities()->removeElement($slot);
+            $slot->setPlan($this);
+            $this->availabilities->add($slot);
         }
 
         return $this;
     }
 
+    /** Retire l'affectation ; la disponibilité est conservée (le bénévole reste disponible). */
     public function removeSubscription(Subscriptions $subscription): static
     {
-        if ($this->subscriptions->removeElement($subscription)) {
-            $subscription->removePlan($this);
+        foreach ($this->availabilities->toArray() as $slot) {
+            if ($slot->getSubscription() === $subscription) {
+                $slot->setPlan(null);
+                $this->availabilities->removeElement($slot);
+            }
         }
 
         return $this;

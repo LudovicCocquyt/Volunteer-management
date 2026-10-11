@@ -18,22 +18,11 @@ class ManageVolunteerSercive
 
     public function assign(Plans $plan, Subscriptions $subscription): Subscriptions
     {
-        // Update the availability of the subscription
-        $availabilities = $subscription->getAvailabilities();
-        foreach ($availabilities as $key => $availability) {
-            $start = new \DateTime($availability["startDate"]);
-            $end   = new \DateTime($availability["endDate"]);
-            if ($start->getTimestamp() == $plan->getStartDate()->getTimestamp() && $end == $plan->getEndDate()) {
-                $availabilities[$key]["available"] = false;
-            }
-        }
-        $subscription->setAvailabilities($availabilities);
-        $this->entityManager->persist($subscription);
+        $plan->addSubscription($subscription);
         $this->entityManager->flush();
 
         return $subscription;
     }
-
 
     /**
      * Affecte automatiquement le bénévole à un créneau pour chacune de ses disponibilités.
@@ -54,19 +43,13 @@ class ManageVolunteerSercive
         $allAssigned = true;
 
         try {
-            foreach ($subscription->getAvailabilities() ?? [] as $availability) {
-                // Déjà affecté sur ce créneau
-                if (false === ($availability['available'] ?? true)) {
-                    continue;
+            foreach ($subscription->getAvailabilitySlots() as $slot) {
+                if ($slot->isAssigned()) {
+                    continue; // déjà affecté sur cet horaire
                 }
 
-                if (empty($availability['startDate']) || empty($availability['endDate'])) {
-                    $allAssigned = false;
-                    continue;
-                }
-
-                $start = new \DateTime($availability['startDate']);
-                $end   = new \DateTime($availability['endDate']);
+                $start = $slot->getStartDate();
+                $end   = $slot->getEndDate();
                 $plan  = $this->pickPlan($this->plansRepository->findBySlot($start, $end, $event), $subscription);
 
                 if (null === $plan) {
@@ -80,10 +63,10 @@ class ManageVolunteerSercive
                     continue;
                 }
 
-                $this->assign($plan, $subscription);
                 $plan->addSubscription($subscription);
-                $this->entityManager->flush();
             }
+
+            $this->entityManager->flush();
         } catch (\Throwable $e) {
             $this->logger->error('Auto-affectation interrompue', [
                 'event'        => $event?->getId(),
@@ -120,19 +103,9 @@ class ManageVolunteerSercive
         return $candidates[0]; // tous complets : surbooking autorisé
     }
 
-    public function remove($plan, $subscription): Subscriptions
+    public function remove(Plans $plan, Subscriptions $subscription): Subscriptions
     {
-        // Update the availability of the subscription
-        $availabilities = $subscription->getAvailabilities();
-        foreach ($availabilities as $key => $availability) {
-            $start = new \DateTime($availability["startDate"]);
-            $end   = new \DateTime($availability["endDate"]);
-            if ($start->getTimestamp() == $plan->getStartDate()->getTimestamp() && $end == $plan->getEndDate()) {
-                $availabilities[$key]["available"] = true;
-            }
-        }
-        $subscription->setAvailabilities($availabilities);
-        $this->entityManager->persist($subscription);
+        $plan->removeSubscription($subscription);
         $this->entityManager->flush();
 
         return $subscription;
