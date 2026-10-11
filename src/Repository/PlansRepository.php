@@ -43,21 +43,22 @@ class PlansRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findByOneResultByTimes(string $startDate, string $endDate, Events $event): Plans|array
+    /**
+     * Créneaux d'un événement correspondant exactement à une disponibilité (même début, même fin).
+     *
+     * @return Plans[]
+     */
+    public function findBySlot(\DateTimeInterface $startDate, \DateTimeInterface $endDate, Events $event): array
     {
-        $plans = $this->createQueryBuilder('p')
-            ->andWhere('p.startDate >= :startDate')
-            ->andWhere('p.endDate <= :endDate')
+        return $this->createQueryBuilder('p')
             ->andWhere('p.event = :event')
+            ->andWhere('p.startDate = :startDate')
+            ->andWhere('p.endDate = :endDate')
+            ->setParameter('event', $event)
             ->setParameter('startDate', $startDate)
             ->setParameter('endDate', $endDate)
-            ->setParameter('event', $event)
+            ->orderBy('p.id', 'ASC')
             ->getQuery()
             ->getResult();
-
-        if (!empty($plans)) {
-            return $plans[0];
-        }
-        return [];
     }
 }
