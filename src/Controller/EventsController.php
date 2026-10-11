@@ -59,13 +59,21 @@ final class EventsController extends AbstractController
     #[Route('/{id}/edit', name: 'app_events_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Events $event, EntityManagerInterface $entityManager, AttachmentRepository $attachmentRepository): Response
     {
-        $form = $this->createForm(EventsFormType::class, $event);
+        $wasArchived = (bool) $event->isArchived();
+        $form        = $this->createForm(EventsFormType::class, $event);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            // Archive en lecture seule : seule la désarchivation est acceptée
+            if ($wasArchived && $event->isArchived()) {
+                $entityManager->refresh($event); // annule les modifications soumises
 
-            return $this->redirectToRoute('app_events_edit', ['id' => $event->getId()], Response::HTTP_SEE_OTHER);
+                return $this->redirectToRoute('app_events_edit', ['id' => $event->getId(), 'archive_locked' => 1], Response::HTTP_SEE_OTHER);
+            } else {
+                $entityManager->flush();
+
+                return $this->redirectToRoute('app_events_edit', ['id' => $event->getId()], Response::HTTP_SEE_OTHER);
+            }
         }
 
         return $this->render('events/edit.html.twig', [
@@ -77,12 +85,17 @@ final class EventsController extends AbstractController
             'canDelete'            => (count($event->getPlans()) < 1 && $event->getSubscriptions()->isEmpty()),
             'is_edit'              => true,
             'attachments'          => $attachmentRepository->findAll(),
+            'archiveError'         => $request->query->getBoolean('archive_locked'),
         ]);
     }
 
     #[Route('/{id}', name: 'app_events_delete', methods: ['POST'])]
     public function delete(Request $request, Events $event, EntityManagerInterface $entityManager): Response
     {
+        if ($event->isArchived()) {
+            return $this->redirectToRoute('app_events_edit', ['id' => $event->getId()], Response::HTTP_SEE_OTHER);
+        }
+
         if ($this->isCsrfTokenValid('delete'.$event->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($event);
             $entityManager->flush();

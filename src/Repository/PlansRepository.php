@@ -34,11 +34,18 @@ class PlansRepository extends ServiceEntityRepository
 
         return $plansWithEventName;
     }
-    public function findByActivityName(string $name): array
+    /**
+     * Créneaux d'une activité, limités à un seul événement.
+     *
+     * @return Plans[]
+     */
+    public function findByActivityName(string $name, Events $event): array
     {
         return $this->createQueryBuilder('p')
             ->andWhere('p.activityName = :name')
+            ->andWhere('p.event = :event')
             ->setParameter('name', $name)
+            ->setParameter('event', $event)
             ->getQuery()
             ->getResult();
     }

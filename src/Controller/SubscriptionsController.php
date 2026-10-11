@@ -134,6 +134,11 @@ final class SubscriptionsController extends AbstractController
         $form = $this->createForm(SubscriptionsFormType::class, $subscription);
         $form->handleRequest($request);
 
+        // Archive en lecture seule
+        if ($form->isSubmitted() && $subscription->getEvent()?->isArchived()) {
+            return $this->redirectToRoute('app_subscriptions_index', [], Response::HTTP_SEE_OTHER);
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             // Check if the form has availabilities and replace the data
             $data           = $request->request->all();
@@ -156,6 +161,10 @@ final class SubscriptionsController extends AbstractController
     #[Route('/subscriptions/{id}', name: 'app_subscriptions_delete', methods: ['POST'])]
     public function delete(Request $request, Subscriptions $subscription, EntityManagerInterface $entityManager): Response
     {
+        if ($subscription->getEvent()?->isArchived()) {
+            return $this->redirectToRoute('app_subscriptions_index', [], Response::HTTP_SEE_OTHER);
+        }
+
         if ($this->isCsrfTokenValid('delete'.$subscription->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($subscription);
             $entityManager->flush();

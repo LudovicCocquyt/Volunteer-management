@@ -8,6 +8,16 @@
         {{ include('events/_delete_form.html.twig') }}
     </div>
 
+    {% if event.archived %}
+        <div class="mt-3 p-3 text-sm rounded-lg {{ archiveError ? 'text-red-700 bg-red-100' : 'text-amber-800 bg-amber-100' }}">
+            <i class="fa-solid fa-box-archive"></i>
+            {% if archiveError %}
+                Modifications refusées : cet événement est archivé.
+            {% endif %}
+            Cet événement est archivé et en lecture seule. Pour le modifier, décochez « Archivé » et enregistrez.
+        </div>
+    {% endif %}
+
     <div class="w-full p-2 mb-10 bg-white border border-gray-200 rounded-lg shadow mt-3">
         <div class="relative overflow-x-auto shadow-md rounded-lg pb-3">
             <h3 id="close" class="w-full flex items-center justify-between p-2 text-gray-900 bg-pink-200"  style="background-color: #f9cee8;">Modication de {{ event.name }}

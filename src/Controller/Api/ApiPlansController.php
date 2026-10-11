@@ -191,6 +191,9 @@ final class ApiPlansController extends AbstractController
             if (empty($params['resourceId']) || empty($event)) {
                 return new JsonResponse(['status' => 'Error', 'message' => 'Params not found'], JsonResponse::HTTP_BAD_REQUEST);
             }
+            if ($event->isArchived()) {
+                return $this->archivedResponse();
+            }
             $date = substr($params['start'], 0, 10);
             $start = DateTime::createFromFormat("Y-m-d\TH:i:sP", $date . "T" . $params['startTime'] . ":00+02:00");
             $end   = DateTime::createFromFormat("Y-m-d\TH:i:sP", $date . "T" . $params['endTime'] . ":00+02:00");
@@ -229,6 +232,10 @@ final class ApiPlansController extends AbstractController
     public function edit(Plans $plan, Request $request, EntityManagerInterface $entityManager, PlansRepository $plansRepo): JsonResponse
     {
         try {
+            if ($plan->getEvent()?->isArchived()) {
+                return $this->archivedResponse();
+            }
+
             $status = '[Plans updated]';
             $params = json_decode($request->getContent(), true);
             $date   = $params['start'];
@@ -240,11 +247,12 @@ final class ApiPlansController extends AbstractController
             $plan->setNbPers(intval($params['nbPers']));
             $plan->setInformation(strval($params['information']));
 
-            // If the activityName change, all plans with the same name must be modified.
+            // Renommage d'une activité : tous ses créneaux sont renommés, mais
+            // uniquement dans cet événement (les autres événements et les archives ne bougent pas)
             if ($plan->getActivityName() != $params['resourceId']) {
-                $plans = $plansRepo->findByActivityName($plan->getActivityName());
+                $plans = $plansRepo->findByActivityName($plan->getActivityName(), $plan->getEvent());
                 $this->changeActivityNameOfManyPlans($plans, $params['resourceId'], $entityManager);
-                $status = '[Plans updated] With the same activity name, all plans have been updated.';
+                $status = '[Plans updated] All plans of this activity in this event have been renamed.';
             }
 
             $entityManager->persist($plan);
@@ -278,6 +286,12 @@ final class ApiPlansController extends AbstractController
             $params       = json_decode($request->getContent(), true);
             $plan         = $plansRepository->find(intval($params['planId']));
             $subscription = $subRepo->find(intval($params["subscription"]["id"]));
+            if (!$plan || !$subscription) {
+                return new JsonResponse(['status' => 'Error', 'message' => 'Plan or subscription not found'], JsonResponse::HTTP_NOT_FOUND);
+            }
+            if ($plan->getEvent()?->isArchived()) {
+                return $this->archivedResponse();
+            }
             if (!array_key_exists('assign', $params)) {
                 // Error data
                 return new JsonResponse(['status' => 'Error', 'message' => 'assign key not found'], JsonResponse::HTTP_BAD_REQUEST);
@@ -315,10 +329,22 @@ final class ApiPlansController extends AbstractController
     #[Route('/plan/remove/{id}', name: 'api_plans_delete', methods: ['DELETE'])]
     public function delete(Request $request, Plans $plan, EntityManagerInterface $entityManager): JsonResponse
     {
+        if ($plan->getEvent()?->isArchived()) {
+            return $this->archivedResponse();
+        }
+
         $entityManager->remove($plan);
         $entityManager->flush();
 
         return new JsonResponse(['status' => 'Deleted!'], JsonResponse::HTTP_OK);
+    }
+
+    private function archivedResponse(): JsonResponse
+    {
+        return new JsonResponse(
+            ['status' => 'Error', 'message' => "Événement archivé : modification impossible. Désarchivez-le d'abord."],
+            JsonResponse::HTTP_FORBIDDEN
+        );
     }
 
     private function changeActivityNameOfManyPlans(array $plans, string $newActivityName, $entityManager): void
