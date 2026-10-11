@@ -12,11 +12,61 @@ import { exportList, exportCalendar } from '../utils/ExportToPdf';
 import { UseWindowSize } from '../utils/UseWindowSize';
 import PlansList from './PlansList.jsx';
 
+// Vue et date du calendrier mémorisées par événement (survivent à l'actualisation de la page)
+const CALENDAR_VIEWS = ['resourceTimelineDay', 'resourceTimelineWeek', 'resourceTimelineMonth'];
+
+const loadCalendarState = (eventId) => {
+  try {
+    const state = JSON.parse(localStorage.getItem(`vm.calendar.${eventId}`) || '{}');
+    return {
+      view: CALENDAR_VIEWS.includes(state.view) ? state.view : null,
+      date: typeof state.date === 'string' ? state.date : null,
+    };
+  } catch (e) {
+    return { view: null, date: null };
+  }
+};
+
+const saveCalendarState = (eventId, state) => {
+  try {
+    localStorage.setItem(`vm.calendar.${eventId}`, JSON.stringify(state));
+  } catch (e) {
+    // Stockage indisponible (navigation privée...) : le calendrier fonctionne sans mémoire
+  }
+};
+
+/**
+ * Date du créneau la plus proche d'aujourd'hui sans être dans le futur
+ * (le créneau le plus récent déjà commencé ou du jour). Si tous les créneaux
+ * sont à venir, renvoie le premier d'entre eux.
+ */
+const nearestPastSlotDate = (slots) => {
+  const today = moment().format('YYYY-MM-DD');
+  const days  = [...new Set(slots.map(slot => String(slot.start).substring(0, 10)))].sort();
+  if (days.length === 0) return null;
+
+  const pastOrToday = days.filter(day => day <= today);
+  return pastOrToday.length > 0 ? pastOrToday[pastOrToday.length - 1] : days[0];
+};
+
+// Actualisation (F5) ou retour arrière : on garde la date mémorisée.
+// Arrivée depuis un lien : on ouvre sur le créneau le plus proche.
+const isReloadOrHistory = () => {
+  try {
+    const navigation = performance.getEntriesByType('navigation')[0];
+    return !!navigation && navigation.type !== 'navigate';
+  } catch (e) {
+    return false;
+  }
+};
+
 const TimelineCalendar = () => {
   const calendarRef      = useRef(null);
   const divRef           = useRef(null);
   const nbPersInput      = useRef(null);
   const addActivityInput = useRef(null);
+  const calendarApiRef   = useRef(null); // instance FullCalendar, pour les boutons personnalisés
+  const eventsRef        = useRef([]);   // créneaux à jour, lus par le bouton « créneau le plus proche »
 
   const [licenseKey, setLicenseKey]                   = useState("");
   const [isLicenseLoaded, setIsLicenseLoaded]         = useState(false);
@@ -50,7 +100,9 @@ const TimelineCalendar = () => {
   // Add 1 hour in slotMinTime
   const slotMinTimePlusOneHour = startCalendar ? moment(startCalendar.date).add(1, 'hours').format('HH:mm') : '13:00' //default start time;
 
-  const [currentDate, setCurrentDate] = useState(localStorage.getItem('calendarDate') || eventPreparedDate.date);
+  const savedCalendar                 = loadCalendarState(eventPreparedId);
+  const [currentDate, setCurrentDate] = useState(savedCalendar.date || eventPreparedDate.date);
+  eventsRef.current                   = events;
 
   useEffect(() => {
     fetch('/api/config')
@@ -77,7 +129,11 @@ const TimelineCalendar = () => {
 
   useEffect(() => {
     if (isDataLoaded && isLicenseLoaded) {
+      // Ancienne mémorisation globale (même date pour tous les événements) : remplacée par vm.calendar.<id>
+      localStorage.removeItem('calendarDate');
+
       const calendar = new Calendar(calendarRef.current, calendarConfig);
+      calendarApiRef.current = calendar;
       calendar.render();
       setCalendarInstance(calendar);
       setIsDataLoaded(false);
@@ -270,13 +326,14 @@ const TimelineCalendar = () => {
 
   // When the calendar date range changes (e.g., user navigates to a different month/week/day)
   const handleDatesSet = (arg) => {
-    const newDate = arg.startStr;
-    if (localStorage.getItem('calendarDate') == null) {
-      localStorage.setItem('calendarDate', eventPreparedDate.date);
-    } else {
-      localStorage.setItem('calendarDate', newDate);
-    }
-    setCurrentDate(newDate);
+    const date = arg.view.currentStart.toISOString().substring(0, 10);
+    saveCalendarState(eventPreparedId, { view: arg.view.type, date });
+    setCurrentDate(date);
+  };
+
+  const goToNearestSlot = () => {
+    const date = nearestPastSlotDate(eventsRef.current) || eventPreparedDate.date.substring(0, 10);
+    calendarApiRef.current?.gotoDate(date);
   };
 
   const calendarConfig = {
@@ -297,13 +354,23 @@ const TimelineCalendar = () => {
     timeZone: 'UTC',
     locale: 'fr',
     plugins: [dayGridPlugin, resourceTimelinePlugin, interactionPlugin],
-    initialView: 'resourceTimelineDay',
+    initialView: savedCalendar.view || 'resourceTimelineDay',
+    customButtons: {
+      nearestSlot: {
+        text: 'Créneau le plus proche',
+        hint: 'Aller au créneau le plus récent (ou au premier à venir)',
+        click: goToNearestSlot,
+      },
+    },
     headerToolbar: {
       left: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth',
       center: 'title',
-      right: 'prev,next',
+      right: 'nearestSlot prev,next',
     },
-    initialDate: currentDate,
+    // Les créneaux sont déjà chargés quand le calendrier est créé
+    initialDate: (isReloadOrHistory() && savedCalendar.date)
+      || nearestPastSlotDate(events)
+      || eventPreparedDate.date,
     datesSet: handleDatesSet,
     locale: frLocale,
     height: 'auto',
