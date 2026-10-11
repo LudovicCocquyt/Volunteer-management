@@ -78,7 +78,7 @@ final class ApiPlansController extends AbstractController
 
         $peopleFormat = $event->isDisplayPeopleName() ? 'short' : 'none';
 
-        return new JsonResponse($this->buildNeeds($id, false, $peopleFormat, $plansRepository, $subRepo), JsonResponse::HTTP_OK);
+        return new JsonResponse($this->buildNeeds($id, false, $peopleFormat, $plansRepository, $subRepo, true), JsonResponse::HTTP_OK);
     }
 
     /**
@@ -95,14 +95,19 @@ final class ApiPlansController extends AbstractController
 
     /**
      * @param string $peopleFormat 'full' (Prénom Nom), 'short' (Prénom N.) ou 'none'
+     * @param bool   $publicView   true : masque aussi les créneaux commencés/passés, et
+     *                             compte les bénévoles déjà affectés pour savoir si un créneau est complet
      */
-    private function buildNeeds(int $eventId, bool $includeEmpty, string $peopleFormat, PlansRepository $plansRepository, SubscriptionsRepository $subRepo): array
+    private function buildNeeds(int $eventId, bool $includeEmpty, string $peopleFormat, PlansRepository $plansRepository, SubscriptionsRepository $subRepo, bool $publicView = false): array
     {
         $format = 'Y-m-d\TH:i:s';
         $plans  = $plansRepository->findBy(['event' => $eventId]);
         if (empty($plans)) {
             return [];
         }
+
+        // Les créneaux sont saisis en heure de Paris : comparaison en heure locale
+        $now = (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')))->format('Y-m-d H:i:s');
 
         // Nombre de bénévoles disponibles par créneau
         $volunteer_available = [];
@@ -115,17 +120,18 @@ final class ApiPlansController extends AbstractController
 
         $our_needs = [];
         foreach ($plans as $plan) {
-            $startDateExists = false;
-            $endDateExists   = false;
-            foreach ($our_needs as &$need) { // Référence pour modifier l'élément existant
-                if ($plan->getStartDate()->format($format) == $need['startDate']) {
-                    $startDateExists = true;
-                }
-                if ($plan->getEndDate()->format($format) == $need['endDate']) {
-                    $endDateExists = true;
-                }
-                if ($startDateExists && $endDateExists) {
-                    $need['nbPers'] += $plan->getNbPers();
+            if ($publicView && $plan->getStartDate()->format('Y-m-d H:i:s') <= $now) {
+                continue; // créneau commencé ou passé
+            }
+
+            $startDate = $plan->getStartDate()->format($format);
+            $endDate   = $plan->getEndDate()->format($format);
+
+            // Plusieurs activités au même horaire : un seul créneau public, besoins cumulés
+            foreach ($our_needs as &$need) {
+                if ($need['startDate'] === $startDate && $need['endDate'] === $endDate) {
+                    $need['nbPers']   += $plan->getNbPers();
+                    $need['assigned'] += $plan->getSubscriptions()->count();
                     continue 2;
                 }
             }
@@ -142,9 +148,10 @@ final class ApiPlansController extends AbstractController
                 }
 
                 $our_needs[] = [
-                    'startDate'   => $plan->getStartDate()->format($format),
-                    'endDate'     => $plan->getEndDate()->format($format),
+                    'startDate'   => $startDate,
+                    'endDate'     => $endDate,
                     'nbPers'      => $plan->getNbPers(),
+                    'assigned'    => $plan->getSubscriptions()->count(),
                     'available'   => true,
                     'information' => $plan->getInformation(),
                     'people'      => implode(",\n", $names),
@@ -152,17 +159,24 @@ final class ApiPlansController extends AbstractController
             }
         }
 
-        // Retire les créneaux déjà complets
+        // Retire les créneaux complets
         foreach ($our_needs as $key => $o) {
-            $availabilityKey = $o['startDate'] . '/' . $o['endDate'];
-            if (($volunteer_available[$availabilityKey] ?? 0) >= $o['nbPers']) {
+            $taken = $volunteer_available[$o['startDate'] . '/' . $o['endDate']] ?? 0;
+            if ($publicView) {
+                $taken = max($taken, $o['assigned']);
+            }
+            if ($taken >= $o['nbPers']) {
                 unset($our_needs[$key]);
             }
         }
 
-        usort($our_needs, fn ($a, $b) => strtotime($a['startDate']) - strtotime($b['startDate']));
+        usort($our_needs, fn ($a, $b) => strcmp($a['startDate'], $b['startDate']));
 
-        return $our_needs;
+        return array_map(function (array $need) {
+            unset($need['assigned']);
+
+            return $need;
+        }, $our_needs);
     }
 
     #[Route('/plan/new', name: 'api_plan_new', methods: ['POST'])]

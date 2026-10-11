@@ -13,6 +13,7 @@ const SubscriptionNew = () => {
   const formWrapper                       = document.getElementById('form-wrapper');
 
   const [plans, setPlans]                                                 = useState([]);
+  const [plansLoaded, setPlansLoaded]                                     = useState(false);
   const [currentEvent, setCurrentEvent]                                   = useState(null);
   const [availability, setAvailability]                                   = useState([]);
   const [description, setDescription]                                     = useState("");
@@ -58,12 +59,14 @@ const SubscriptionNew = () => {
     subscriptions_form_event.value = eventId; // Set the event id in the form
 
     setPlans([]); // Reset the plans
+    setPlansLoaded(false);
     setAvailability([]); // Reset the availability
   }
 
   const getApiPlans = async (eventId) => {
     const plans = await getPublicNeedsByEvent(eventId);
     setPlans(plans);
+    setPlansLoaded(true);
   };
 
   const moveAvailability = (plan) => {
@@ -124,6 +127,12 @@ const SubscriptionNew = () => {
           </div>
         }
       </div>
+
+      {currentEvent && plansLoaded && plans.length === 0 &&
+        <div className="pt-10 text-center text-gray-600">
+          Tous les créneaux de cet événement sont complets. Merci pour votre intérêt !
+        </div>
+      }
 
       {plans.length > 0 &&
         <div id="times-wrapper" className="pt-10">

@@ -55,6 +55,20 @@ final class SubscriptionsController extends AbstractController
                 $availabilities = json_decode($data['subscriptions_form']['availabilities'], true);
                 unset($data['subscriptions_form']['availabilities']);
             }
+
+            // Ignore les créneaux commencés entre l'affichage de la page et l'envoi du formulaire
+            $now            = (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')))->format('Y-m-d H:i:s');
+            $availabilities = array_values(array_filter(
+                is_array($availabilities) ? $availabilities : [],
+                function ($a) use ($now) {
+                    try {
+                        return is_array($a) && !empty($a['startDate'])
+                            && (new \DateTimeImmutable($a['startDate']))->format('Y-m-d H:i:s') > $now;
+                    } catch (\Exception) {
+                        return false;
+                    }
+                }
+            ));
             $request->request->replace($data);
         }
 
