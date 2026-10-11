@@ -1,6 +1,8 @@
 
 ###> symfony/framework-bundle ###
 .env.local
+.env.local.test
+.env.test
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
@@ -23,3 +25,7 @@ public/public_html/
 ###< log ###
 
 public/uploads/
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

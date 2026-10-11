@@ -196,7 +196,10 @@ class Subscriptions
      */
     public function getAvailabilities(): array
     {
-        return array_map(fn (Availability $slot) => $slot->toArray(), $this->availabilitySlots->toArray());
+        $slots = $this->availabilitySlots->toArray();
+        usort($slots, fn (Availability $a, Availability $b) => $a->getStartDate() <=> $b->getStartDate());
+
+        return array_map(fn (Availability $slot) => $slot->toArray(), $slots);
     }
 
     /**
